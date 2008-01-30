@@ -1,0 +1,209 @@
+.wd-editor-toolbar-panel{
+}
+
+.wd-editor-toolbar-panel div{
+	height: 30px;
+}
+
+.wd-editor-toolbar-panel a{
+	margin: 0;
+	/*padding: 0.1em 0.2em;*/
+	border: 1px solid #999;
+	/*float: left;*/
+	background-color: #FFF;
+}
+.wd-editor-toolbar-panel a:hover{
+	/*background-color: #EEE;*/
+	border-color: #333;
+}
+
+.wd-editor-toolbar-panel ul{
+	padding: 0; margin: 0;
+
+	float: left;
+	list-style: none;
+}	
+.wd-editor-toolbar-panel ul li{
+	padding: 0; margin: 1px;
+	float: left;
+/*background-color: #DDD;*/
+}
+.wd-editor-toolbar-panel ul li ul {
+	position: absolute;
+	/*width: 10em;*/
+	/*width: 22px;*/
+	left: -999em;
+/*	background-color: #FFF;*/
+	z-index: 30;
+}
+
+.wd-editor-toolbar-panel ul li ul li a{
+	float: none;
+	/*width: 10em;*/
+}
+.wd-editor-toolbar-panel ul li ul li{
+	margin: 0;
+}
+.wd-editor-toolbar-panel ul li ul li a{
+	display: block;
+	float: none;
+}
+
+.wd-editor-toolbar-panel ul li:hover ul, .wd-editor-toolbar-panel ul li.sfhover ul {
+	left: auto;
+	background-color: black;
+	border: 2px solid #555;
+}
+
+.wd-editor-toolbar-panel li.hseparator{
+	width: 2px;
+	height: 28px;
+	margin: 0 5px;
+	background-color: #333;
+}
+
+.wd-editor-toolbar-panel ul li a{
+	height: 22px;
+	width: 22px;
+	padding: 0; margin: 0;
+	display: block;
+
+}
+
+.wd-editor-toolbar-panel ul li a span{
+	display: none;
+}
+
+a.weditor-bold{
+	background-image: url(/common--theme/base/images/editor/bold.png);
+}
+a.weditor-italic{
+	background-image: url(/common--theme/base/images/editor/italic.png);
+}
+a.weditor-underline{
+	background-image: url(/common--theme/base/images/editor/underline.png);
+}
+a.weditor-strikethrough{
+	background-image: url(/common--theme/base/images/editor/strikethrough.png);
+}
+a.weditor-teletype{
+	background-image: url(/common--theme/base/images/editor/teletype.png);
+}	
+a.weditor-quote{
+	background-image: url(/common--theme/base/images/editor/quote.png);
+}	
+a.weditor-superscript{
+	background-image: url(/common--theme/base/images/editor/superscript.png);
+}
+a.weditor-subscript{
+	background-image: url(/common--theme/base/images/editor/subscript.png);
+}	
+a.weditor-raw{
+	background-image: url(/common--theme/base/images/editor/raw.png);
+}
+a.weditor-hr{
+	background-image: url(/common--theme/base/images/editor/hr.png);
+}
+a.weditor-div{
+	background-image: url(/common--theme/base/images/editor/div.png);
+}
+a.weditor-clearfloat{
+	background-image: url(/common--theme/base/images/editor/clearfloat.png);
+}
+a.weditor-clearfloatleft{
+	background-image: url(/common--theme/base/images/editor/clearfloatleft.png);
+}
+a.weditor-clearfloatright{
+	background-image: url(/common--theme/base/images/editor/clearfloatright.png);
+}
+a.weditor-divwiz{
+	background-image: url(/common--theme/base/images/editor/divwiz.png);
+}
+a.weditor-table{
+	background-image: url(/common--theme/base/images/editor/table.png);
+}
+a.weditor-toc{
+	background-image: url(/common--theme/base/images/editor/toc.png);
+}
+a.weditor-uri{
+	background-image: url(/common--theme/base/images/editor/uri.png);
+}
+a.weditor-uriwiz{
+	background-image: url(/common--theme/base/images/editor/uriwiz.png);
+}
+a.weditor-pagelink{
+	background-image: url(/common--theme/base/images/editor/pagelink.png);
+}
+a.weditor-pagelinkwiz{
+	background-image: url(/common--theme/base/images/editor/pagelinkwiz.png);
+}
+a.weditor-image{
+	background-image: url(/common--theme/base/images/editor/image.png);
+}
+a.weditor-imagewiz{
+	background-image: url(/common--theme/base/images/editor/imagewiz.png);
+}
+a.weditor-video{
+	background-image: url(/common--theme/base/images/editor/video.png);
+}
+a.weditor-audio{
+	background-image: url(/common--theme/base/images/editor/audio.png);
+}
+a.weditor-code{
+	background-image: url(/common--theme/base/images/editor/code.png);
+}
+a.weditor-codewiz{
+	background-image: url(/common--theme/base/images/editor/codewiz.png);
+}
+a.weditor-numlist{
+	background-image: url(/common--theme/base/images/editor/numlist.png);
+}
+a.weditor-bullist{
+	background-image: url(/common--theme/base/images/editor/bullist.png);
+}
+a.weditor-deflist{
+	background-image: url(/common--theme/base/images/editor/deflist.png);
+}
+a.weditor-incindent{
+	background-image: url(/common--theme/base/images/editor/incindent.png);
+}
+a.weditor-decindent{
+	background-image: url(/common--theme/base/images/editor/decindent.png);
+}
+a.weditor-footnote{
+	background-image: url(/common--theme/base/images/editor/footnote.png);
+}
+a.weditor-math{
+	background-image: url(/common--theme/base/images/editor/math.png);
+}
+a.weditor-mathinline{
+	background-image: url(/common--theme/base/images/editor/mathinline.png);
+}
+a.weditor-eqref{
+	background-image: url(/common--theme/base/images/editor/eqref.png);
+}
+a.weditor-bib{
+	background-image: url(/common--theme/base/images/editor/bib.png);
+}
+a.weditor-bibcite{
+	background-image: url(/common--theme/base/images/editor/bibcite.png);
+}
+a.weditor-h1{
+	background-image: url(/common--theme/base/images/editor/h1.png);
+}
+a.weditor-h2{
+	background-image: url(/common--theme/base/images/editor/h2.png);
+}
+a.weditor-h3{
+	background-image: url(/common--theme/base/images/editor/h3.png);
+}
+a.weditor-h4{
+	background-image: url(/common--theme/base/images/editor/h4.png);
+}
+a.weditor-h5{
+	background-image: url(/common--theme/base/images/editor/h5.png);
+}
+a.weditor-h6{
+	background-image: url(/common--theme/base/images/editor/h6.png);
+}
+
