@@ -23,11 +23,6 @@
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
 
-ini_set('include_path',ini_get('include_path').':'.WIKIDOT_ROOT.'/lib/Text_Diff/');
-require_once (WIKIDOT_ROOT.'/lib/Text_Diff/Text/Diff.php');
-require_once (WIKIDOT_ROOT.'/lib/Text_Diff/Text/Diff/Renderer.php');
-require_once (WIKIDOT_ROOT.'/lib/Text_Diff/Text/Diff/Renderer/inline.php');
-
 class PageEditDiffModule extends SmartyModule {
 	
 	public function build($runData){

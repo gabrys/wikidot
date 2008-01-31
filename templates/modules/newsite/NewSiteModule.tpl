@@ -122,8 +122,7 @@
 					<td>
 						<input type="checkbox" name="tos" class="checkbox">
 						<br/>
-						<!-- TODO: De-Wikidot.com-ize - change - copyrights -->
-						{t}I have read and agree to the <a href="http://www.wikidot.com/legal:terms-of-service"
+						{t 1=$URL_HOST}I have read and agree to the <a href="http://%1/legal:terms-of-service"
 						target="_blank">Terms of Service</a>.{/t}
 						
 					</td>
