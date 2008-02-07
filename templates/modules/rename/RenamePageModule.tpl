@@ -103,7 +103,7 @@
 			<input type="button" value="{t}cancel{/t}" onclick="WIKIDOT.page.listeners.closeActionArea(event)"/>
 			<input type="button" value="{t}rename/move{/t}" onclick="WIKIDOT.modules.RenamePageModule.listeners.rename(event)"/>
 		</div>
-	</div>
+	</form>
 </div>
 
 <div id="rename-option-delete" style="display: none">
