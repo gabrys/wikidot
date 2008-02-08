@@ -55,7 +55,7 @@ class Text_Wiki_Render_Xhtml_Embed extends Text_Wiki_Render {
         
         $content = trim($options['content']);
         
-        foreach ($this->patterns as $pattern) {
+        foreach ($this->_patterns as $pattern) {
             if (preg_match($pattern, $content)) {
                 $content = preg_replace('/language="JavaScript[^"]*"/i', '', $content);
                 // check for js events
