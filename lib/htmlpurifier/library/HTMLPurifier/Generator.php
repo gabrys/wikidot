@@ -203,7 +203,9 @@ class HTMLPurifier_Generator
      * @return String escaped data.
      */
     public function escape($string) {
-        return htmlspecialchars($string, ENT_COMPAT, 'UTF-8');
+        // return htmlspecialchars($string, ENT_COMPAT, 'UTF-8');
+        // changed by Michal Frackowiak from Wikidot.org
+        return htmlspecialchars($string, null, 'UTF-8');
     }
     
 }
