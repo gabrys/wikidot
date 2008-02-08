@@ -86,6 +86,8 @@ class PgConnection implements DatabaseConnection{
 		if (!$this->link) {
 			throw new OzoneDatabaseException("error: ".pg_result_error()."\n");
 		}
+		/* configure the connection */
+		@pg_query($this->link, 'SET search_path TO "$user", public, ts2');
 		OzoneLogger::instance()->debug("database connection successful");
 	}
 
