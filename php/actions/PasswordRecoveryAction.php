@@ -113,7 +113,7 @@ class PasswordRecoveryAction extends SmartyAction {
 			throw ProcessException("No such user.", "no_user");	
 		}
 		
-		$user->setPassword($password);
+		$user->setPassword(md5($password));
 		$user->save();
 		
 	}
