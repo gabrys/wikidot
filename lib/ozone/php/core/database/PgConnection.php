@@ -172,5 +172,9 @@ class PgConnection implements DatabaseConnection{
 			$r = pg_query($q);	
 		}
 		return true;
-	}	
+	}
+	
+	public function getLink(){
+	    return $this->link;
+	}
 }

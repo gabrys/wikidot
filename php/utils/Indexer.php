@@ -68,7 +68,13 @@ class Indexer {
 		foreach($tags as $tag){
 			$tagstring .= $tag->getTag().' ';	
 		}
-		$ie->setVector("(setweight( to_tsvector('default','$title'), 'C')||setweight( to_tsvector('default','$unixName'), 'C') || to_tsvector('default', '".db_escape_string($text)."')||setweight( to_tsvector('default','$tagstring'), 'C'))", true);
+		
+	    $db = Database::connection();
+    	$v = pg_version($db->getLink());
+		if(!preg_match(';^8\.3;', $v['server'])){
+		    $db->query("SELECT set_curcfg('default')");
+		}
+		$ie->setVector("(setweight( to_tsvector('$title'), 'C')||setweight( to_tsvector('$unixName'), 'C') || to_tsvector('".db_escape_string($text)."')||setweight( to_tsvector('$tagstring'), 'C'))", true);
 		$ie->save();
 	}
 	
@@ -102,7 +108,14 @@ class Indexer {
 		$ie->setText(htmlspecialchars($thread->getDescription())."\n\n".$text);
 		$title = db_escape_string(htmlspecialchars($thread->getTitle()));
 		$description = db_escape_string(htmlspecialchars($thread->getDescription()));
-		$ie->setVector("setweight( to_tsvector('default','$title'), 'C') || setweight( to_tsvector('default','$description'), 'C') || to_tsvector('default', '".db_escape_string($text)."')", true);
+		
+	    $db = Database::connection();
+    	$v = pg_version($db->getLink());
+		if(!preg_match(';^8\.3;', $v['server'])){
+		    $db->query("SELECT set_curcfg('default')");
+		}
+		
+		$ie->setVector("setweight( to_tsvector($title'), 'C') || setweight( to_tsvector('$description'), 'C') || to_tsvector('".db_escape_string($text)."')", true);
 		
 		$ie->save();
 	}

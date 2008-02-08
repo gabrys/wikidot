@@ -96,7 +96,10 @@ class SearchModule extends SmartyModule {
 		// check if separate database for searching
 		$db = Database::connection();
 		
-		$db->query("SELECT set_curcfg('default')");
+		$v = pg_version($db->getLink());
+		if(!preg_match(';^8\.3;', $v['server'])){
+		    $db->query("SELECT set_curcfg('default')");
+		}
 		
 		$r = $db->query($q);
 		$res = $r->fetchAll();
