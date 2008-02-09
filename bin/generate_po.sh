@@ -19,27 +19,18 @@
 
 # generates the .po file for the wikidot project
 
-file=locale/pl_PL/LC_MESSAGES/messages.po
-
-if [ -f $file ]
-then
-  mv $file $file.old 
-fi
-
 # prepare from tpl
+./lib/ozone/bin/tsmarty2c.php `find . -name '*.tpl'` > tmp/tmp_locale.c
 
-../ozone/ozone/bin/tsmarty2c.php `find . -name '*.tpl'` > tmp/tmp_locale.c
-#xgettext -p locale/pl_PL/LC_MESSAGES/ --from-code=UTF-8 -n  tmp/tmp_locale.c 
-#mv $file $file.tpl
+# generate pot
+xgettext -p locale/ --from-code=UTF-8 -n  `find . -name '*.php'` tmp/tmp_locale.c
+mv locale/messages.po locale/messages.pot
 
-xgettext -p locale/pl_PL/LC_MESSAGES/ --from-code=UTF-8 -n  `find . -name '*.php'` tmp/tmp_locale.c
-
-#msgmerge $file.tpl $file --output-file=$file
-
-if [ -f $file.old ]
-then
-  msgmerge $file.old $file --output-file=$file
-  rm $file.old 
-fi
+# merge with existing translations
+# if [ -f $file.old ]
+# then
+#   msgmerge $file.old $file --output-file=$file
+#  rm $file.old 
+# fi
 
 #rm tmp/tmp_locale.c
