@@ -97,19 +97,6 @@ class ForumCommentsListModule extends SmartyModule {
 		
 		$pl = $runData->getParameterList();
 		
-		if($page != null){
-		
-			// consider putting ads too
-			$settings = $site->getSettings();
-			if($settings->getShowForumAds()){
-				$runData->contextAdd("showForumAds", true);
-				// put theme inside.
-				$theme = $page->getCategory()->getTheme();
-				$runData->contextAdd("theme", $theme);
-					
-			}
-		}
-		
 		if($page == null){
 			$pageId = $pl->getParameterValue("pageId");
 			if($pageId !== null && is_numeric($pageId)){
