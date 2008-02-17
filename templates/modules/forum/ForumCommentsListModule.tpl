@@ -22,10 +22,6 @@
 				
 		{macro name="forumpost" post=$post reply=$reply options=true revisionOptions=true headOptions=true}
 					
-		{if $showForumAds && $adCount==0 && $thread->getNumberPosts() > 2}
-			{renderAds theme=$theme place="page" site=$site}
-		{/if}			
-					
 		{* check if close container *}
 		{*<ul>
 			<li>{$post->getPostId()}</li>
