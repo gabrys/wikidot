@@ -17,7 +17,7 @@
 			<a href="javascript:;" onclick="WIKIDOT.utils.changeTextareaRowNo('np-text',5)">+</a>
 		</div>
 		<div class="edit-help-34">
-			{t}Need help? Check the{/t} <a href="{URL_DOCS}" target="_blank">{t}documentation{/t}</a>.
+			{t}Need help? Check the{/t} <a href="{$URL_DOCS}" target="_blank">{t}documentation{/t}</a>.
 		</div>
 		{if $anonymousString}
 			<div class="note-block">
