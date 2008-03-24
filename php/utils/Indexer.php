@@ -115,7 +115,7 @@ class Indexer {
 		    $db->query("SELECT set_curcfg('default')");
 		}
 		
-		$ie->setVector("setweight( to_tsvector($title'), 'C') || setweight( to_tsvector('$description'), 'C') || to_tsvector('".db_escape_string($text)."')", true);
+		$ie->setVector("setweight( to_tsvector('$title'), 'C') || setweight( to_tsvector('$description'), 'C') || to_tsvector('".db_escape_string($text)."')", true);
 		
 		$ie->save();
 	}
