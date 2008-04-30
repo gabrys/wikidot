@@ -27,12 +27,12 @@
 					{if $newPage && $templates}
 						<tr>
 							<td>
-								{t}Initial template{/t}:
+								{t}Initial content{/t}:
 							</td>
 							<td>
 								<select name="theme" id="page-templates" onchange="WIKIDOT.modules.PageEditModule.listeners.templateChange(event)">
-									{foreach from=$templates item=template}
-										<option value=""  style="padding: 0 1em">no template (blank page)</option>
+									<option value=""  style="padding: 0 1em">no template (blank page)</option>
+									{foreach from=$templates item=template}	
 										<option value="{$template->getPageId()}"  style="padding: 0 1em" {if $template->getPageId() == $templateId}selected="selected"{/if}>{$template->getTitle()|escape}</option>
 									{/foreach}
 								</select>
