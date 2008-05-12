@@ -134,8 +134,14 @@ class FrontForumModule extends SmartyModule {
 
 			$category = DB_ForumCategoryPeer::instance()->selectByPrimaryKey($categoryId);
 		
-			if($category == null){ //|| $category->getSiteId() !== $site->getSiteId()){
+			if($category == null){
 				throw new ProcessException(_('Requested forum category does not exist.'), "no_category");	
+			}
+		    if($category->getSiteId() !== $site->getSiteId()){
+				$fSite = DB_SitePeer::instance()->selectByPrimaryKey($category->getSiteId());
+				if($fSite->getPrivate()){
+					throw new ProcessException(_('The requested category belongs to a private site.'), "no_category");
+				}
 			}
 			$category->setTemp("group",$category->getForumGroup());
 			$categories[$category->getCategoryId()] = $category;
