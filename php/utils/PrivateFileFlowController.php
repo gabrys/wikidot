@@ -48,7 +48,7 @@ class PrivateFileFlowController extends WebFlowController {
 		$siteHost = $_SERVER["HTTP_HOST"];
 		
 		$memcache = Ozone::$memcache;
-		if(preg_match("/^([a-zA-Z0-9\-]+)\.wikidot\.com$/", $siteHost, $matches)==1){
+		if(preg_match("/^([a-zA-Z0-9\-]+)\." . GlobalProperties::$URL_DOMAIN_PREG . "$/", $siteHost, $matches)==1){
 			$siteUnixName=$matches[1];
 			// select site based on the unix name
 			
