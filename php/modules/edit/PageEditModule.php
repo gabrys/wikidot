@@ -131,29 +131,51 @@ class PageEditModule extends SmartyModule {
 			$runData->ajaxResponseAdd('lock_id', $lock->getLockId());
 			$runData->ajaxResponseAdd('lock_secret', $secret);
 			
-			// select available templates
-			$templatesCategory = DB_CategoryPeer::instance()->selectByName("template", $site->getSiteId());
-		
-			if($templatesCategory != null){
-				$c = new Criteria();
-				$c->add("category_id", $templatesCategory->getCategoryId());
-				$c->addOrderAscending("title");
-				$templates =  DB_PagePeer::instance()->select($c);
-				
-				$runData->contextAdd("templates", $templates);
-				
-			}
-			
-			// check if there is a default template...
-
 			$runData->contextAdd("title", $suggestedTitle);
 			
-			if($category != null){
-				if($category->getTemplateId() != null){
-					$runData->contextAdd("templateId", $category->getTemplateId());
-					
-				}	
-			}
+			
+			/* Select available templates, but only if the category does not have a live template. */
+			
+    		$categoryName = $category->getName();
+    	    $templatePage = DB_PagePeer::instance()->selectByName($site->getSiteId(), 
+    		    ($categoryName == '_default' ? '' : $categoryName.':') .'_template');
+    		
+    		if(!$templatePage || !preg_match(';^={4,}$;sm', $templatePage->getSource())) {
+        	    			
+    			$templatesCategory = DB_CategoryPeer::instance()->selectByName("template", $site->getSiteId());
+    		
+    			if($templatesCategory != null){
+    				$c = new Criteria();
+    				$c->add("category_id", $templatesCategory->getCategoryId());
+    				$c->addOrderAscending("title");
+    				$templates =  DB_PagePeer::instance()->select($c);
+    				
+    				$runData->contextAdd("templates", $templates);
+    				
+    			}
+    			
+    			// check if there is a default template...
+    
+    			
+    			if($category != null){
+    				if($category->getTemplateId() != null){
+    					$runData->contextAdd("templateId", $category->getTemplateId());
+    					
+    				}	
+    			}
+    		} else {
+    		    /* Has default template, try to populate the edit box with initial content. */
+    		    $templateSource = $templatePage->getSource();
+        		$split = preg_split(';^={4,}$;sm', $templateSource);
+    		    if(count($split) >= 2){
+    	            /* Fine, there is some initial content. */
+    	            $templateSource = trim(preg_replace(";^.*?\n={4,};s", '', $templateSource));   
+    	        } else {
+    	            $templateSource = '';
+    	        }
+    	        $runData->contextAdd('source', $templateSource);
+    		}
+			
 			
 			$db->commit();
 			return;	

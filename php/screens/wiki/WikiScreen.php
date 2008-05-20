@@ -137,7 +137,7 @@ class WikiScreen extends Screen {
 			$compiled = $page->getCompiled();
 			
 			$runData->contextAdd("wikiPage", $page);
-			$runData->contextAdd("screen_placeholder", $compiled->getText());
+			$runData->contextAdd("pageContent", $compiled->getText());
 
 			$category = $page->getCategory();
 			$runData->setTemp("category", $category);
@@ -249,7 +249,7 @@ class WikiScreen extends Screen {
 			$runData->contextAdd("useCustomDomainScript", true);
 			$runData->contextAdd("useCustomDomainScriptSecure", $_SERVER['HTTPS']);
 		}
-
+		
 		$smarty = Ozone::getSmarty();
 		
 		// put context into context
@@ -261,6 +261,10 @@ class WikiScreen extends Screen {
 	 		}
 	 	}
 	 	
+	 	$templateFile = PathManager::screenTemplate("wiki/WikiScreen");
+	 	$screenContent = $smarty->fetch($templateFile);
+	 	
+	 	$smarty->assign("screen_placeholder", $screenContent);
 	 	$layoutFile = PathManager::layoutTemplate("WikiLayout");
 	 	$out = $smarty->fetch($layoutFile);
 	 	

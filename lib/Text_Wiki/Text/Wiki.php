@@ -85,6 +85,7 @@ class Text_Wiki {
         'Heading',
         'Toc',
         'Horiz',
+        'Separator',
         'Clearfloat',
         'Break',
         'Span',

@@ -196,8 +196,8 @@ WIKIDOT.modules.PageEditModule.listeners = {
 		var change = true;
 		if(WIKIDOT.modules.PageEditModule.vars.changed){
 			change = confirm("It seems you have already changed the page.\n" +
-					"Changing the template now will reset the edited page.\n" +
-					"Do you want to change the template?");
+					"Changing the initial template now will reset the edited page.\n" +
+					"Do you want to change the initial content?");
 		}
 		if(change){
 			WIKIDOT.modules.PageEditModule.vars.templateId = templateId;

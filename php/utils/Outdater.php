@@ -56,6 +56,7 @@ class Outdater {
 				$this->outdatePageCache($page);
 				$this->handleNavigationElement($page);
 				$this->indexPage($page);
+				$this->handleTemplateChange($page);
 				break;
 			case 'source_changed':
 				$this->recompilePage($page);
@@ -65,6 +66,7 @@ class Outdater {
 				$this->recompileInclusionDeps($page);
 				$this->handleNavigationElement($page);
 				$this->indexPage($page);
+				$this->handleTemplateChange($page);
 				break;
 			case 'title_changed':
 				$this->outdatePageCache($page);
@@ -85,6 +87,8 @@ class Outdater {
 				$this->outdatePageCache($page);
 				$this->outdatePageTagsCache($page);
 				$this->indexPage($page);
+				$this->handleTemplateChange($page);
+				$this->handleTemplateChange($parm2);
 				break;
 			case 'delete':
 				// $page is not just an old unix name. the page itself should be already deleted.
@@ -93,6 +97,7 @@ class Outdater {
 				//$this->outdateDescendantsCache($page); // this is done in Deleter
 				$this->outdatePageTagsCache($page);
 				$this->outdatePageCache($page);
+				$this->handleTemplateChange($page);
 				break;
 			case 'parent_changed':
 				$this->outdatePageCache($page);
@@ -162,6 +167,11 @@ class Outdater {
 		}
 	}
 	
+	/**
+	 * This is the place where pages are compiled!
+	 *
+	 * @param Db_Page $page
+	 */
 	private function recompilePage($page){
 		// compiled content not up to date. recompile!
 		$source = $page->getSource(); 
@@ -170,6 +180,17 @@ class Outdater {
 		$c->add("page_id", $page->getPageId());
 		$compiled = DB_PageCompiledPeer::instance()->selectOne($c);
 
+		/* Find out if the category is using any templates. */
+		if(!preg_match(';(:|^)_;', $page->getUnixName())) {
+    		$category = $page->getCategory();
+    		$categoryName = $category->getName();
+    	    $templatePage = DB_PagePeer::instance()->selectByName($page->getSiteId(), 
+    		    ($categoryName == '_default' ? '' : $categoryName.':') .'_template');
+    		
+    		if($templatePage) {
+        	    $source = $this->assemblySource($source, $templatePage->getSource());
+    		}
+		}
 		$wt = new WikiTransformation();
 		$wt->setPage($page);
 		$result = $wt->processSource($source);
@@ -187,6 +208,11 @@ class Outdater {
 		$this->vars['linksNotExist'] = $linksNotExist;
 		$this->vars['inclusions'] = $inclusions;
 		$this->vars['inclusionsNotExist'] = $inclusionsNotExist;
+	}
+	
+	private function assemblySource($source, $templateSource){
+	    $t = new WikiTransformation(false);
+	    return $t->assemblyTemplate($source, $templateSource);
 	}
 	
 	/**
@@ -451,6 +477,17 @@ class Outdater {
 		$key = 'page..'.$site->getUnixName().'..'.$pageName;
 		$memcache->delete($key);
 		
+		/* Touch the catefory "last change" timestamp. */
+		
+	    if(strpos( $pageName, ":") != false){
+			$tmp0 = explode(':',$pageName); 
+			$categoryName = $tmp0[0];
+		} else {
+			$categoryName = "_default";
+		}
+		$ckey = 'pagecategory_lc..'.$site->getUnixName().'..'.$categoryName;
+		$memcache->set($ckey, $now, 0, 10000);
+		
 	}
 	
 	/**
@@ -694,6 +731,25 @@ class Outdater {
 		$key = 'categorybyid..'.$site->getSiteId().'..'.$cname;
 		$mc->delete($key);
 		
+	}
+	
+	private function handleTemplateChange($page){
+	    if(is_string($page)){
+    	    if(strpos( $page, ":") != false){
+    			$tmp0 = explode(':',$page); 
+    			$categoryName = $tmp0[0];
+    		} else {
+    			$categoryName = "_default";
+    		}
+    		if(preg_match(';_template$;', $page)) {
+    		    $site = $GLOBALS['site'];
+    		    $category = DB_CategoryPeer::instance()->selectByName($categoryName, $site->getSiteId(), false);
+    		    $this->recompileCategory($category);
+    		}
+	    } elseif(preg_match(';_template$;', $page->getUnixName())) {
+	        $category = $page->getCategory();
+	        $this->recompileCategory($category);
+        }
 	}
 	
 }

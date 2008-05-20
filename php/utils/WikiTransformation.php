@@ -74,11 +74,41 @@ class WikiTransformation {
 	public function processSource($source){
 		
 		$wiki = $this->wiki;
+	    if(preg_match(';_template$;', $wiki->vars['pageName'])){
+			$wiki->disablerule('separator');
+		}
 		$out = $wiki->transform($source, $this->transformationFormat);
 	
 		$out = $this->purifyHtml($out);
 		
 		return $out;	
+	}
+	
+	public function assemblyTemplate($source, $template){
+	    /* First check if it is a real "live" template. If not, return the original $source. 
+		 * To be recognized as a live template it mast contain either %%content%% or
+		 * %%content{X}%% tags. */
+	    if(!preg_match(';%%content({[0-9]+})?%%;', $template)) {
+	        return $source;
+	    }
+	    $out = $source;
+	    
+	    $template = preg_replace(';%%content({[0-9]+})?%%;', '%%%\0%%%', $template);
+	    
+		/* Check if has a =default==== delimiter. */
+	    $split = preg_split(';^={4,}$;sm', $template);
+	    if(count($split) > 1){
+	        $template = $split[0];
+	    }
+	    
+	    $out = str_replace('%%%%%content%%%%%', $out, $template);
+	    /* Handle split sources. */
+	    $splitSource = preg_split('/^([=]{4,})$/m', $source);
+	    for ($i = 0; $i < count($splitSource); $i++) {
+	        $out = str_replace('%%%%%content{'.($i+1).'}%%%%%', $splitSource[$i], $out);
+	    }
+	    $out = preg_replace(';%%%%%content({[0-9]+})?%%%%%;', '', $out);
+	    return $out;
 	}
 	
 	public function setPage($page){

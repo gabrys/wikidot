@@ -53,6 +53,28 @@ class PagePreviewModule extends SmartyModule {
 		}
 		*/
 		
+		/* Get the category and apply the "live template" to the source. */
+		$pageUnixName = $pl->getParameterValue("page_unix_name");
+		
+	    if(strpos( $pageUnixName, ":") != false){
+			$tmp0 = explode(':',$pageUnixName); 
+			$categoryName = $tmp0[0];
+		} else {
+			$categoryName = "_default";
+		}
+
+		$category = DB_CategoryPeer::instance()->selectByName($categoryName, $site->getSiteId());
+		
+		/* Look for the template (if any). */
+		if(!preg_match(';(:|^)_;', $pageUnixName)) {
+		$templatePage = DB_PagePeer::instance()->selectByName($site->getSiteId(), 
+		    ($categoryName == '_default' ? '' : $categoryName.':') .'_template');
+		
+		if($templatePage) {
+    	    $source = $wt->assemblyTemplate($source, $templatePage->getSource());
+		}
+		}
+	    
 		$result = $wt->processSource($source);
 		
 		$body = $result;

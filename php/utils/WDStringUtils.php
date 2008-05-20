@@ -115,8 +115,9 @@ class WDStringUtils {
 		
 		// and absolutely purify the string removing all unwanted characters
 		$text = strtolower($text);
-		$text = preg_replace('/[^a-z0-9\-:]/', '-', $text);
-		
+		$text = preg_replace('/[^a-z0-9\-:_]/', '-', $text);
+		$text = preg_replace(';^_;', ':_', $text);
+		$text = preg_replace(';(?<!:)_;', '-', $text);
 		$text = preg_replace('/^\-*/','',$text);
 		$text = preg_replace('/\-*$/','',$text);
 		$text = preg_replace('/[\-]{2,}/','-',$text);
@@ -124,6 +125,8 @@ class WDStringUtils {
 		
 		$text = str_replace(':-', ':', $text);
 		$text = str_replace('-:', ':', $text);
+		$text = str_replace('_-', '_', $text);
+		$text = str_replace('-_', '_', $text);
 		
 		$text = preg_replace('/^:/', '', $text);
 		$text = preg_replace('/:$/', '', $text);
