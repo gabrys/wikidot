@@ -17,8 +17,8 @@
  * http://www.wikidot.org/license
  * 
  * @category Wikidot
- * @package Wikidot_Db_Base
- * @version $Id$
+ * @package Wikidot
+ * @version \$Id\$
  * @copyright Copyright (c) 2008, Wikidot Inc.
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */

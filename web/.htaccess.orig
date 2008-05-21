@@ -47,6 +47,7 @@ RewriteRule 	^feed/forum/threads\.xml$				feed.php?feed__ForumThreadsFeed [L]
 RewriteRule 	^feed/page/comments\-([0-9]+)\.xml$		feed.php?feed__PageCommentsFeed/p/$1 [L]
 RewriteRule 	^feed/front/([a-z\-:]+)/([0-9a-zA-Z\-]+)\.xml$	feed.php?feed__FrontForumFeed/page/$1/label/$2 [L]
 RewriteRule 	^feed/site\-changes\.xml$				feed.php?feed__SiteChangesFeed [L]
+RewriteRule 	^feed/pages/(.*)(\.xml)?$				feed.php?feed__PagesFeed/$1 [L]
 
 ## private feed
 RewriteCond 	%{HTTP_HOST} ^%{WIKIDOT:URL_HOST_PREG}$

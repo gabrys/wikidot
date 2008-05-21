@@ -62,6 +62,21 @@ class PagesFeed extends FeedScreen {
 			}
 		}
 		
+		if(count($cats) == 0) {
+		    $akey = 'pageall_lc..'.$site->getUnixName();
+    		$allPagesTimestamp = $mc->get($akey);
+    		if($allPagesTimestamp && $cacheTimestamp && $allPagesTimestamp <= $cacheTimestamp){
+    			//cache valid
+    		}else{
+    			$valid = false;
+    			if(!$allPagesTimestamp){
+					// 	put timestamp
+					$mc->set($akey, $now, 0, 864000);
+					$valid = false;
+				}	
+    		}
+		}
+		
         if($valid){
 			$this->vars = $struct['vars'];
 			return $struct['content'];	
@@ -83,7 +98,7 @@ class PagesFeed extends FeedScreen {
 	
 	public function build($runData){
 	
-	$pl = $runData->getParameterList();
+	    $pl = $runData->getParameterList();
 		$site = $runData->getTemp("site");
 		
 		$categoryName = $pl->getParameterValue("category");
@@ -130,32 +145,61 @@ class PagesFeed extends FeedScreen {
 		
 		if($tagString) {
     		/* Split tags. */
-    		$tags = preg_split('/[,;\s]+?/', $tagString);
+    		$tags = preg_split(';[\s,\;]+;', $tagString);
     		
-    		/* Create an extra condition to the SELECT */
+    		$tagsAny = array();
+    		$tagsAll = array();
+    		$tagsNone = array();
     		
-    		$tagMode = $pl->getParameterValue("tagMode");
-    		if(!$tagMode){
-    		    $tagMode = 'any';
-    		}
-    		$t = array();
-    		foreach($tags as $tag0) {
-    		    $t[] = 'tag = \''.db_escape_string($tag0).'\'';
-    		}
-    		$tagQuery = "SELECT count(*) FROM page_tag "
-    		    ."WHERE page_tag.page_id=page.page_id "
-    		    ."AND (".implode(' OR ', $t).")";
-    		
-    		if($tagMode == 'all'){
-        		$c->add('('.$tagQuery.')', count($tags), '>='); ;
-    		} else if($tagMode == 'none') {
-    		    $c->add('('.$tagQuery.')', 0, '=');
-    		} else {
-    		    $c->add('('.$tagQuery.')', 1, '>=');
+    		foreach($tags as $t){
+    		    if(substr($t, 0, 1) == '+') {
+    		        $tagsAll[] = substr($t, 1);
+    		    } elseif(substr($t, 0, 1) == '-') {
+    		        $tagsNone[] = substr($t, 1);
+    		    } else {
+    		        $tagsAny[] = $t;
+    		    }
     		}
     		
-    		/* Add this to the query. */
+    		/* Create extra conditions to the SELECT */
     		
+    		/* ANY */
+    		if(count($tagsAny) > 0) {
+    		    $t = array();
+        		foreach($tagsAny as $tag0) {
+        		    $t[] = 'tag = \''.db_escape_string($tag0).'\'';
+        		}
+        		$tagQuery = "SELECT count(*) FROM page_tag "
+        		    ."WHERE page_tag.page_id=page.page_id "
+        		    ."AND (".implode(' OR ', $t).")";
+        		
+        		$c->add('('.$tagQuery.')', 1, '>=');
+    		}
+    		/* ALL */
+		    if(count($tagsAll) > 0) {
+		        $t = array();
+        		foreach($tagsAll as $tag0) {
+        		    $t[] = 'tag = \''.db_escape_string($tag0).'\'';
+        		}
+        		$tagQuery = "SELECT count(*) FROM page_tag "
+        		    ."WHERE page_tag.page_id=page.page_id "
+        		    ."AND (".implode(' OR ', $t).")";
+        		
+        		$c->add('('.$tagQuery.')', count($tagsAll));
+    		}
+    		/* NONE */
+		    if(count($tagsNone) > 0) {
+		        $t = array();
+        		foreach($tagsNone as $tag0) {
+        		    $t[] = 'tag = \''.db_escape_string($tag0).'\'';
+        		}
+        		$tagQuery = "SELECT count(*) FROM page_tag "
+        		    ."WHERE page_tag.page_id=page.page_id "
+        		    ."AND (".implode(' OR ', $t).")";
+        		
+        		$c->add('('.$tagQuery.')', 0);
+    		}
+    	
     		
 		}
 		
@@ -304,9 +348,11 @@ class PagesFeed extends FeedScreen {
 			$b .= 'by ' . $userString;
 		   
 			$wt = new WikiTransformation();
-    		$wt->setMode("feed");
+    		$wt->setMode("list");
+    		$wt->setPage($page);
     		$content = $wt->processSource($b);
-    		
+    		$d = utf8_encode("\xFE");
+            $content = preg_replace("/" . $d . "module \"([a-zA-Z0-9\/_]+?)\"(.+?)?" . $d . "/", '', $content);
     		$content = preg_replace(';(<.*?)(src|href)="/([^"]+)"([^>]*>);si', '\\1\\2="http://'.$site->getDomain().'/\\3"\\4', $content);
 			$content = preg_replace(';<script\s+[^>]+>.*?</script>;is', '', $content);
 			$content = preg_replace(';(<[^>]*\s+)on[a-z]+="[^"]+"([^>]*>);si', '\\1 \\2', $content);
@@ -315,11 +361,12 @@ class PagesFeed extends FeedScreen {
 			
 		    $items[] = $item;
 		}
-		$wt = new WikiTransformation();
-		$wt->setMode("feed");
-		$itemsContent = $wt->processSource(implode("\n\n", $items));
-		
-		
+		$channel = array();
+	    $channel['title'] = $pl->getParameterValue("t");
+		//$channel['link'] = "http://".$site->getDomain()."/".$page->getUnixName();
+//		if($feed->getDescription()){
+//			$channel['description'] = $feed->getDescription();
+//		}
 		
 		$runData->contextAdd("channel", $channel);
 		$runData->contextAdd("items", $items);

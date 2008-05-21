@@ -181,7 +181,13 @@ class WikiTransformation {
 				$wiki->setRenderConf($this->transformationFormat, 'image', 'no_local', true);
 				$wiki->setRenderConf($this->transformationFormat, 'gallery', 'no_local', true);
 				break;
+			case 'list':
+			    $wiki->setRenderConf($this->transformationFormat, 'heading', 'use_id', false);
+				$wiki->setRenderConf($this->transformationFormat, 'footnote', 'id_prefix', rand(0,1000000).'-');
+				$wiki->setRenderConf($this->transformationFormat, 'bibitem', 'id_prefix', rand(0,1000000).'-');
+				$wiki->setRenderConf($this->transformationFormat, 'math', 'id_prefix', rand(0,1000000).'-');
 				
+			    break;
 			case 'pm':
 				// disable a few rules
 				$wiki->disableRule("include");

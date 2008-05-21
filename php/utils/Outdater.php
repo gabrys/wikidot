@@ -488,6 +488,9 @@ class Outdater {
 		$ckey = 'pagecategory_lc..'.$site->getUnixName().'..'.$categoryName;
 		$memcache->set($ckey, $now, 0, 10000);
 		
+		$ckey = 'pageall_lc..'.$site->getUnixName();
+		$memcache->set($ckey, $now, 0, 10000);
+		
 	}
 	
 	/**
