@@ -21,8 +21,8 @@
 			</td>
 		</tr>
 	</table>
-	
-</div>
+</form>
+
 
 <div id="sm-mi-search-r" style="margin: 1em 0;">
 
