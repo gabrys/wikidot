@@ -57,8 +57,7 @@ class Text_Wiki_Parse_Iframe extends Text_Wiki_Parse {
             "(?:" . // start pattern
             "[^ \\/\"\'{$this->wiki->delim}]*\\/" . // no spaces, backslashes, slashes, double-quotes, single quotes, or delimiters;
             ")*" . // end pattern
-            "[^ \\t\\n\\/\"\'{$this->wiki->delim}]*" .
-            "[A-Za-z%0-9\\/?=&~_])";
+            "[^ \\t\\n\\/\"{$this->wiki->delim}]*)";
             
 		$this->regex = ';\[\[iframe\s+('.$urlRegex.')(\s+.*?)?\]\];si'; 
 		

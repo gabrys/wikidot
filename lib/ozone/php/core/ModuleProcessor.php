@@ -35,7 +35,9 @@ class ModuleProcessor {
 	private $cssInclude = array();
 	private $modulesToProcessPage = null;
 	
-	private static $level = -1;
+	private $_moduleChain = array();
+	
+	private $level = 0;
 	
 	public function __construct($runData){
 		$this->runData = $runData;	
@@ -50,7 +52,10 @@ class ModuleProcessor {
 	}
 	
 	public function process($content){
-		self::$level++;
+	    if($this->level == 0){
+	        $this->_moduleChain = array();
+	    }
+		$this->level++;
 		// search content for some pattern and call the process...
 		$d = utf8_encode("\xFE");
 		$out = preg_replace_callback("/".$d."module \"([a-zA-Z0-9\/_]+?)\"([^".$d."]+?)?".$d."/", array(&$this, 'renderModule1'), $content);
@@ -67,7 +72,7 @@ class ModuleProcessor {
 			$out = preg_replace($regexp, $replace, $out, 1);
 		}	
 		
-		//check if top-level
+		// TODO: check if top-level?
 		if($this->modulesToProcessPage != null){
 			$runData = $this->runData;
 			foreach($this->modulesToProcessPage as $module){
@@ -97,7 +102,7 @@ class ModuleProcessor {
 
 		require_once($classPath);
 		$moduleClass = new $className();
-		
+		$moduleClass->setModuleChain($this->_moduleChain);
 		$runData = $this->runData;
 		$runData->setModuleTemplate($templateName);
 		
@@ -137,7 +142,7 @@ class ModuleProcessor {
 			
 			// recurent (for nested modules to work):
 			$out = $this->process($out);
-			self::$level--;
+			$this->level--;
 			throw $e;
 	 	}
 		
@@ -176,10 +181,13 @@ class ModuleProcessor {
 		$runData->setContext($contextOrig);
 		$runData->setParameterList($plOrig);
 		
+		$moduleChainOrig = array_copy($this->_moduleChain);
+		$this->_moduleChain[] = $moduleClass;
+		
 		// recurent (for nested modules to work):
 		$out = $this->process($out);
-		self::$level--;
-		
+		$this->level = $this->level - 1;
+		$this->_moduleChain = $moduleChainOrig;
 		// check if the module wants to modify the page itself
 		if($moduleClass->getProcessPage()){
 			$this->modulesToProcessPage[] = $moduleClass;

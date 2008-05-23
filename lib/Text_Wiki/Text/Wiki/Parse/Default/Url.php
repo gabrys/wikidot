@@ -116,6 +116,12 @@ class Text_Wiki_Parse_Url extends Text_Wiki_Parse {
             ")*" . // end pattern
             "[^ \\t\\n\\/\"\'{$this->wiki->delim}]*" .
             "[A-Za-z%0-9\\/?=&~_])";
+        $this->regexLiberal =
+            "(?:(?:$schemes)" . // allowed schemes
+            "(?:" . // start pattern
+            "[^ \\/\"\'{$this->wiki->delim}]*\\/" . // no spaces, backslashes, slashes, double-quotes, single quotes, or delimiters;
+            ")*" . // end pattern
+            "[^ \\t\\n\\/\"{$this->wiki->delim}]*)";
             
     }
 
@@ -135,7 +141,7 @@ class Text_Wiki_Parse_Url extends Text_Wiki_Parse {
         // 
         
         // the regular expression for this kind of URL
-        $tmp_regex = '/\[(\*)?((?:' . $this->regex . ')|(?:#[a-zA-Z0-9_\-%]*)|(?:\/)) ([^\]'.$this->wiki->delim.']+)\]/';
+        $tmp_regex = '/\[(\*)?((?:' . $this->regexLiberal . ')|(?:#[a-zA-Z0-9_\-%]*)|(?:\/)) ([^\]'.$this->wiki->delim.']+)\]/';
         
         // use a custom callback processing method to generate
         // the replacement text for matches.

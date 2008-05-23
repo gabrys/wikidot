@@ -25,6 +25,8 @@
 
 class ListPagesModule extends SmartyModule {
     
+    public $parameterhash;
+      
     protected $processPage = true;
     
     private $_tmpSplitSource;
@@ -34,10 +36,18 @@ class ListPagesModule extends SmartyModule {
     private $_vars = array();
 
     public function render($runData) {
+        
         $site = $runData->getTemp("site");
         $pl = $runData->getParameterList();
         $categoryName = $pl->getParameterValue("category", "MODULE", "AMODULE");
         $parmHash = md5(serialize($pl->asArray()));
+        $this->parameterhash = $parmHash;
+    	/* Check if recursive. */
+        foreach($this->_moduleChain as $m){
+            if(get_class($m) == 'ListPagesModule'){// && $m->parameterHash == $parmHash){
+                return '<div class="error-block">The ListPages module does not work recursively.</div>';
+            }
+        }
         
         $key = 'listpages_v..' . $site->getUnixName() . '..' . $categoryName . '..' . $parmHash;
         

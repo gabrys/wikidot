@@ -41,6 +41,8 @@ abstract class Module {
 	protected $includeDefaultJs = true;
 	protected $includeDefaultCss = true;
 	
+	protected $_moduleChain = array();
+	
 	public function isAllowed($runData){
 		return true;
 	}
@@ -86,4 +88,7 @@ abstract class Module {
 	 	$this->extraJs[] = $val;
 	 }
 	
+	 public function setModuleChain(array $moduleChain){
+	     $this->_moduleChain = $moduleChain;
+	 }
 }
