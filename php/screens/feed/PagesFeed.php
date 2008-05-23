@@ -319,7 +319,7 @@ class PagesFeed extends FeedScreen {
 		    $cont = '';
 		    /* get summary for the page. */
 		    $splitSource = preg_split('/^([=]{4,})$/m', $source);
-    		if(isset($splitSource[0]) && count($splitSource[0]) > 1) {
+    		if(isset($splitSource[0]) && count($splitSource) > 1) {
     	        $cont = $splitSource[0];
     	    } else {
     	        /* Try to extract the short version. */

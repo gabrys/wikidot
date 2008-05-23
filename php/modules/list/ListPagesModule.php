@@ -268,8 +268,8 @@ class ListPagesModule extends SmartyModule {
             $perPage = 20;
         }
         
-        if ($limit && preg_match(';^[0-9]+$;', $perPage)) {
-            $c->setLimit($limit);
+        if ($limit && preg_match(';^[0-9]+$;', $limit)) {
+            $c->setLimit($limit); // this limit has no effect on count(*) !!!
         }
         
         $pageNo = $pl->getParameterValue("p");
@@ -278,14 +278,15 @@ class ListPagesModule extends SmartyModule {
         }
         
         $co = DB_PagePeer::instance()->selectCount($c);
-        
+        $co = min(array($co, $limit));
+
         $totalPages = ceil($co / $perPage);
         if ($pageNo > $totalPages) {
             $pageNo = $totalPages;
         }
         $offset = ($pageNo - 1) * $perPage;
-        
-        $c->setLimit($perPage, $offset);
+        $newLimit = min(array($perPage, $limit - $offset));
+        $c->setLimit($newLimit, $offset);
         $runData->contextAdd("totalPages", $totalPages);
         $runData->contextAdd("currentPage", $pageNo);
         $runData->contextAdd("count", $co);
@@ -406,6 +407,9 @@ class ListPagesModule extends SmartyModule {
             /* %%page_unix_name%% */
             $b = str_ireplace('%%page_unix_name%%', $page->getUnixName(), $b);
             
+            /* %%link%% */
+            $b = str_ireplace('%%link%%', 'http://' . $site->getDomain().'/'.$page->getUnixName(), $b);
+            
             /* %%tags%% */
             $b = preg_replace_callback("/%%tags%%/i", array(
                 $this, '_handleTags'), $b);
@@ -514,7 +518,7 @@ class ListPagesModule extends SmartyModule {
     }
 
     private function _handleSummary($m) {
-        if (isset($this->_tmpSplitSource[0]) && count($this->_tmpSplitSource[0]) > 1) {
+        if (isset($this->_tmpSplitSource[0]) && count($this->_tmpSplitSource) > 1) {
             return $this->_tmpSplitSource[0];
         } else {
             /* Try to extract the short version. */
