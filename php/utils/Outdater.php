@@ -451,6 +451,7 @@ class Outdater {
 		// both levels!	
 		$memcache = Ozone::$memcache;
 		$site = $GLOBALS['site'];
+		$now = time();
 		if(is_string($page)){
 			$pageName = $page;
 		}else{

@@ -43,6 +43,9 @@ WIKIDOT.modules.NewPageHelperModule.callbacks = {
 		if(r.templateId){
 			href += '/t/'+r.templateId;
 		}
+		if(r.pageTitle){
+			href += '/title/' + encodeURIComponent(r.pageTitle);
+		}
 		window.location.href = href;
 	}	
 }
