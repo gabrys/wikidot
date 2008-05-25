@@ -26,7 +26,7 @@
  */
 
 chdir(dirname(__FILE__)); // unifies CLI/CGI cwd handling
-require ('../php/misc/setup.php');
+require ('../php/setup.php');
 
 // initialize things now
 	
