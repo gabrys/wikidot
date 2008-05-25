@@ -64,7 +64,8 @@ class WDRenderUtils {
 		if($params['image'] != null){
 			$image = $params['image'];
 			// handle sizes...
-			$out .= 	'<a '.$linkInner.' ><img class="small" src="/common--images/avatars/'.floor($userId/1000).'/'.$userId.'/a16.png" alt="'.htmlspecialchars($user->getNickName()).'"/>';
+			$imgBase = '/common--images/avatars/'.floor($userId/1000).'/'.$userId;
+			$out .= 	'<a '.$linkInner.' ><img class="small" src="'.$imgBase.'/a16.png" alt="'.htmlspecialchars($user->getNickName()).'" style="background-image:url('.$imgBase.'/karma.png)"/>';
 			$out .= '</a>';
 		}
 		if(!$params['noNameLink']){
