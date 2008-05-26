@@ -64,8 +64,11 @@ class WDRenderUtils {
 		if($params['image'] != null){
 			$image = $params['image'];
 			// handle sizes...
-			$out .= 	'<a '.$linkInner.' ><img class="small" src="/common--images/avatars/'.floor($userId/1000).'/'.$userId.'/a16.png" alt="'.htmlspecialchars($user->getNickName()).'" style="background-image:url(/userkarma.png?u=' . $userId . ')"/>';
-			$out .= '</a>';
+			$out .= 	'<a '.$linkInner.' ><img class="small" src="/common--images/avatars/'.floor($userId/1000).'/'.$userId.'/a16.png" alt="'.htmlspecialchars($user->getNickName()).'"';
+			/* karma: */
+			$out .= ' style="background-image:url(http://' . GlobalProperties::$URL_HOST . '/userkarma.php?u=' . $userId . ')"';
+			/* end of karma */
+			$out .= '/></a>';
 		}
 		if(!$params['noNameLink']){
 			$out .= '<a '.$linkInner.'>'.htmlspecialchars($user->getNickName()).'</a></span>';
