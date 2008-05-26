@@ -72,7 +72,6 @@ class UserInfoModule extends SmartyLocalizedModule {
 		$runData->contextAdd("referer", $referer);
 		
 		$runData->contextAdd("uu", $runData->getUser());
-
 	}
 	
 	public function processPage($out, $runData){

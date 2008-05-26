@@ -50,6 +50,7 @@ class UserInfoProfileModule extends SmartyLocalizedModule {
 			$runData->contextAdd("profileContent", $compiled);
 			$runData->contextAdd("wikiPage", $page);
 		}
+		$runData->contextAdd('karmaLevel', $user->getKarmaLevel());
 	}
 	
 }

@@ -197,7 +197,7 @@ WIKIDOT.render.fixAvatarHover.showHover = function(e){
 	var ha = this.hoverAvatar
 	//position the hover!
 	var cx,cy;
-	cx = YAHOO.util.Dom.getX(this) + 8;
+	cx = YAHOO.util.Dom.getX(this) + 8 + 7;
 	cy = YAHOO.util.Dom.getY(this) + 8;
 	ha.style.display="block";
 	var img = ha.getElementsByTagName('img')[0];

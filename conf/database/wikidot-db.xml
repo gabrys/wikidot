@@ -45,7 +45,15 @@
 		
 		<column name="rating" type="varchar(10)"/> <!-- enables or disables rating -->
 		
+		<column name="category_template_id" type="int"/>
+		
 	</table>
+	
+	<table name="category_template">
+		<column name="category_template_id" type="serial" primaryKey="true"/>
+		<column name="source" type="text"/>
+	</table>
+	
 
 	<table name="page">
 		<column name="page_id" type="serial" primaryKey="true"/>
@@ -135,6 +143,39 @@
 		<column name="owner_user_id" type="int"/>
 	</table>
 	
+	<table name="comment">
+		<column name="comment_id" type="serial" primaryKey="true"/>
+		<column name="page_id" type="int"/>
+		<column name="parent_id" type="int"/>
+		
+		<column name="user_id" type="int" />
+		<column name="user_string" type="varchar(80)"/>
+		
+		<column name="title" type="varchar(256)"/>
+		<column name="text" type="text"/>
+		
+		<column name="date_posted" type="timestamp"/>
+		<column name="site_id" type="int"/>	
+		<column name="revision_number"  type="int" default="0"/> <!-- current revision number-->
+		<column name="revision_id"  type="int"/> <!-- id of the current revision -->
+		
+		<column name="date_last_edited" type="timestamp"/>
+		<column name="edited_user_id" type="int"/> <!-- last edited by -->
+		<column name="edited_user_string" type="varchar(80)"/> <!-- user info if user_id IS NULL -->
+	</table>
+	
+	<table name="comment_revision">
+		<column name="revision_id" type="serial" primaryKey="true"/>
+		<column name="comment_id" type="int"/>
+		 
+		<column name="user_id" type="int"/> <!-- user that created this revision -->
+		<column name="user_string" type="varchar(80)"/>
+		<column name="text" type="text"/>
+		<column name="title" type="varchar(256)"/>
+		<column name="date" type="timestamp"/>
+		
+		
+	</table>
 	<!-- FTS -->
 	<!-- put many fields to avoid joining -->
 	<table name="fts_entry">
@@ -414,6 +455,12 @@
 		<column name="allow_site_newsletters_default" type="boolean" default="true" />
 		
 		<column name="max_sites_admin" type="int" default="3"/>
+	</table>
+	
+	<table name="user_karma">
+		<column name="user_id" type="int" primaryKey="true"/>
+		<column name="points" type="int" default="0"/>
+		<column name="level" type="int" default="0"/>
 	</table>
 	
 	<!-- 

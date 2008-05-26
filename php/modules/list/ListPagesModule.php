@@ -48,9 +48,7 @@ class ListPagesModule extends SmartyModule {
                 return '<div class="error-block">The ListPages module does not work recursively.</div>';
             }
         }
-        
-        $key = 'listpages_v..' . $site->getUnixName() . '..' . $categoryName . '..' . $parmHash;
-        
+
         $valid = true;
         
         if (!$categoryName) {
@@ -59,14 +57,16 @@ class ListPagesModule extends SmartyModule {
             if (!$pageUnixName) {
                 $pageUnixName = $pl->getParameterValue('page_unix_name'); // from preview
             }
-            if (strpos($wikiPage, ":") != false) {
-                $tmp0 = explode(':', $wikiPage);
+            if (strpos($pageUnixName, ":") != false) {
+                $tmp0 = explode(':', $pageUnixName);
                 $categoryName = $tmp0[0];
             } else {
                 $categoryName = "_default";
             }
         }
         
+        $key = 'listpages_v..' . $site->getUnixName() . '..' . $categoryName . '..' . $parmHash;
+
         $mc = OZONE::$memcache;
         $struct = $mc->get($key);
         if (!$struct) {

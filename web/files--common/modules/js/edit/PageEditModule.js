@@ -609,10 +609,12 @@ WIKIDOT.modules.PageEditModule.init = function(){
 			$("page-templates").value = templateId;
 		}
 		
-		if(zz = path.match(/\/title\/([^\/]+)/)){
-			// set the title
-			$("edit-page-title").value = decodeURIComponent(zz[1]);
-		}
+		try{
+			if(zz = path.match(/\/title\/([^\/]+)/)){
+				// set the title
+				$("edit-page-title").value = decodeURIComponent(zz[1]);
+			}
+		}catch(e){}
 		
 		if( !WIKIREQUEST.info.pageId){
 			// new page - init templates!

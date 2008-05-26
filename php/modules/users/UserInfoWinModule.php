@@ -55,6 +55,7 @@ class UserInfoWinModule extends SmartyModule {
 		}
 		
 		$runData->contextAdd("uu", $runData->getUser());
+		$runData->contextAdd('karmaLevel', $user->getKarmaLevel());
 		
 	}
 	

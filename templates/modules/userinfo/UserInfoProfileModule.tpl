@@ -21,6 +21,15 @@
 	{/if}
 	
 	{t}User since{/t}:  <span class="odate">{$user->getRegisteredDate()->getTimestamp()}|%e %b %Y, %H:%M %Z (%O {t}ago{/t})</span><br/>
+	{t}Karma level{/t}: 
+	{if $karmaLevel == 0}{t}none{/t}
+		{elseif $karmaLevel == 1}{t}low{/t}
+		{elseif $karmaLevel == 2}{t}medium{/t}
+		{elseif $karmaLevel == 3}{t}high{/t}
+		{elseif $karmaLevel == 4}{t}very high{/t}
+		{elseif $karmaLevel == 5}{t}guru{/t}
+	{/if}
+	<img src="/userkarma.php?u={$user->getUserId()}"/>
 	
 </div>
 
