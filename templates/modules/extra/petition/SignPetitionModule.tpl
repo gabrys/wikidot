@@ -105,7 +105,7 @@
 	
 	{else}
 	
-		<form id="sign-petition-form" onsubmit="YAHOO.util.Event.stopEvent(event)" target="dummy.html">
+		<form id="sign-petition-form" onsubmit="YAHOO.util.Event.stopEvent(event)" target="dummy.html" action="POST">
 			<input type="hidden" name="campaignId" value="{$campaign->getCampaignId()}"/>
 			<table class="form">
 				<tr id="sign-petition-row-firstName">
@@ -182,7 +182,7 @@
 							<div class="field-error-message"></div>
 							
 							<select name="country">
-								<option value="  " selected>(please select a country)</option>
+								<option value="  " selected="selected">(please select a country)</option>
 								{*<option value="--">none</option>*}
 								{foreach from=$coutryCodes item=country key=code}
 									<option value="{$code}">{$country}</option>
