@@ -54,8 +54,7 @@ class LoginStatusModule extends Module{
 			$userId = $user->getUserId();
 			$linkInner = 'href="http://' . GlobalProperties::$URL_HOST . '/user:info/'.$user->getUnixName().'" onclick="WIKIDOT.page.listeners.userInfo('.$user->getUserId().'); return false;" ';
 			
-			$imgBase = '/common--images/avatars/'.floor($userId/1000).'/'.$userId.'/';
-			$out = '<span class="printuser"><a '.$linkInner.'><img class="small" src="'.$imgBase.'/a16.png" alt="avatar" style="background-image:url('.$imgBase.'/karma.png)"/></a>';
+			$out = '<span class="printuser"><a '.$linkInner.'><img class="small" src="/common--images/avatars/'.floor($userId/1000).'/'.$userId.'/a16.png" alt="avatar" style="background-image:url(/userkarma.php?u=' .$userId  . ')"/></a>';
 			$out .= $user->getNickName().'</span>'.
 					' | <a href="http://'.GlobalProperties::$URL_HOST.'/account:you">'._('my account').'</a>' .
 					'<a  id="account-topbutton" href="javascript:;">&nabla;</a>';

@@ -129,9 +129,8 @@ WIKIDOT.render.printuser = function(userId, userName, wImage){
 	var link = 'href="javascript:;" onclick="WIKIDOT.page.listeners.userInfo('+userId+')"';
 	var out='<span class="printuser">';
 	if(wImage==true){
-		var imgBase = '/common--images/avatars/'+Math.floor(userId/1000)+'/'+userIdq
-		out += '<a '+link+' ><img class="small" src="' + imgBase + '/a16.png" alt="" ' +
-			'style="background-image:url(' + imgBase + '/karma.png)"/>';
+		out += '<a '+link+' ><img class="small" src="/common--images/avatars/'+Math.floor(userId/1000)+'/'+userId+'/a16.png" ' +
+			' alt="" style="background-image:url(/userkarma.php?u=' + userId + ')"/>';
 	}
 	out += '<a '+link+'>'+userName+'</a></span>';
 	return out;
