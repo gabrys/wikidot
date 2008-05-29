@@ -18,7 +18,7 @@
  * 
  * @category Wikidot
  * @package Wikidot
- * @version $Id$
+ * @version $Id: ListPagesModule.php,v 1.10 2008/05/27 13:27:06 redbeard Exp $
  * @copyright Copyright (c) 2008, Wikidot Inc.
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
@@ -40,6 +40,9 @@ class ListPagesModule extends SmartyModule {
         $site = $runData->getTemp("site");
         $pl = $runData->getParameterList();
         $categoryName = $pl->getParameterValue("category", "MODULE", "AMODULE");
+        if(!$categoryName) {
+            $categoryName = $pl->getParameterValue("categories", "MODULE", "AMODULE");
+        }
         $parmHash = md5(serialize($pl->asArray()));
         $this->parameterhash = $parmHash;
     	/* Check if recursive. */
@@ -135,6 +138,9 @@ class ListPagesModule extends SmartyModule {
         $site = $runData->getTemp("site");
         
         $categoryName = $pl->getParameterValue("category", "MODULE", "AMODULE");
+        if(!$categoryName) {
+            $categoryName = $pl->getParameterValue("categories", "MODULE", "AMODULE");
+        }
         
         $order = $pl->getParameterValue("order");
         $limit = $pl->getParameterValue("limit");
@@ -365,6 +371,10 @@ class ListPagesModule extends SmartyModule {
             $title = str_replace('%%', "\xFD", $title);
             $source = str_replace('%%', "\xFD", $source);
             
+            $c = new Criteria();
+            $c->add('revision_id', $page->getRevisionId());
+            $lastRevision = DB_PageRevisionPeer::instance()->selectOne($c);
+            
             //$c = new Criteria();
             //$c->add('page_id', $page->getPageId());
             //$c->addOrderAscending('revision_id');
@@ -382,13 +392,32 @@ class ListPagesModule extends SmartyModule {
             
             /* %%author%% */
             
-            $user = DB_OzoneUserPeer::instance()->selectByPrimaryKey($page->getOwnerUserId());
-            if ($user->getUserId() > 0) {
-                $userString = '[[*user ' . $user->getNickName() . ']]';
+            if($page->getOwnerUserId()){
+	            $user = DB_OzoneUserPeer::instance()->selectByPrimaryKey($page->getOwnerUserId());
+	            if ($user->getUserId() > 0) {
+	                $userString = '[[*user ' . $user->getNickName() . ']]';
+	            } else {
+	                $userString = _('Anonymous user');
+	            }
             } else {
-                $userString = 'Anonymous user';
+                $userString = _('Anonymous user');
             }
             $b = str_ireplace("%%author%%", $userString, $b);
+            $b = str_ireplace("%%user%%", $userString, $b);
+            
+            if($lastRevision->getUserId()){
+	            $user = DB_OzoneUserPeer::instance()->selectByPrimaryKey($lastRevision->getUserId());
+	            if ($user->getUserId() > 0) {
+	                $userString = '[[*user ' . $user->getNickName() . ']]';
+	            } else {
+	                $userString = _('Anonymous user');
+	            }
+            } else {
+                $userString = _('Anonymous user');
+            }
+            $b = str_ireplace("%%author_edited%%", $userString, $b);
+            $b = str_ireplace("%%user_edited%%", $userString, $b);
+            
             
             /* %%date%% */
             
@@ -413,6 +442,10 @@ class ListPagesModule extends SmartyModule {
             $b = preg_replace_callback("/%%((description)|(short)|(summary))%%/i", array(
                 $this, 
                 '_handleSummary'), $b);
+                
+            $b = preg_replace_callback("/%%first_paragraph%%/i", array(
+                $this, 
+                '_handleFirstParagraph'), $b);
             
             /* %%page_unix_name%% */
             $b = str_ireplace('%%page_unix_name%%', $page->getUnixName(), $b);
@@ -439,10 +472,13 @@ class ListPagesModule extends SmartyModule {
             $items[] = trim($b);
         }
         if (!$separation) {
+            $prependLine = $pl->getParameterValue('prependLine', 'MODULE', 'AMODULE');
+            $appendLine = $pl->getParameterValue('appendLine', 'MODULE', 'AMODULE');
             $wt = new WikiTransformation();
             $wt->setMode("list");
             $glue = "\n";
-            $itemsContent = $wt->processSource(implode($glue, $items));
+            $itemsContent = $wt->processSource(($prependLine ? ($prependLine . "\n") : ''). implode($glue, $items) . ($appendLine ? ("\n". $appendLine) : ''));
+            
         } else {
             $itemsContent = implode("\n", $items);
         }
@@ -520,7 +556,7 @@ class ListPagesModule extends SmartyModule {
         $n = $m[1] - 1;
         
         if (isset($this->_tmpSplitSource[$n])) {
-            return $this->_tmpSplitSource[$n];
+            return trim($this->_tmpSplitSource[$n]);
         } else {
             return '';
         }
@@ -529,21 +565,46 @@ class ListPagesModule extends SmartyModule {
 
     private function _handleSummary($m) {
         if (isset($this->_tmpSplitSource[0]) && count($this->_tmpSplitSource) > 1) {
-            return $this->_tmpSplitSource[0];
+            return trim($this->_tmpSplitSource[0]);
         } else {
             /* Try to extract the short version. */
             $s = $this->_tmpSource;
+             /* Strip some blocks first. */
+            $s = trim(preg_replace('/^(\+{1,6}) (.*)/m', '', $s));
+            $s = trim(preg_replace('/^\[\[toc(\s[^\]]+)?\]\]/', '', $s));
+            $s = trim(preg_replace('/^\[\[\/?div(\s[^\]]+)?\]\]/', '', $s));
+            $s = trim(preg_replace('/^\[\[\/?module(\s[^\]]+)?\]\]/', '', $s));
             /* 1. Try the first paragraph. */
             $m1 = array();
             preg_match(";(^.*?)\n\n;", $s, $m1);
             if (isset($m1[1])) {
                 $p = $m1[1];
-                return $p;
+                return trim($p);
             } else {
-                return $s;
+                return trim($s);
             }
         }
     
+    }
+    
+     private function _handleFirstParagraph($m) {
+        /* Try to extract the short version. */
+        $s = $this->_tmpSource;
+        /* Strip some blocks first. */
+        $s = trim(preg_replace('/^(\+{1,6}) (.*)/m', '', $s));
+        $s = trim(preg_replace('/^\[\[toc(\s[^\]]+)?\]\]/', '', $s));
+        $s = trim(preg_replace('/^\[\[\/?div(\s[^\]]+)?\]\]/', '', $s));
+        $s = trim(preg_replace('/^\[\[\/?module(\s[^\]]+)?\]\]/', '', $s));
+        
+        /* 1. Try the first paragraph. */
+        $m1 = array();
+        preg_match(";(^.*?)\n\n;", $s, $m1);
+        if (isset($m1[1])) {
+            $p = $m1[1];
+            return trim($p);
+        } else {
+            return trim($s);
+        }
     }
 
     private function _handleTags($m) {

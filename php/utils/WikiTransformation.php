@@ -88,14 +88,19 @@ class WikiTransformation {
 	    /* First check if it is a real "live" template. If not, return the original $source. 
 		 * To be recognized as a live template it mast contain either %%content%% or
 		 * %%content{X}%% tags. */
+	    
+	    /* Handle ListPages module inside a template -- %%content%% need to be escaped. */
+	    $template = preg_replace_callback(";^\[\[module\s+ListPages(.*?)\n\[\[/module\]\];ms", array($this, '_assemblyTemplateHandleListPages'), $template);
+	    
 	    if(!preg_match(';%%content({[0-9]+})?%%;', $template)) {
 	        return $source;
 	    }
 	    $out = $source;
+
+	    $template = preg_replace(';%%content({[0-9]+})?%%;', '%%%\\0%%%', $template);
+	    $template = preg_replace(";%\xFA%(content({[0-9]+}))?%\xFA%;", "%%\\1%%", $template);
 	    
-	    $template = preg_replace(';%%content({[0-9]+})?%%;', '%%%\0%%%', $template);
-	    
-		/* Check if has a =default==== delimiter. */
+		/* Check if has a ===== delimiter. */
 	    $split = preg_split(';^={4,}$;sm', $template);
 	    if(count($split) > 1){
 	        $template = $split[0];
@@ -109,6 +114,14 @@ class WikiTransformation {
 	    }
 	    $out = preg_replace(';%%%%%content({[0-9]+})?%%%%%;', '', $out);
 	    return $out;
+	}
+	
+	private function _assemblyTemplateHandleListPages($m){
+	    if(preg_match(';^\[\[module;sm', $m[1])){
+	        return $m[0];
+	    }else{
+	        return preg_replace(';%%(content({[0-9]+}))?%%;', "%\xFA%\\1%\xFA%", $m[0]);
+	    }
 	}
 	
 	public function setPage($page){

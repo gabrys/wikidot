@@ -147,6 +147,7 @@ class Duplicator {
 		$npage->setTitle($page->getTitle());
 		$npage->setUnixName($newUnixName);
 		$npage->setDateLastEdited($now);
+		$npage->setDateCreated($now);
 		$npage->setLastEditUserId($owner->getUserId());
 		$npage->setOwnerUserId($owner->getUserId());
 		

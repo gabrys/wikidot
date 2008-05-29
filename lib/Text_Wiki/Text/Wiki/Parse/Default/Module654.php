@@ -41,7 +41,7 @@ class Text_Wiki_Parse_Module654 extends Text_Wiki_Parse {
      * 
      */
     
-    public $regex = '/^\[\[module654\s([a-z0-9_\-\/]+)(\s+.*?)?\]\](?:(.*?)\[\[\/module\]\])?/ims';
+    public $regex = "/^\[\[module654\s([a-z0-9_\-\/]+)(\s+.*?)?\]\]\n(?:(.*?)\[\[\/module\]\])?/ims";
 
     /**
      * 
@@ -71,6 +71,6 @@ class Text_Wiki_Parse_Module654 extends Text_Wiki_Parse {
         $options = array('moduleName' => $moduleName, 'attr' => $attr, 
             'module_body' => $body);
         
-        return "\n\n" . $this->wiki->addToken($this->rule, $options) . "\n";
+        return "\n\n" . $this->wiki->addToken($this->rule, $options) . "\n\n";
     }
 }

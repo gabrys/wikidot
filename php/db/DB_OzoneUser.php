@@ -49,6 +49,17 @@ class DB_OzoneUser extends DB_OzoneUserBase {
         return DB_UserSettingsPeer::instance()->selectByPrimaryKey($this->getUserId());
     }
 
+    public function getKarmaLevel() {
+        $c = new Criteria();
+        $c->add('user_id', $this->getUserId());
+        $karma = DB_UserKarmaPeer::instance()->selectOne($c);
+        if($karma){
+            return $karma->getLevel();
+        } else {
+            return 0;
+        }
+    }
+    
     public function save() {
         $memcache = Ozone::$memcache;
         $key = 'user..' . $this->getUserId();

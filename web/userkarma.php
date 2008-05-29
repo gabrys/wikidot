@@ -26,6 +26,14 @@
 require ('../php/setup.php');
 
 header('Content-type: image/png');
+$offset = 3600 * 1;	
+// calc the string in GMT not localtime and add the offset
+$expire = "Expires: " . gmdate("D, d M Y H:i:s", time() + $offset) . " GMT";
+//output the HTTP header
+Header($expire);
+$gmt_mtime = gmdate('D, d M Y H:i:s', time() ) . ' GMT';
+header("Last-Modified: " . $gmt_mtime );
+header('Cache-Control: max-age=3600, must-revalidate');
 
 /* Do everything here. */
 

@@ -31,7 +31,7 @@ class WDRenderUtils {
 		if(is_string($user)){
 			$linkInner = 'href="javascript:;"  onclick="WIKIDOT.page.listeners.anonymousUserInfo(\''.$user.'\'); return false;" ';
 			// 	ok, this is just "anonymous info". print it!
-			$out = '<span class="printuser">';
+			$out = '<span class="printuser anonymous">';
 			if($params['image'] != null){
 				$image = $params['image'];
 				// handle sizes...
