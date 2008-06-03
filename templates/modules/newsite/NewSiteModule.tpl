@@ -79,7 +79,8 @@
 					
 					</td>
 				</tr>*}
-				<td>
+				<tr>
+					<td>
 						{t}Initial template{/t}:
 					</td>
 					<td>

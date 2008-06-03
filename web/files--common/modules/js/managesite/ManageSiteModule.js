@@ -159,7 +159,7 @@ WIKIDOT.modules.ManagerSiteModule.init = function(){
 	mm['sm-renamesite'] = "managesite/ManageSiteRenameModule";
 	mm['sm-deletesite'] = "managesite/ManageSiteDeleteModule";
 	mm['sm-email-lists'] = "managesite/elists/ManageSiteEmailListsModule";
-
+	mm['sm-clonesite'] = "managesite/ManageSiteCloneModule";
 	// etc...
 	WIKIDOT.modules.ManagerSiteModule.vars.modulesMapping = mm;
 	
