@@ -197,7 +197,7 @@ WIKIDOT.render.fixAvatarHover.showHover = function(e){
 	var ha = this.hoverAvatar
 	//position the hover!
 	var cx,cy;
-	cx = YAHOO.util.Dom.getX(this) + 8 + 7;
+	cx = YAHOO.util.Dom.getX(this) + 8 + 8; /* 8 is half of avatar width and 8 is karma indicator width */
 	cy = YAHOO.util.Dom.getY(this) + 8;
 	ha.style.display="block";
 	var img = ha.getElementsByTagName('img')[0];

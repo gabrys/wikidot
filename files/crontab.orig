@@ -9,5 +9,6 @@
 16 * * * *     www-data	%{WIKIDOT:WIKIDOT_ROOT}/bin/job.sh RemoveOldSessionsJob
 18 * * * *     www-data	%{WIKIDOT:WIKIDOT_ROOT}/bin/job.sh ResetUSCounterJob
 33 5 * * *     www-data %{WIKIDOT:WIKIDOT_ROOT}/bin/job.sh SendEmailDigestJob
+15 9 * * *     www-data %{WIKIDOT:WIKIDOT_ROOT}/bin/job.sh UpdateKarmaJob
 * * * * *      www-data %{WIKIDOT:WIKIDOT_ROOT}/bin/job.sh HandleBackupRequestsJob
 46 * * * *     www-data %{WIKIDOT:WIKIDOT_ROOT}/bin/job.sh OutdateDatabaseStorageJob

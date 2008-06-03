@@ -825,8 +825,7 @@ table.page-files .options{
 	width: 16px;
 	height: 16px;
 	z-index:0;
-	/*background-color: #7c7c7c;*/
-	padding: 1px 1px 1px 7px;
+	padding: 1px 1px 1px 8px;
 	background-repeat: no-repeat;
 	background-position: center left;
 }
