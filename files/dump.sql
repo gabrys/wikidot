@@ -2054,7 +2054,7 @@ COPY ozone_session (session_id, started, last_accessed, ip_address, check_ip, in
 
 COPY ozone_user (user_id, name, nick_name, "password", email, unix_name, last_login, registered_date, super_admin, super_moderator, "language") FROM stdin;
 -1	Automatic	Automatic	\N	automatic@wikidot	automatic	\N	\N	f	f	en
--0	Anonymous	Anonymous	\N	anonymous@wikidot	anonymous	\N	\N	f	f	en
+0	Anonymous	Anonymous	\N	anonymous@wikidot	anonymous	\N	\N	f	f	en
 1	admin@wikidot	Admin	a9e7f4848e40deb03cba8edd294d3a17	admin@wikidot	admin	2008-01-30 16:08:49	\N	t	f	en
 \.
 

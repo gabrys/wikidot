@@ -44,6 +44,9 @@ class ManageSiteCloneAction extends SmartyAction {
 		$name = trim($pl->getParameterValue("name"));
 		$unixName = trim($pl->getParameterValue("unixname"));
 		$tagline = trim($pl->getParameterValue("tagline"));
+		$description = trim($pl->getParameterValue("description"));
+		
+		$private = (bool) $pl->getParameterValue("private");
 		
 		// validate form data:
 		
@@ -99,9 +102,10 @@ class ManageSiteCloneAction extends SmartyAction {
 		
 		$siteProps = array(
 		    'name' => $name,
-		    'subtitle' => $subtitle,
+		    'subtitle' => $tagline,
 		    'unixname' => $unixName,
-		    'description' => $description
+		    'description' => $description,
+		    'private' => $private
 		);
 		$dup = new Duplicator();
 		$dup->cloneSite($site, $siteProps);

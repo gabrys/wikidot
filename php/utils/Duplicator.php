@@ -47,10 +47,10 @@ class Duplicator {
             $nsite->setName($siteProperties['name']);
         }
         if (isset($siteProperties['subtitle'])) {
-            $nsite->setName($siteProperties['subtitle']);
+            $nsite->setSubtitle($siteProperties['subtitle']);
         }
         if (isset($siteProperties['description'])) {
-            $nsite->setName($siteProperties['description']);
+            $nsite->setDescription($siteProperties['description']);
         }
         if (array_key_exists('private', $siteProperties)) {
             if ($siteProperties['private']) {
@@ -106,14 +106,11 @@ class Duplicator {
 		    $ntheme->setSiteId($nsite->getSiteId());
 		    $ntheme->setThemeId(null);
 		    $ntheme->save();
-		    /* TODO: fix parent_theme_id too. */
-		    /* Copy files too. */
-		    $themePath = 
 		    $themeMap[$theme->getThemeId()] = $ntheme->getThemeId();
 		    $nthemes[] = $ntheme;
 		}
         foreach($nthemes as $ntheme){
-            if(isset($themeMap[$ntheme->getExtendsThemeId()])){
+            if($ntheme->getExtendsThemeId() && isset($themeMap[$ntheme->getExtendsThemeId()])){
                 $ntheme->setExtendsThemeId($themeMap[$ntheme->getExtendsThemeId()]);
                 $ntheme->save();
             }
@@ -129,11 +126,16 @@ class Duplicator {
             if (!in_array($cat->getName(), $this->excludedCategories)) {
                 $ncategory = $this->duplicateCategory($cat, $nsite);
                 /* Check if is using a custom theme. */
-                if(isset($themeMap[$ncategory->getThemeId()])){
+                if($ncategory->getThemeId() && isset($themeMap[$ncategory->getThemeId()])){
                     $ncategory->setThemeId($themeMap[$ncategory->getThemeId()]);
+                    $ncategory->save();
+                }
+                if($ncategory->getTemplateId()){
+                    $ncategory->setTemplateId($this->pageMap[$ncategory->getTemplateId()]);
+                    $ncategory->save();
                 }
             }
-        
+            
         }
         
         /* Recompile WHOLE site. */
@@ -179,6 +181,8 @@ class Duplicator {
         		    $ncategory->setNumberPosts(0);
         		    $ncategory->setNumberThreads(0);
         		    $ncategory->setLastPostId(null);
+        		    $ncategory->setSiteId($nsite->getSiteId());
+        		    $ncategory->setGroupId($ngroup->getGroupId());
         		    $ncategory->save();
         		}
     		}
@@ -345,6 +349,18 @@ class Duplicator {
         $ncomp->setPageId($npage->getPageId());
         $ncomp->setDateCompiled($now);
         $ncomp->save();
+        
+        /* Copy tags too. */
+        $c = new Criteria();
+        $c->add('page_id', $page->getPageId());
+        $tags = DB_PageTagPeer::instance()->select($c);
+        foreach($tags as $tag){
+            $tag->setNew(true);
+            $tag->setTagId(null);
+            $tag->setSiteId($nsite->getSiteId());
+            $tag->setPageId($npage->getPageId());
+            $tag->save();
+        }
         
         $this->pageMap[$page->getPageId()] = $npage->getPageId();
     }

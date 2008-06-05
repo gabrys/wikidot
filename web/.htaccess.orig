@@ -95,7 +95,7 @@ RewriteRule 	(.*)					secure_css_wrapper.php?$1 [L]
 
 
 # Compression (gzip/deflate):
-AddOutputFilterByType DEFLATE 		text/html text/plain text/xml
+AddOutputFilterByType DEFLATE 		text/html text/plain text/xml text/css application/x-javascript
 BrowserMatch 	^Mozilla/4 			gzip-only-text/html
 BrowserMatch 	^Mozilla/4\.0[678] 	no-gzip
 BrowserMatch 	\bMSI[E] !no-gzip 	!gzip-only-text/html

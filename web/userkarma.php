@@ -37,7 +37,24 @@ header('Cache-Control: max-age=3600, must-revalidate');
 
 /* Do everything here. */
 
-$userId = $_GET['u'];
+$u = $_SERVER['REQUEST_URI'];
+$split = explode("/", $u);
+$parms = array();
+for($i=1; $i<count($split); $i+=2){
+    $parms[$splited[$i]] = $splited[$i+1];
+
+}
+
+if(!isset($parms['u'])){
+    if(!isset($_GET['u'])){
+        echo 'dupa';
+        return;
+    }else{
+        $userId = $_GET['u'];
+    }
+}else{
+    $userId = $parms['u'];
+}
 if(!is_numeric($userId)){
     return;
 }
