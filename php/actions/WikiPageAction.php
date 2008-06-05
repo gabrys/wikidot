@@ -519,7 +519,7 @@ class WikiPageAction extends SmartyAction {
 			DB_PageEditLockPeer::instance()->delete($c);
 			$runData->ajaxResponseAdd("revisionId", $pageRevision->getRevisionId());
 		}
-
+		
 		$db->commit();
 
 	}
@@ -1017,7 +1017,7 @@ class WikiPageAction extends SmartyAction {
 		$c = new Criteria();
 		$q = "SELECT page_id, title, unix_name FROM page_link, page " .
 				"WHERE page_link.to_page_name='".db_escape_string($oldName)."' " .
-				"AND page_link.from_page_id=page.page_id ORDER BY COALESCE(title, unix_name)";
+				"AND page_link.from_page_id=page.page_id AND page.site_id={$site->getSiteId()} ORDER BY COALESCE(title, unix_name)";
 
 		$c->setExplicitQuery($q);
 		
@@ -1025,7 +1025,8 @@ class WikiPageAction extends SmartyAction {
 		
 		$q = "SELECT page_id, title, unix_name FROM page, page_inclusion " .
 				"WHERE page_inclusion.included_page_name='".db_escape_string($oldName)."' " .
-				"AND page_inclusion.including_page_id=page.page_id ORDER BY COALESCE(title, unix_name)";
+				"AND page_inclusion.including_page_id=page.page_id AND page.site_id={$site->getSiteId()} ORDER BY COALESCE(title, unix_name)";
+		
 
 		$c->setExplicitQuery($q);
 		
