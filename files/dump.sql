@@ -2638,6 +2638,7 @@ COPY user_block (block_id, site_id, user_id, reason, date_blocked) FROM stdin;
 COPY user_settings (user_id, receive_invitations, receive_pm, notify_online, notify_feed, notify_email, receive_newsletter, receive_digest, allow_site_newsletters_default, max_sites_admin) FROM stdin;
 \.
 
+INSERT INTO user_settings (user_id) VALUES (1);
 
 --
 -- Data for Name: watched_forum_thread; Type: TABLE DATA; Schema: public; Owner: wd
