@@ -33,7 +33,10 @@ $classpath[] = $opath."/php/core";
 $classpath[] = $apath."/php/db/base";
 $classpath[] = $apath."/php/db";
 $classpath[] = $apath."/php/utils";
+$classpath[] = $apath."/php/pingback";
 $classpath[] = $apath."/conf";
+$classpath[] = $apath."/lib/zf/library";
+
 $classpath[] = $opath."/php/core/exceptions";
 
 $GLOBALS['classpath'] = $classpath; 
