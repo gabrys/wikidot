@@ -1,7 +1,7 @@
 <h2>{t}Move thread{/t}</h2>
 <p>
 	{t}Just move this thread to a different location i.e. different category. This 
-	should be also usefull to "delete" threads - move to a hidden category somewhere else.{/t}
+	should be also useful to "delete" threads - move to a hidden category somewhere else.{/t}
 </p>
 
 <form>

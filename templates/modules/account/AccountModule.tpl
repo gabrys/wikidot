@@ -72,7 +72,7 @@
 				<li><a href="javascript:;" id="am-recentposts">{t}Recent posts/comments{/t}</a></li>
 			</ul>
 		</li>
-		<li><a href="javascript:;"  id="am-stats">{t}Overall statistics{/t}</a></li>
+		{*<li><a href="javascript:;"  id="am-stats">{t}Overall statistics{/t}</a></li>*}
 	</ul>
 	<hr/>
 	<ul>

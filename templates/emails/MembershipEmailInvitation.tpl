@@ -18,7 +18,7 @@ http://{$site->getDomain()|escape}.
 
 Signing up is easy and takes less than a minute. If you already have
 an account at {$SERVICE_NAME},
-you will be given a possibility to join the mentioned
+you will be able to join the mentioned
 Site. 
 
 To proceed or learn more click the follow link:

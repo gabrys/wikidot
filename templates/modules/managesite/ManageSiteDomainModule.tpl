@@ -2,19 +2,19 @@
 
 <p>
 	Each Wiki Site obtains a web address in a dedicated <em>{$URL_DOMAIN}</em> subdomain.
-	It is however possible to use an external domain for this Site.
+	However, it is possible to use an external domain to reach this Site.
 </p>
 <p>
 	If you enable this feature this Site will be available via both domains, i.e.
 	<em>{$site->getUnixName()|escape}.{$URL_DOMAIN}</em> <u>and</u> the new domain.
 </p>
 <p>
-	You can also set up to 3 <strong>"301 redirects"</strong> which means that if these domain
+	You can also set up to 3 <strong>"301 redirects"</strong>. This means that if these domain
 	are handled by the {$SERVICE_NAME} servers your visitors will be redirected to the main
-	domain for the Site. This is usefull e.g. to handle domains without the "www." prefix.
+	domain for the Site. This is useful, for example, to handle domains without the "www." prefix.
 </p>
 <p>
-	Warning: it is a cool feature and totally free!
+	Warning: this is a cool feature and totally free!
 </p>
 
 <div class="error-block" id="sm-domain-error" style="display: none"></div>
@@ -112,5 +112,5 @@
 	regardless of the custom domain settings.
 </p>
 <p>
-	Any changes in the redirections might take up to a few minutes before effective due to caching.
+	Any changes in the redirections might take up to a few minutes before becoming effective, due to caching.
 </p>

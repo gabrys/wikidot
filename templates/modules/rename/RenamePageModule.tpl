@@ -3,7 +3,7 @@
 	
 	<p>
 		{t escape=no}The <em>rename</em> action will change the "unix name" of the page, i.e. the address 
-		via which the page is accesed.{/t}
+		via which the page is accessed.{/t}
 	</p>
 {else}
 	<h1>{t}Delete page{/t}</h1>
@@ -69,7 +69,7 @@
 	{/if}
 	
 	<p>
-		{t}Attention should be also payed to the pages that depend on this one either by directly linking to
+		{t}Attention should be also paid to the pages that depend on this one either by directly linking to
 		it or by including it. Click below to see what pages depend on this one.{/t}
 	</p>
 	<p>

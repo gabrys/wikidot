@@ -1,4 +1,4 @@
-<h1>{t}Administrator the following sites:{/t}</h1>
+<h1>{t}Administrator of the following sites:{/t}</h1>
 
 {if $memberships}
 	<div class="sites-list">

@@ -7,7 +7,7 @@
 		<h1>So you have forgotten your password... no problem!</h1>
 		
 		<p>
-			In a few easy steps we will mverify  you are the owener of the user account
+			In a few easy steps we will confirm  you are the owner of the user account
 			you claim. First please provide the email <u>you have registered with</u>:
 		</p>
 		

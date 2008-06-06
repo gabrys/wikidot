@@ -24,6 +24,7 @@
  */
 
 require_once('Zend/Http/Client.php');
+require_once('Zend/XmlRpc/Client.php');
 require_once('Zend/XmlRpc/Client/FaultException.php');
 require_once('Zend/Http/Client/Adapter/Exception.php');
 require_once('Zend/Http/Response.php');
@@ -80,7 +81,7 @@ class PingBack {
 			
 			$rpc = new Zend_XmlRpc_Client($this->getExternalPingBackURI());
 			$srv = $rpc->getProxy('pingback');
-			return $srv->ping($this->wikidotURI, $this->externalURI());
+			return $srv->ping($this->wikidotURI, $this->externalURI);
 			
 		} catch (Zend_Http_Client_Adapter_Exception $e) {
 			throw new PingBackException("HTTP Error: " . $e->getMessage());
@@ -138,7 +139,7 @@ class PingBack {
 		try {
 			if (! $pb_url) {
 				$html = $this->getExternalPageAsSimpleXml();
-				$pb_urlx = $html->xpath1($html, "//link[@rel='pingback'][1]");
+				$pb_urlx = $this->xpath1($html, "//link[@rel='pingback'][1]");
 				if (! $pb_urlx) {
 					throw new Exception();
 				}
@@ -150,7 +151,7 @@ class PingBack {
 		} catch (Exception $e) {
 			throw new PingBackNotAvailableException("Site does not seem to support PingBack service");
 		}
-		return $pb_url;
+		return (string) $pb_url;
 	}
 	
 	/**

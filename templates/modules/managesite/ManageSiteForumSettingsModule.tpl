@@ -64,7 +64,7 @@ forum:new-thread
 forum:recent-posts</pre></code>
 	
 	<p>
-		Make sure you have a link somewhere to <a href="/forum:start"><tt>forum:start</tt></a> and posibly to 
+		Make sure you have a link somewhere to <a href="/forum:start"><tt>forum:start</tt></a> and possibly to 
 		<a href="/forum:recent-posts"><tt>forum:recent-posts</tt></a> but nothing else.<br/>
 		Good places are certainly <a href="/nav:top"><tt>nav:top</tt></a> or
 		<a href="/nav:side"><tt>nav:side</tt></a>. An example code to copy&amp;paste is given below:

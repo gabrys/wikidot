@@ -14,7 +14,7 @@
 			<td>
 				<select id="sm-ssl-mode-select">
 					<option value="" {if $secureMode==''}selected="selected"{/if}>disabled</option>
-					<option value="ssl" {if $secureMode=='ssl'}selected="selected"{/if}>both unsecure and SLL enabled</option>
+					<option value="ssl" {if $secureMode=='ssl'}selected="selected"{/if}>both unsecure and SSL enabled</option>
 					<option value="ssl_only" {if $secureMode=='ssl_only'}selected="selected"{/if}>SSL only (recommended for private sites)</option>
 				</select>
 			</td>

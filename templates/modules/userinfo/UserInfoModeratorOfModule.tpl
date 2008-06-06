@@ -1,4 +1,4 @@
-<h1>{t}Moderator the following sites:{/t}</h1>
+<h1>{t}Moderator of the following sites:{/t}</h1>
 
 {if $memberships}
 	<div class="sites-list">

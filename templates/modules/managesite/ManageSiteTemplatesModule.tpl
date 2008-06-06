@@ -1,8 +1,8 @@
 <h1>Templates</h1>
 
 <p>
-	Templates are a convinient way to keep you Site Content well organized and consistent. 
-	Below you can assing default page sceletons/templates (pages from the <em>template:</em> category)
+	Templates are a convenient way to keep you Site Content well organized and consistent. 
+	Below you can assign default page skeletons/templates (pages from the <em>template:</em> category)
 	to new created pages in particular categories.
 </p>
 {if $noTemplates}

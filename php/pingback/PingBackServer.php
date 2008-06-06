@@ -42,10 +42,13 @@ class PingBackServer {
 		
 		try {
 			$ret = $pb->pong();
+			
+			// do something
+			
 		} catch(PingBackException $e) {
 			throw new Zend_XmlRpc_Server_Fault($e);
 		}
 		
-		return $ret;
+		return "OK";
 	}
 }
