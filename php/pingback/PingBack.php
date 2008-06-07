@@ -39,7 +39,7 @@ require_once('Zend/Http/Response.php');
 class PingBack {
 	
 	/**
-	 * HTML block elements that can surround link and thus be treated as a context of the link
+	 * HTML block elements that can surround link and thus can be treated as a context of the link
 	 *
 	 * @var array
 	 */
@@ -47,6 +47,7 @@ class PingBack {
 	
 	/**
 	 * how many bytes we want in context before and after the link
+	 * the context is cut to full words anyways
 	 *
 	 * @var int
 	 */
@@ -74,6 +75,7 @@ class PingBack {
 	 * Pingback from Wikidot page (source URI) to external page (target URI)
 	 *
 	 * @throws PingBackException if pinging is not successfull
+	 * @throws PingBackNotAvailableException when the target is not PingBack enabled
 	 * @return string the endpoint return value
 	 */
 	public function ping() {
@@ -95,12 +97,15 @@ class PingBack {
 	}
 	
 	/**
-	 * Process a pingback from external page (source URI) to Wikidot page (target URI)
+	 * Processes a pingback from external page (source URI) to Wikidot page (target URI)
 	 * 
 	 * Returns an array containing to keys: 'title' (with value of the page title)
 	 * and 'context' which contains the context in which the link to Wikidot page appears
 	 * 
-	 * @throws PingBackException
+	 * If some error apears the exception thrown should in most cases have the error code set
+	 * Error codes for the PingBack are listed here: http://hixie.ch/specs/pingback/pingback#TOC3
+	 * 
+	 * @throws PingBackException in case of errors
 	 * @return array array of title and the context of the link to Wikidot page
 	 */
 	public function pong() {
@@ -131,6 +136,7 @@ class PingBack {
 	 * Checks for the X-Pingback header and if this fails,
 	 * searches for <link rel="pingback"> in the HTML
 	 *
+	 * @throws PingBackNotAvailableException when pingback URI is not specified or cannot be read
 	 * @return string
 	 */
 	private function getExternalPingBackURI() {
@@ -167,11 +173,11 @@ class PingBack {
 	
 	/**
 	 * Fetches the title of the external page.
-	 * If title is not set, the URI is used
+	 * If title is not set, the URI is returned
 	 *
-	 * @return string
+	 * @return string the HTML title or the URI of external page
 	 */
-	public function getExternalTitle() {
+	private function getExternalTitle() {
 		$xml = $this->getExternalPageAsSimpleXml();
 		
 		try {
@@ -197,7 +203,7 @@ class PingBack {
 	 *
 	 * @return string HTML with context of the page -- all tags are stripped, but the <a href> to us 
 	 */
-	public function getExternalContext() {
+	private function getExternalContext() {
 		
 		$xml = $this->getExternalPageAsSimpleXml();
 		
@@ -233,6 +239,7 @@ class PingBack {
 		
 		// Add more space
 		$ret = preg_replace("|<([^/])|s", " <\\1", $ret);
+		$ret = preg_replace("|</a>|s", "</a> ", $ret);
 		
 		// Strip tags but "a"
 		$ret = strip_tags($ret, "<a>");
@@ -278,6 +285,14 @@ class PingBack {
 	}
 	
 	/**
+	 * HTTP (body and headers) response object of the external URI
+	 *
+	 * @var Zend_Http_Response
+	 */
+	private $externalPage = null;
+	private $externalPageSet = false;
+	
+	/**
 	 * Requests the URL unless already fetched
 	 *
 	 * @return Zend_Http_Response the HTTP response object
@@ -287,22 +302,27 @@ class PingBack {
 			try {
 				$hc = new Zend_Http_Client($this->externalURI);
 				$this->externalPage = $hc->request("GET");
-				$this->externalPageSet = true;
 				if ($this->externalPage->getStatus() != 200) {
-					throw new PingBackException("Site does not exist");
+					throw new PingBackException("Site does not exist", 16);
 				}
+				$this->externalPageSet = true;
 			} catch (Zend_Http_Client_Adapter_Exception $e) {
-				throw new PingBackException("HTTP error: " . $e->getMessage());
+				throw new PingBackException("HTTP error: " . $e->getMessage(), 16);
 			}
 		}
 		return $this->externalPage;
 	}
 	
+	/**
+	 * SimpleXMLElement of the HTML from the external URI
+	 *
+	 * @var SimpleXMLElement
+	 */
 	private $externalPageAsSimpleXml = null;
 	private $externalPageAsSimpleXmlSet = false;
 	
 	/**
-	 * Gets the SimpleXxmlElement of the HTML from the external URI
+	 * Gets the SimpleXMLElement of the HTML from the external URI
 	 *
 	 * @return SimpleXMLElement simple XML element of the external document
 	 */

@@ -32,7 +32,8 @@ class PingBackServer {
 	 *
 	 * @param string $sourceURI The absolute URI of the post on the source page containing the link to the target site.
 	 * @param string $targetURI The absolute URI of the target of the link, as given on the source page.
-	 * @return string or int ping status
+	 * @throws Zend_XmlRpc_Server_Fault on caugth exceptions
+	 * @return string on success
 	 */
 	static public function ping($sourceURI, $targetURI) {
 		
