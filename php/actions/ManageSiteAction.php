@@ -892,7 +892,7 @@ class ManageSiteAction extends SmartyAction {
 		// delete custom domain link
 		
 		if($site->getCustomDomain()){
-			@unlink(WIKIDOT_ROOT.'/web/costom--domains/'.$site->getCustomDomain());
+			@unlink(WIKIDOT_ROOT.'/web/custom--domains/'.$site->getCustomDomain());
 			$site->setCustomDomain(null);
 		}
 		$db->commit();
@@ -997,9 +997,9 @@ class ManageSiteAction extends SmartyAction {
 		// delete custom domain link
 		
 		if($site->getCustomDomain()){
-			@unlink(WIKIDOT_ROOT.'/web/costom--domains/'.$site->getCustomDomain());
+			@unlink(WIKIDOT_ROOT.'/web/custom--domains/'.$site->getCustomDomain());
 			symlink( WIKIDOT_ROOT.'/web/files--sites/'.$site->getUnixName(),
-					WIKIDOT_ROOT.'/web/costom--domains/'.$site->getCustomDomain());
+					WIKIDOT_ROOT.'/web/custom--domains/'.$site->getCustomDomain());
 		}
 		$db->commit();
 		
