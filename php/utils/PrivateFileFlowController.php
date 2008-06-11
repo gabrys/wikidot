@@ -25,6 +25,99 @@
 
 class PrivateFileFlowController extends WebFlowController {
 
+	protected function getSite($siteHost) {
+		
+		$memcache = Ozone::$memcache;
+		
+		if(preg_match("/^([a-zA-Z0-9\-]+)\." . GlobalProperties::$URL_DOMAIN_PREG . "$/", $siteHost, $matches)==1){
+			$siteUnixName=$matches[1];
+			// select site based on the unix name
+			$mcKey = 'site..'.$siteUnixName;
+			$site = $memcache->get($mcKey); 
+			if($site == false){
+				$c = new Criteria();
+				$c->add("unix_name", $siteUnixName);
+				$c->add("site.deleted", false);
+				$site = DB_SitePeer::instance()->selectOne($c);
+				if($site) {$memcache->set($mcKey, $site, 0, 3600);}	
+			}
+		} else {
+			// select site based on the custom domain
+			$mcKey = 'site_cd..'.$siteHost;
+			$site = $memcache->get($mcKey);
+			if($site == false){	
+				$c = new Criteria();
+				$c->add("custom_domain", $siteHost);
+				$c->add("site.deleted", false);
+				$site = DB_SitePeer::instance()->selectOne($c);
+				if ($site) {
+					$memcache->set($mcKey, $site, 0, 3600);
+				}	
+			}
+			GlobalProperties::$SESSION_COOKIE_DOMAIN = '.'.$siteHost;		
+		}
+		
+		return $site;
+	}
+	
+	protected function userAllowed($user, $site) {
+	
+		if (! $user || ! $site) {
+			return false; 
+		}
+		
+		if (! $site->getPrivate()) { // site is public
+			return true;
+		}
+		
+		if ($user->getSuperAdmin() || $user->getSuperModerator()) { // user is a superuser
+			return true;
+		}
+		
+		// check if member
+		$c = new Criteria();
+		$c->add("site_id", $site->getSiteId());
+		$c->add("user_id", $user->getUserId());
+		
+		if (DB_MemberPeer::instance()->selectOne($c)) { // user is a member of the wiki
+			return true;
+		}
+		
+		return false;
+	}
+	
+	protected function serveFile($path) {
+		if(file_exists($path)){
+			
+			preg_match(';\.([a-z0-9]+)$;i', $path, $matches);
+  			$ext = $matches[1];
+  			if($ext){
+  				$mimes = mimeTypes('/etc/mime.types');
+  				$mime = $mimes[$ext];
+  			}
+  			if(!$mime){
+				$finfo = finfo_open(FILEINFO_MIME, WIKIDOT_ROOT.'/lib/magic/magic');
+				$mime =  finfo_file($finfo, $path);
+				finfo_close($finfo);
+  			}
+  			
+  			// to disable rendered html
+  			if($mime == "text/html" || $mime == "application/xhtml+xml"){
+  				$mime = "text/plain";
+  			}
+  			
+  			if($mime){
+				header("Content-Type: ".$mime);
+  			}
+			$this->readfile($path);
+		}
+	}
+	
+	protected function readfile($path) {
+		// X-SendFile here
+		readfile($path);
+	}
+	
 	public function process() {
 		global $timeStart;
 
@@ -47,67 +140,12 @@ class PrivateFileFlowController extends WebFlowController {
 		// check if site (wiki) exists!
 		$siteHost = $_SERVER["HTTP_HOST"];
 		
-		$memcache = Ozone::$memcache;
-		if(preg_match("/^([a-zA-Z0-9\-]+)\." . GlobalProperties::$URL_DOMAIN_PREG . "$/", $siteHost, $matches)==1){
-			$siteUnixName=$matches[1];
-			// select site based on the unix name
-			
-			// check memcached first!
-			
-			// the memcache block is to avoid database connection if possible
-			
-			$mcKey = 'site..'.$siteUnixName;
-			$site = $memcache->get($mcKey); 
-			if($site == false){
-				$c = new Criteria();
-				$c->add("unix_name", $siteUnixName);
-				$c->add("site.deleted", false);
-				$site = DB_SitePeer::instance()->selectOne($c);
-				if($site) {$memcache->set($mcKey, $site, 0, 3600);}	
-			}
-		} else {
-			// select site based on the custom domain
-			$mcKey = 'site_cd..'.$siteHost;
-			$site = $memcache->get($mcKey);
-			if($site == false){	
-				$c = new Criteria();
-				$c->add("custom_domain", $siteHost);
-				$c->add("site.deleted", false);
-				$site = DB_SitePeer::instance()->selectOne($c);
-				if($site) {$memcache->set($mcKey, $site, 0, 3600);}	
-			}
-			/*
-			if($site == null){
-				// check for redirects
-				$mcKey = 'domain_redirect..'.$siteHost;
-				$newUrl = $memcache->get($mcKey);
-				if($newUrl){
-					header("HTTP/1.1 301 Moved Permanently");
-					header("Location: ".$newUrl);
-					exit();		
-				}
-				$c = new Criteria();
-				$q = "SELECT site.* FROM site, domain_redirect WHERE domain_redirect.url='".db_escape_string($siteHost)."' " .
-						"AND site.site_id = domain_redirect.site_id LIMIT 1";
-				$c->setExplicitQuery($q);
-				$site = DB_SitePeer::instance()->selectOne($c);
-				if($site){
-					$newUrl = 'http://'.$site->getDomain();
-					$memcache->set($mcKey, $newUrl, 0, 3600);
-					header("HTTP/1.1 301 Moved Permanently");
-					header("Location: ".$newUrl);
-					exit();	
-				}
-			}
-			*/
-			GlobalProperties::$SESSION_COOKIE_DOMAIN = '.'.$siteHost;
-			
-		}
-
+		$site = $this->getSite($siteHost);
+		
 		if($site == null){
 			$content = file_get_contents(WIKIDOT_ROOT."/files/site_not_exists.html");
 			echo $content;
-			return $content;	
+			return $content;
 		} 
 		
 		$runData->setTemp("site", $site);	
@@ -143,50 +181,17 @@ class PrivateFileFlowController extends WebFlowController {
 		// handle session at the begging of procession
 		$runData->handleSessionStart();
 
-		if($site->getPrivate() ){
-			$user = $runData->getUser();
-			if($user && !$user->getSuperAdmin() && !$user->getSuperModerator()){
-				// check if member
-				$c = new Criteria();
-				$c->add("site_id", $site->getSiteId());
-				$c->add("user_id", $user->getUserId());
-				$mem = DB_MemberPeer::instance()->selectOne($c);
-				if(!$mem) { $user = null;}
-			}
-			if($user == null){
-				header("HTTP/1.0 401 Unauthorized");
-				echo "Not authorized. This is a private site with access restricted to its members.";
-				exit();
-			}	
+		if (! $this->userAllowed($runData->getUser(), $site)) {
+			header("HTTP/1.0 401 Unauthorized");
+			echo "Not authorized. This is a private site with access restricted to its members.";
+			exit();
 		}
 
 		$file = $_SERVER['QUERY_STRING'];
 		if(!$file){exit();}
 		$path = WIKIDOT_ROOT.'/web/files--sites/'.$site->getUnixName().'/files/'.$file;
-		if(file_exists($path)){
-			
-			preg_match(';\.([a-z0-9]+)$;i', $path, $matches);
-  			$ext = $matches[1];
-  			if($ext){
-  				$mimes = mimeTypes('/etc/mime.types');
-  				$mime = $mimes[$ext];
-  			}
-  			if(!$mime){
-				$finfo = finfo_open(FILEINFO_MIME, WIKIDOT_ROOT.'/lib/magic/magic');
-				$mime =  finfo_file($finfo, $path);
-				finfo_close($finfo);
-  			}
-  			
-  			// to disable rendered html
-  			if($mime == "text/html" || $mime == "application/xhtml+xml"){
-  				$mime = "text/plain";
-  			}
-  			
-  			if($mime){
-				header("Content-Type: ".$mime);
-  			}
-			readfile($path);
-		}
+		
+		$this->serveFile($path);
 
 		return;
 	}

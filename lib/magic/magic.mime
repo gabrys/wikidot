@@ -44,7 +44,7 @@
 #audio/x-tracker-module
 ##>17	string	>\0		Title: "%s"
 
-21	string/c	!SCREAM!	audio/x-mod
+21	string/c	\!SCREAM!	audio/x-mod
 #audio/x-screamtracker-module
 21	string	BMOD2STM	audio/x-mod
 #audio/x-screamtracker-module
@@ -99,9 +99,7 @@
 
 # svg
 
-0	string		\<?xml
-#			text/xml
->38	string		\<\!DOCTYPE\040svg	image/svg+xml
+38	string		\<\!DOCTYPE\040svg	image/svg+xml
 
 
 # xml
@@ -111,8 +109,8 @@
 #------------------------------------------------------------------------------
 # Java
 
-0	short		0xcafe
->2	short		0xbabe		application/java
+0	beshort		0xcafe
+>2	beshort		0xbabe		application/java
 
 #------------------------------------------------------------------------------
 # audio:  file(1) magic for sound formats
@@ -135,7 +133,7 @@
 # DEC systems (e.g. DECstation 5000) use a variant of the Sun/NeXT format
 # that uses little-endian encoding and has a different magic number
 # (0x0064732E in little-endian encoding).
-0	lelong		0x0064732E	
+0	lelong		0x0064732E
 >12	lelong		1		audio/x-dec-basic
 >12	lelong		2		audio/x-dec-basic
 >12	lelong		3		audio/x-dec-basic
@@ -148,25 +146,24 @@
 
 # Bytes 0-3 of AIFF, AIFF-C, & 8SVX audio files are "FORM"
 #					AIFF audio data
-8	string		AIFF		audio/x-aiff	
+8	string		AIFF		audio/x-aiff
 #					AIFF-C audio data
-8	string		AIFC		audio/x-aiff	
+8	string		AIFC		audio/x-aiff
 #					IFF/8SVX audio data
-8	string		8SVX		audio/x-aiff	
+8	string		8SVX		audio/x-aiff
 
 
 
 # Creative Labs AUDIO stuff
 #					Standard MIDI data
-0	string	MThd			audio/unknown	
-#>9 	byte	>0			(format %d)
-#>11	byte	>1			using %d channels
+0	string	MThd			audio/unknown
+0	string	MThd			audio/midi
 #					Creative Music (CMF) data
-0	string	CTMF			audio/unknown	
+0	string	CTMF			audio/unknown
 #					SoundBlaster instrument data
-0	string	SBI			audio/unknown	
+0	string	SBI			audio/unknown
 #					Creative Labs voice data
-0	string	Creative\ Voice\ File	audio/unknown	
+0	string	Creative\ Voice\ File	audio/unknown
 ## is this next line right?  it came this way...
 #>19	byte	0x1A
 #>23	byte	>0			- version %d
@@ -184,14 +181,23 @@
 0	string		RIFF
 #					- WAVE format
 >8	string		WAVE		audio/x-wav
->8	string		AVI		video/x-msvideo
+>8	string/B	AVI		video/x-msvideo
 #
-0	belong		0x2e7261fd	application/x-realaudio
 >8 	string		CDRA		image/x-coreldraw
 
+# AAC (aka MPEG-2 NBC)
+0       beshort&0xfff6    0xfff0          audio/X-HX-AAC-ADTS
+0       string          ADIF            audio/X-HX-AAC-ADIF
+0       beshort&0xffe0  0x56e0          audio/MP4A-LATM
+0       beshort         0x4De1          audio/MP4A-LATM
 
 # MPEG Layer 3 sound files
-0       beshort		&0xffe0		audio/mpeg
+# modified by Joerg Jenderek
+# GRR the original test are too common for many DOS files
+# so test 1 <= kbits nibble <= E
+0       beshort		&0xffe0		
+>2	ubyte&0xF0	>0x0F		
+>>2	ubyte&0xF0	<0xE1		audio/mpeg
 #MP3 with ID3 tag
 0	string		ID3		audio/mpeg
 # Ogg/Vorbis
@@ -203,10 +209,10 @@
 
 # XPM icons (Greg Roelofs, newt@uchicago.edu)
 # ideally should go into "images", but entries below would tag XPM as C source
-0	string		/*\ XPM		image/x-xpm	7bit
+0	string		/*\ XPM		image/x-xpmi 7bit
 
-# 3DS (3d Studio files)
-16	beshort		0x3d3d		image/x-3ds
+# 3DS (3d Studio files) Conflicts with diff output 0x3d '='
+#16	beshort		0x3d3d		image/x-3ds
 
 # this first will upset you if you're a PL/1 shop... (are there any left?)
 # in which case rm it; ascmagic will catch real C programs
@@ -265,7 +271,8 @@
 0       string          #!\ /bin/awk            application/x-awk
 0       string          #!/usr/bin/awk          application/x-awk
 0       string          #!\ /usr/bin/awk        application/x-awk
-0       string          BEGIN                   application/x-awk
+# update to distinguish from *.vcf files by Joerg Jenderek: joerg dot jenderek at web dot de
+#0	regex		BEGIN[[:space:]]*[{]	application/x-awk
 
 # For Larry Wall's perl language.  The ``eval'' line recognizes an
 # outrageously clever hack for USG systems.
@@ -280,6 +287,14 @@
 0       string          #!\ /usr/local/bin/perl         application/x-perl
 0       string          eval\ "exec\ /usr/local/bin/perl application/x-perl
 
+# Type: Lua scripting language
+# URL:  http://www.lua.org/
+# From: Reuben Thomas <rrt@sc3d.org>
+0	string/B	#!\ /usr/bin/lua	application/x-lua
+0	string/B	#!\ /usr/local/bin/lua	application/x-lua
+0	string		#!/usr/bin/env\ lua	application/x-lua
+0	string		#!\ /usr/bin/env\ lua	application/x-lua
+
 #------------------------------------------------------------------------------
 # compress:  file(1) magic for pure-compression formats (no archives)
 #
@@ -290,7 +305,7 @@
 # because it tries to uncompress it to figure out what's inside.
 
 # standard unix compress
-0	string		\037\235	application/x-compress
+#0	string		\037\235	application/x-compress
 
 # gzip (GNU zip, not to be confused with [Info-ZIP/PKWARE] zip archiver)
 0       string          \037\213        application/x-gzip
@@ -338,7 +353,7 @@
 0	short		0143561		application/x-cpio	swapped
 
 0	string		=<ar>		application/x-archive
-0	string		!<arch>		application/x-archive
+0	string		\!<arch>	application/x-archive
 >8	string		debian		application/x-debian-package
 
 #------------------------------------------------------------------------------
@@ -392,21 +407,14 @@
 #------------------------------------------------------------------------------
 # html:  file(1) magic for HTML (HyperText Markup Language) docs
 #
-# from Daniel Quinlan <quinlan@yggdrasil.com>
+# from Michael Piefel <piefel@debian.org>
 #
-0	string		\<HEAD	text/html
-0	string		\<head	text/html
-0	string		\<TITLE	text/html
-0	string		\<title	text/html
-0       string          \<html	text/html
-0       string          \<HTML	text/html
-0	string		\<!--	text/html
-0	string		\<h1	text/html
-0	string		\<H1	text/html
-0	string		\<!doctype\ HTML	text/html
-0	string		\<!DOCTYPE\ HTML	text/html
-0	string		\<!doctype\ html	text/html
-0	string		\<!doctype\ HTML	text/html
+0	string/cB	\<!DOCTYPE\ html	text/html
+0	string/cb	\<head			text/html
+0	string/cb	\<title			text/html
+0	string/bc	\<html			text/html
+0	string		\<!--			text/html
+0	string/c	\<h1			text/html
 
 #------------------------------------------------------------------------------
 # images:  file(1) magic for image formats (see also "c-lang" for XPM bitmaps)
@@ -469,7 +477,7 @@
 0	beshort		0xffd8		image/jpeg
 
 # PC bitmaps (OS/2, Windoze BMP files)  (Greg Roelofs, newt@uchicago.edu)
-0	string		BM		image/bmp
+0	string		BM		image/x-ms-bmp
 #>14	byte		12		(OS/2 1.x format)
 #>14	byte		64		(OS/2 2.x format)
 #>14	byte		40		(Windows 3.x format)
@@ -481,9 +489,6 @@
 
 # CDROM Filesystems
 32769    string    CD001     application/x-iso9660
-
-# StuffIt X
-0	string		StuffIt!		application/x-stuffitx
 
 # Newer StuffIt archives (grant@netbsd.org)
 0	string		StuffIt			application/x-stuffit
@@ -528,7 +533,11 @@
 #
 
 0	string		\376\067\0\043			application/msword
-0	string		\320\317\021\340\241\261	application/msword
+# disable this one because it applies also to other
+# Office/OLE documents for which msword is not correct. See PR#2608.
+# from magic file of the apache
+#0	string		\320\317\021\340\241\261	application/msword
+512	string		\354\245\301			application/msword
 0	string		\333\245-\0\0\0			application/msword
 
 
@@ -564,7 +573,7 @@
 #0	string		\367\203	TeX generic font data
 #0	string		\367\131	TeX packed font data
 #0	string		\367\312	TeX virtual font data
-#0	string		This\ is\ TeX,	TeX transcript text	
+#0	string		This\ is\ TeX,	TeX transcript text
 #0	string		This\ is\ METAFONT,	METAFONT transcript text
 
 # There is no way to detect TeX Font Metric (*.tfm) files without
@@ -586,25 +595,64 @@
 # RTF - Rich Text Format
 0	string		{\\rtf		text/rtf
 
+# TeX documents, from Daniel Quinlan (quinlan@yggdrasil.com)
+0	search/400	\\input		text/x-tex
+0	search/400	\\section	text/x-tex
+0	search/400	\\setlength	text/x-tex
+0	search/400	\\documentstyle	text/x-tex
+0	search/400	\\chapter	text/x-tex
+0	search/400	\\documentclass	text/x-tex
+
+# Type: Inform interactive fiction language
+# URL:  http://www.inform-fiction.org/
+# From: Reuben Thomas <rrt@sc3d.org>
+0	regex		[Cc]onstant[[:space:]]+[Ss]tory	text/x-inform
+
 #------------------------------------------------------------------------------
 # animation:  file(1) magic for animation/movie formats
 #
 # animation formats, originally from vax@ccwf.cc.utexas.edu (VaX#n8)
 #						MPEG file
-0	belong		0x000001b3			video/mpeg
-0	belong		0x000001ba			video/mpeg
+# MPEG sequences
+0       belong             0x000001BA
+>4      byte               &0x40          video/mp2p
+>4      byte               ^0x40          video/mpeg
+0       belong             0x000001BB     video/mpeg
+0       belong             0x000001B0     video/mp4v-es
+0       belong             0x000001B5     video/mp4v-es
+0       belong             0x000001B3     video/mpv
+0       belong&0xFF5FFF1F  0x47400010     video/mp2t
+0       belong             0x00000001
+>4      byte&0x1F	   0x07           video/h264
+
 # FLI animation format
 0	leshort		0xAF11				video/fli
 # FLC animation format
 0	leshort		0xAF12				video/flc
-# AVI
->8	string		AVI\ 				video/avi
 #
 # SGI and Apple formats
-#
-0	string		MOVI				video/sgi
-4	string		moov				video/quicktime	moov
-4	string		mdat				video/quicktime	mdat
+# Added ISO mimes
+0	string		MOVI	      video/sgi
+4	string		moov	      video/quicktime
+4	string		mdat	      video/quicktime
+4	string		wide	      video/quicktime
+4	string		skip	      video/quicktime
+4	string		free	      video/quicktime
+4	string		idsc	      image/x-quicktime
+4	string		idat	      image/x-quicktime
+4	string		pckg	      application/x-quicktime
+4	string/B	jP	      image/jp2
+4	string		ftyp
+>8	string		isom	      video/mp4
+>8	string		mp41	      video/mp4
+>8	string		mp42	      video/mp4
+>8	string/B	jp2	      image/jp2
+>8	string		3gp	      video/3gpp
+>8      string          avc1          video/3gpp
+>8	string		mmp4	      video/mp4
+>8	string/B	M4A	      audio/mp4
+>8	string/B	M4V	      video/mp4
+>8	string/B	qt	      video/quicktime
 # The contributor claims:
 #   I couldn't find a real magic number for these, however, this
 #   -appears- to work.  Note that it might catch other files, too,
@@ -631,26 +679,26 @@
 #
 # Executables
 #
-0       string          \177ELF 
->4      byte            0
->4      byte            1
->4      byte            2
->5      byte            0
->5      byte            1
->>16    leshort         0
->>16    leshort         1               application/x-object
->>16    leshort         2               application/x-executable
->>16    leshort         3               application/x-sharedlib
->>16    leshort         4               application/x-coredump
+0	string		\177ELF
+>16	leshort		0		application/octet-stream
+>16	leshort		1		application/x-object
+>16	leshort		2		application/x-executable
+>16	leshort		3		application/x-sharedlib
+>16	leshort		4		application/x-coredump
+>16	beshort		0		application/octet-stream
+>16	beshort		1		application/x-object
+>16	beshort		2		application/x-executable
+>16	beshort		3		application/x-sharedlib
+>16	beshort		4		application/x-coredump
 #
 # DOS
 0		string			MZ				application/x-dosexec
 #
 # KDE
 0		string	[KDE\ Desktop\ Entry]	application/x-kdelnk
-0		string	\#\ KDE\ Config\ File	application/x-kdelnk
+0		string	#\ KDE\ Config\ File	application/x-kdelnk
 # xmcd database file for kscd
-0		string	\#\ xmcd                text/xmcd
+0		string	#\ xmcd                text/xmcd
 
 #------------------------------------------------------------------------------
 # pkgadd:  file(1) magic for SysV R4 PKG Datastreams
@@ -667,8 +715,10 @@
 #------------------------------------------------------------------------------
 # Hierarchical Data Format, used to facilitate scientific data exchange
 # specifications at http://hdf.ncsa.uiuc.edu/
-0	belong		0x0e031301	Hierarchical Data Format (version 4) data
-0	string		\211HDF\r\n\032	Hierarchical Data Format (version 5) data
+#Hierarchical Data Format (version 4) data
+0	belong		0x0e031301		application/x-hdf
+#Hierarchical Data Format (version 5) data
+0	string		\211HDF\r\n\032		application/x-hdf
 
 # Adobe Photoshop
 0	string		8BPS			image/x-photoshop
@@ -685,19 +735,19 @@
 4	string	Standard\ Jet\ DB	application/msaccess
 
 ## magic for XBase files
-#0      byte       0x02	
+#0      byte       0x02
 #>8     leshort	  >0
 #>>12   leshort    0	application/x-dbf
 #
-#0      byte       0x03	
+#0      byte       0x03
 #>8     leshort	  >0
 #>>12   leshort    0	application/x-dbf
 #
-#0      byte       0x04	
+#0      byte       0x04
 #>8     leshort	  >0
 #>>12   leshort    0	application/x-dbf
 #
-#0      byte       0x05	
+#0      byte       0x05
 #>8     leshort	  >0
 #>>12   leshort    0	application/x-dbf
 #
@@ -713,7 +763,7 @@
 #>8     leshort	  >0
 #>>12   leshort    0	application/x-dbf
 #
-#0      byte       0x83	
+#0      byte       0x83
 #>8     leshort	  >0
 #>>12   leshort    0	application/x-dbf
 #
@@ -721,7 +771,7 @@
 #>8     leshort	  >0
 #>>12   leshort    0	application/x-dbf
 #
-#0      byte       0x8e	
+#0      byte       0x8e
 #>8     leshort	  >0
 #>>12   leshort    0	application/x-dbf
 #
@@ -738,21 +788,26 @@
 # Debian has entries for the old PGP formats:
 # pgp:  file(1) magic for Pretty Good Privacy
 # see http://lists.gnupg.org/pipermail/gnupg-devel/1999-September/016052.html
-0       beshort         0x9900                  text/PGP key public ring
-0       beshort         0x9501                  text/PGP key security ring
-0       beshort         0x9500                  text/PGP key security ring
-0       beshort         0xa600                  text/PGP encrypted data
-0       string          -----BEGIN\040PGP       text/PGP armored data 
->15     string          PUBLIC\040KEY\040BLOCK- public key block
->15     string          MESSAGE-                message
->15     string          SIGNED\040MESSAGE-      signed message
->15     string          PGP\040SIGNATURE-       signature
-0       beshort         0x8501                  data
+#text/PGP key public ring
+0	beshort		0x9900		application/pgp
+#text/PGP key security ring
+0	beshort		0x9501		application/pgp
+#text/PGP key security ring
+0	beshort		0x9500		application/pgp
+#text/PGP encrypted data
+0	beshort		0xa600		application/pgp-encrypted
+#text/PGP armored data
+##public key block
+2	string	---BEGIN\ PGP\ PUBLIC\ KEY\ BLOCK-	application/pgp-keys
+0	string	-----BEGIN\040PGP\40MESSAGE-		application/pgp
+0	string	-----BEGIN\040PGP\40SIGNATURE-		application/pgp-signature
 #
 # GnuPG Magic:
-# 
-0       beshort         0x9901                  text/GnuPG key public ring
-0       beshort         0x8501                  text/OpenPGP data
+#
+#text/GnuPG key public ring
+0	beshort		0x9901		application/pgp
+#text/OpenPGP data
+0	beshort		0x8501		application/pgp-encrypted
 
 # flash:        file(1) magic for Macromedia Flash file format
 #
@@ -760,7 +815,7 @@
 #
 #       http://www.macromedia.com/software/flash/open/
 #
-0	string		FWS             
+0	string		FWS
 >3	byte		x			application/x-shockwave-flash
 
 # The following paramaters are created for Namazu.
@@ -835,6 +890,8 @@
 # miscellaneous formats
 0		string	LZ		application/octet-stream
 
+# DOS device drivers by Joerg Jenderek
+0	belong		0xffffffff	application/octet-stream
 
 # .EXE formats (Greg Roelofs, newt@uchicago.edu)
 #
@@ -871,30 +928,6 @@
 # Microsoft Outlook's Transport Neutral Encapsulation Format (TNEF)
 0		lelong	0x223e9f78	application/ms-tnef
 
-
-#
-# QuickTime format
-# Contributer: Peter Breton
-#
-
-0	string		MOVI		video/quicktime
-4	string		moov		video/quicktime
-4	string		mdat		video/quicktime
-
-# Video Formate
-0       string          RIFF
-# AVI == Audio Video Interleave
->8      string          AVI\            
-#>0xbc   string         >\0             video/x-%s
-
->>0xbc  string          DIV3            video/x-DivX-3
->>0xbc  string          div3            video/x-divX-3
->>0xbc  string          DIV4            video/x-DivX-4
->>0x70  string          DX50            video/x-DIVX-5
->>0x70  string          MP4             video/x-MPEG-4
->>0xbc  string          DIVX            video/x-DivX
->8      string          WAVE            audio/x-wav
-
 # From: stephane.loeuillet@tiscali.f
 # http://www.djvuzone.org/
 0	string		AT&TFORM	image/x.djvu
@@ -906,5 +939,40 @@
 # 0x9445366139FA (V 3.80)
 # this is from source (http://www.adrift.org.uk/) and I have some taf
 # files, and checked them.
-#0       belong          0x3C423FC9
-#>4      belong          0x6A87C2CF application/x-adrift
+#0	belong	0x3C423FC9
+#>4	belong	0x6A87C2CF	application/x-adrift
+#0	string	\000\000\001\000	image/x-ico
+
+# Quark Xpress 3 Files:
+# (made the mimetype up)
+0	string	\0\0MMXPR3\0	application/x-quark-xpress-3
+
+# EET archive
+# From: Tilman Sauerbeck <tilman@code-monkey.de>
+0	belong	0x1ee7ff00	application/x-eet
+
+# From: Denis Knauf, via gentoo.
+0	string	fLaC		audio/x-flac
+0	string	CWS		application/x-shockwave-flash
+
+# Hangul Document Files:
+# Reversed-engineered HWP magic numbers
+# From: Won-Kyu Park <wkpark@kldp.org>
+512	string		R\0o\0o\0t\0	application/x-hwp
+
+0	string/c	BEGIN:VCARD	text/x-vcard
+0	string		WordPro\0	application/vnd.lotus-wordpro
+0	string		WordPro\r\373	application/vnd.lotus-wordpro
+0	string		CPC\262		image/cpi
+
+# 
+128	string		DICM		application/dicom
+
+# Symbian installation files
+8	lelong	0x10000419	application/vnd.symbian.install
+0	lelong	0x10201A7A	x-epoc/x-sisx-app
+
+# Gnumeric spreadsheet
+# This entry is only semi-helpful, as Gnumeric compresses its files, so
+# they will ordinarily reported as "compressed", but at least -z helps
+39	string	=<gmr:Workbook	application/x-gnumeric

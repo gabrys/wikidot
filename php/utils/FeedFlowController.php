@@ -168,6 +168,7 @@ class FeedFlowController extends WebFlowController {
 			if($user == null){
 				header('WWW-Authenticate: Basic realm="Private"');
    				header('HTTP/1.0 401 Unauthorized');
+   				header('Content-type: text/plain; charset=utf-8');
    				echo _("This is a private feed. User authentication required via Basic HTTP Authentication. You can not access it. Please go to 'Account settings' -> 'Notifications' to get the password if you believe you should be allowed.");
    				exit();
 			}
