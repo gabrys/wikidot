@@ -284,36 +284,39 @@ class phpFlickr {
     
     function buildPhotoURL ($photo, $size = "Medium") 
     {
+        //var_dump($photo);
         //receives an array (can use the individual photo data returned 
         //from an API call) and returns a URL (doesn't mean that the 
         //file size exists)
 		if ($this->service == "23") {
 			$url = "http://www.23hq.com/";
 		} else {
-			$url = "http://static.flickr.com/";
+			$url = "http://farm".$photo['farm'].".static.flickr.com/";
         }
-        $url .= $photo['server'] . "/" . $photo['id'] . "_" . $photo['secret'];
-        switch (strtolower($size)) {
-            case "square":
-                $url .= "_s";
-                break;
-            case "thumbnail":
-                $url .= "_t";
-                break;
-            case "small":
-                $url .= "_m";
-                break;
-            case "medium":
-                $url .= "";
-                break;
-            case "large":
-                $url .= "_b";
-                break;
-            case "original":
-                $url .= "_o";
-                break;
+        if(strtolower($size) == 'original') {
+            $url .= $photo['server'] . "/" . $photo['id'] . "_" . $photo['originalsecret'] . "_o" . "." . $photo['originalformat'];
+        } else {
+            $url .= $photo['server'] . "/" . $photo['id'] . "_" . $photo['secret'];
+            switch (strtolower($size)) {
+                case "square":
+                    $url .= "_s";
+                    break;
+                case "thumbnail":
+                    $url .= "_t";
+                    break;
+                case "small":
+                    $url .= "_m";
+                    break;
+                case "medium":
+                    $url .= "";
+                    break;
+                case "large":
+                    $url .= "_b";
+                    break;
+
+            }
+            $url .= ".jpg";
         }
-        $url .= ".jpg";
         return $url;
     }
     
