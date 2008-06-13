@@ -43,6 +43,9 @@ class ListPagesModule extends SmartyModule {
         if(!$categoryName) {
             $categoryName = $pl->getParameterValue("categories", "MODULE", "AMODULE");
         }
+        
+        $categoryName = strtolower($categoryName);
+        
         $parmHash = md5(serialize($pl->asArray()));
         $this->parameterhash = $parmHash;
     	/* Check if recursive. */
@@ -141,6 +144,8 @@ class ListPagesModule extends SmartyModule {
         if(!$categoryName) {
             $categoryName = $pl->getParameterValue("categories", "MODULE", "AMODULE");
         }
+        
+        $categoryName = strtolower($categoryName);
         
         $order = $pl->getParameterValue("order");
         $limit = $pl->getParameterValue("limit");
@@ -286,6 +291,8 @@ class ListPagesModule extends SmartyModule {
         
         if ($limit && preg_match(';^[0-9]+$;', $limit)) {
             $c->setLimit($limit); // this limit has no effect on count(*) !!!
+        } else {
+        	$limit = null;
         }
         
         $pageNo = $pl->getParameterValue("p");
@@ -294,14 +301,21 @@ class ListPagesModule extends SmartyModule {
         }
         
         $co = DB_PagePeer::instance()->selectCount($c);
-        $co = min(array($co, $limit));
+        
+        if($limit){
+        	$co = min(array($co, $limit));
+        }
 
         $totalPages = ceil($co / $perPage);
         if ($pageNo > $totalPages) {
             $pageNo = $totalPages;
         }
         $offset = ($pageNo - 1) * $perPage;
-        $newLimit = min(array($perPage, $limit - $offset));
+        if($limit){
+            $newLimit = min(array($perPage, $limit - $offset));
+        } else {
+            $newLimit = $perPage;
+        }
         $c->setLimit($newLimit, $offset);
         $runData->contextAdd("totalPages", $totalPages);
         $runData->contextAdd("currentPage", $pageNo);
@@ -368,7 +382,9 @@ class ListPagesModule extends SmartyModule {
             $title = $page->getTitle();
             $source = $page->getSource();
             
+            $title = str_replace(array('[',']'), '', $title);
             $title = str_replace('%%', "\xFD", $title);
+            
             $source = str_replace('%%', "\xFD", $source);
             
             $c = new Criteria();
@@ -388,7 +404,7 @@ class ListPagesModule extends SmartyModule {
             /* %%title%% and similar */
             
             $b = str_replace('%%title%%', $title, $b);
-            $b = preg_replace("/%%((linked_title)|(title_linked))%%/i", preg_quote_replacement('[[[' . $page->getUnixName() . ' | ' . $page->getTitle() . ']]]'), $b);
+            $b = preg_replace("/%%((linked_title)|(title_linked))%%/i", preg_quote_replacement('[[[' . $page->getUnixName() . ' | ' . $title . ']]]'), $b);
             
             /* %%author%% */
             
