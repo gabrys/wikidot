@@ -86,26 +86,32 @@ class PrivateFileFlowController extends WebFlowController {
 		return false;
 	}
 	
-	protected function serveFile($path) {
-		if(file_exists($path)){
+	protected function fileMime($path, $allowHtml = false) {
+		
+		if (file_exists($path)) {
 			
-			preg_match(';\.([a-z0-9]+)$;i', $path, $matches);
-  			$ext = $matches[1];
-  			if($ext){
-  				$mimes = mimeTypes('/etc/mime.types');
-  				$mime = $mimes[$ext];
-  			}
-  			if(!$mime){
-				$finfo = finfo_open(FILEINFO_MIME, WIKIDOT_ROOT.'/lib/magic/magic');
-				$mime =  finfo_file($finfo, $path);
-				finfo_close($finfo);
-  			}
+			$finfo = finfo_open(FILEINFO_MIME, WIKIDOT_ROOT.'/lib/magic/magic');
+			$mime =  finfo_file($finfo, $path);
+			finfo_close($finfo);
+		} else {
+			$mime = false;
+		}
   			
-  			// to disable rendered html
-  			if($mime == "text/html" || $mime == "application/xhtml+xml"){
-  				$mime = "text/plain";
-  			}
-  			
+		if (! $mime) {
+			$mime = "application/octet-stream";
+		}
+		
+		if (! $allowHtml) {
+			if ($mime == "text/html" || $mime == "application/xhtml+xml") {
+				$mime = "text/plain";
+			}
+		}
+		
+		return $mime;
+	}
+	
+	protected function serveFile($path, $mime) {
+		if(file_exists($path)){
   			if($mime){
 				header("Content-Type: ".$mime);
   			}
@@ -152,31 +158,6 @@ class PrivateFileFlowController extends WebFlowController {
 		//nasty global thing...
 		$GLOBALS['siteId'] = $site->getSiteId();
 		$GLOBALS['site'] = $site;
-		
-		// set language
-		$lang = $site->getLanguage();
-		$runData->setLanguage($lang);
-		$GLOBALS['lang'] = $lang;
-		
-		// and for gettext too:
-		
-		switch($lang){
-			case 'pl':
-				$glang="pl_PL";
-				break;
-			case 'en':
-				$glang="en_US";
-				break;
-		}
-
-		putenv("LANG=$glang"); 
-		putenv("LANGUAGE=$glang"); 
-		setlocale(LC_ALL, $glang.'.UTF-8');
-
-		// Set the text domain as 'messages'
-		$gdomain = 'messages';
-		bindtextdomain($gdomain, WIKIDOT_ROOT.'/locale'); 
-		textdomain($gdomain);
 
 		// handle session at the begging of procession
 		$runData->handleSessionStart();
@@ -188,26 +169,16 @@ class PrivateFileFlowController extends WebFlowController {
 		}
 
 		$file = $_SERVER['QUERY_STRING'];
+		
 		if(!$file){exit();}
+		
 		$path = WIKIDOT_ROOT.'/web/files--sites/'.$site->getUnixName().'/files/'.$file;
 		
-		$this->serveFile($path);
+		$mime = $this->fileMime($path);
+		
+		$this->serveFile($path, $mime);
 
 		return;
 	}
 
 }
-
-function mimeTypes($file) {
-       if (!is_file($file) || !is_readable($file)) return false;
-       $types = array();
-       $fp = fopen($file,"r");
-       while (false != ($line = fgets($fp,4096))) {
-           if (!preg_match("/^\s*(?!#)\s*(\S+)\s+(?=\S)(.+)/",$line,$match)) continue;
-           $tmp = preg_split("/\s/",trim($match[2]));
-           foreach($tmp as $type) $types[strtolower($type)] = $match[1];
-       }
-       fclose ($fp);
-      
-       return $types;
-   }

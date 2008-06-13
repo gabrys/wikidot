@@ -144,6 +144,10 @@ class GlobalProperties {
 		self::$URL_HOST = 'www.'.self::$URL_DOMAIN;
 		self::$URL_HOST_PREG = preg_quote(self::$URL_HOST);
 		self::$URL_DOMAIN_PREG = preg_quote(self::$URL_DOMAIN);
+		if (! self::$URL_UPLOAD_DOMAIN) {
+			self::$URL_UPLOAD_DOMAIN = 'wdupload.' . self::$URL_DOMAIN;
+		}
+		self::$URL_UPLOAD_DOMAIN_PREG = preg_quote(self::$URL_UPLOAD_DOMAIN);
 		if(!self::$SESSION_COOKIE_DOMAIN){
 			self::$SESSION_COOKIE_DOMAIN = '.'.self::$URL_DOMAIN;
 		}
