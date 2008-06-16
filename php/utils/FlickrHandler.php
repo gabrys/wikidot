@@ -35,7 +35,7 @@ require(WIKIDOT_ROOT."/lib/phpFlickr/phpFlickr.php");
 
 class FlickrHandler extends phpFlickr {
 	
-	 private $cache = true;
+	 public $cache = true;
 	
 	private static $instance;
 	
@@ -61,7 +61,7 @@ class FlickrHandler extends phpFlickr {
 	 	return false; 
 	 }
 	 
-	 function cache ($request, $response){
+	 public function cache ($request, $response){
 	 	$reqhash = md5(serialize($request));
 	 	$key = "phpflickrcache..".$reqhash;	
 	 	$mc = Ozone::$memcache;

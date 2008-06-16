@@ -2,12 +2,37 @@
 
 <div id="sm-clone-block">
 <p>
-	Clone the whole site.
+	Using this feature you are able to clone the whole wiki. A new wiki with content copied from this one
+	will be created with the new web address.
 </p>
 
-<h2>What to clone?</h2>
+<h2>What will be cloned?</h2>
+
+<p>Will be cloned</p>
+<ul>
+	<li>all pages and their content</li>
+	<li>page tags</li>
+	<li>category settings</li>
+	<li>permission settings</li>
+	<li>themes (including custom themes)</li>
+	<li>forum structure (groups and categories)</li>
+</ul>
+
+<p>Will not be cloned</p>
+
+<ul>
+	<li>page edit history (revisions)</li>
+	<li>forum threads and posts</li>
+	<li>members</li>
+	<li>custom domain settings</li>
+</ul>
 
 <h2>Override</h2>
+
+<p>
+	Any option you provide below will override the copied property of the existing Site. Of course, 
+	a unique web address (unix name) needs to be provided.
+</p>
 
 <div class="error-block" id="clone-site-form-errors" style="display: none"></div>
 
@@ -29,7 +54,7 @@
 				{t}Tagline{/t}:
 			</td>
 			<td>
-				<input class="text" type="text" name="subtitle" size="30" value="{$site->getSubtitle()|escape}"/>
+				<input class="text" type="text" name="tagline" size="30" value="{$site->getSubtitle()|escape}"/>
 				<div class="sub">
 					{t}Appears beneath the name.{/t}
 				</div>

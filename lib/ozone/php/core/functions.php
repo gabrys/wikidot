@@ -318,12 +318,12 @@ function glue_path() {
  */
 function exec_time($cmd, $time_limit = null, &$output = null, &$ret_val = null) {
 	if ($time_limit == null) {
-		exec($cmd, $exec_output, $exec_return_val);
+		$out = exec($cmd, $exec_output, $exec_return_val);
 	} else {
 		$prog = escapeshellcmd(OZONE_ROOT . "/bin/timelimit.sh");
 		$time = (int) $time_limit;
 		$newcmd = escapeshellcmd("$prog $time $cmd");
-		exec($newcmd, $exec_output, $exec_return_val);
+		$out = exec($newcmd, $exec_output, $exec_return_val);
 	}
 	if ($output != null) {
 		$output = $exec_output;
@@ -331,4 +331,5 @@ function exec_time($cmd, $time_limit = null, &$output = null, &$ret_val = null) 
 	if ($ret_val != null) {
 		$ret_val = $exec_return_val;
 	}
+	return $out;
 }

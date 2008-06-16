@@ -48,4 +48,4 @@
     </div>
 </form>
 
-<iframe src="" name="_upload_iframe" id="_upload_iframe" style="display: none;"></iframe>
+<iframe src="/common--misc/blank.html" name="_upload_iframe" id="_upload_iframe" style="display: none;"></iframe>

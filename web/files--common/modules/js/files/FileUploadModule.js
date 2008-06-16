@@ -26,6 +26,7 @@ WIKIDOT.modules.PageUploadModule.listeners = {
 			t3.content=message;
 			t3.show();
 		}
+		$('_upload_iframe').src='/common--misc/blank.html';
 	},
 	
 	uploadStart: function(e){
@@ -40,7 +41,6 @@ WIKIDOT.modules.PageUploadModule.listeners = {
 	
 	checkFileExists: function(e){
 		if($("upload-userfile").value == ''){
-			alert("dsu");
 			return;
 		}
 		var p = new Object();

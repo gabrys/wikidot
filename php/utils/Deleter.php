@@ -145,6 +145,10 @@ class Deleter {
         
         // delete forum? no. will be autodeleted based on the database constrains.
 
+        // need to delete post revisions
+        $db = Database::connection();
+        $q = "DELETE FROM forum_post_revision WHERE forum_post_id IN (SELECT post_id FROM forum_post WHERE site_id= {$site->getSiteId()}";
+        $db->query($q);
         //delete the site itself
 
         $outdater = new Outdater();

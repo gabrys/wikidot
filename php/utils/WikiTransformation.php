@@ -103,14 +103,14 @@ class WikiTransformation {
 		/* Check if has a ===== delimiter. */
 	    $split = preg_split(';^={4,}$;sm', $template);
 	    if(count($split) > 1){
-	        $template = $split[0];
+	        $template = trim($split[0]);
 	    }
 	    
-	    $out = str_replace('%%%%%content%%%%%', $out, $template);
+	    $out = str_replace('%%%%%content%%%%%', trim($out), $template);
 	    /* Handle split sources. */
 	    $splitSource = preg_split('/^([=]{4,})$/m', $source);
 	    for ($i = 0; $i < count($splitSource); $i++) {
-	        $out = str_replace('%%%%%content{'.($i+1).'}%%%%%', $splitSource[$i], $out);
+	        $out = str_replace('%%%%%content{'.($i+1).'}%%%%%', trim($splitSource[$i]), $out);
 	    }
 	    $out = preg_replace(';%%%%%content({[0-9]+})?%%%%%;', '', $out);
 	    return $out;
