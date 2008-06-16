@@ -53,6 +53,16 @@ class GlobalProperties {
 	public static $SESSION_COOKIE_SECURE = false; // by default
 	public static $SESSION_COOKIE_DOMAIN = null;
 	
+	/**
+	 * X-Sendfile settings
+	 * You can use this to accelerate user-uploaded file serving
+	 * 
+	 * Use $XSENDFILE_HEADER = "X-LIGHTTPD-send-file"; for Lighttpd 1.4.x
+	 * Use $XSENDFILE_HEADER = "X-Sendfile"; for Lighttpd 1.5.x
+	 */
+	public static $XSENDFILE_USE = false;
+	public static $XSENDFILE_HEADER = "X-LIGHTTPD-send-file";
+	
 	
 	/**
 	 * Database settings. For type the valid value is: "pgsql". 

@@ -120,8 +120,11 @@ class PrivateFileFlowController extends WebFlowController {
 	}
 	
 	protected function readfile($path) {
-		// X-SendFile here
-		readfile($path);
+		if (GlobalProperties::$XSENDFILE_USE) {
+			header(GlobalProperties::$XSENDFILE_HEADER . ": $path");
+		} else {
+			readfile($path);
+		}
 	}
 	
 	public function process() {

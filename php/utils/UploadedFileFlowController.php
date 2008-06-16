@@ -14,14 +14,14 @@ class UploadedFileFlowController extends PrivateFileFlowController {
 		$secure_domain = false;
 		
 		// manage the special trusted upload domain
-		if (preg_match("/^[^.*]\." . GlobalProperties::$URL_UPLOAD_DOMAIN_PREG . "$/", $siteHost)) {
+		if (preg_match("/^[^.]*\." . GlobalProperties::$URL_UPLOAD_DOMAIN_PREG . "$/", $siteHost)) {
 			$secure_domain = true;
 			$siteHost = preg_replace("/" . GlobalProperties::$URL_UPLOAD_DOMAIN_PREG . "$/", GlobalProperties::$URL_DOMAIN, $siteHost);
 		}
 		
 		$site = $this->getSite($siteHost);
 		
-		if ($site == null){
+		if (! $site) {
 			$content = file_get_contents(WIKIDOT_ROOT."/files/site_not_exists.html");
 			echo $content;
 			return $content;
@@ -48,8 +48,8 @@ class UploadedFileFlowController extends PrivateFileFlowController {
 		
 		$path = WIKIDOT_ROOT.'/web/files--sites/'.$site->getUnixName().'/files/'.$file;
 		
-		$mime_secure = $this->fileMime($path, false);
-		$mime_insecure = $this->fileMime($path, true);
+		$mime_secure = $this->fileMime($path, true);
+		$mime_insecure = $this->fileMime($path, false);
 		
 		if ($mime_insecure == $mime_secure || $secure_domain) {
 			$this->serveFile($path, $mime_secure);
@@ -58,11 +58,11 @@ class UploadedFileFlowController extends PrivateFileFlowController {
 		
 		// we must redirect user
 		$proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
-		$domain = $site->getSiteName . "." . GlobalProperties::$URL_UPLOAD_DOMAIN;
+		$domain = $site->getUnixName() . "." . GlobalProperties::$URL_UPLOAD_DOMAIN;
 		
 		header ('HTTP/1.1 301 Moved Permanently');
 		header ("Location: ${proto}://${domain}/local--files/${file}");
-		
+
 		return;
 	}
 }
