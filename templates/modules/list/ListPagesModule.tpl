@@ -7,7 +7,7 @@
 	{$itemsContent}
 	{if $feedUri}
 		<div class="feedinfo">
-			<span class="rss-icon"><img src="/files--common/theme/base/images/feed/feed-icon-14x14.png" alt="rss icon"/></span>
+			<span class="rss-icon"><img src="/common--theme/base/images/feed/feed-icon-14x14.png" alt="rss icon"/></span>
 			<a href="{$feedUri}">{t}RSS feed{/t}</a>
 		</div>
 	{/if}
@@ -20,7 +20,7 @@
 	
 	{if $rssUrl}
 		<div class="feedinfo">
-			<span class="rss-icon"><img src="/files--common/theme/base/images/feed/feed-icon-14x14.png" alt="rss icon"/></span>
+			<span class="rss-icon"><img src="/common--theme/base/images/feed/feed-icon-14x14.png" alt="rss icon"/></span>
 			<a href="{$rssUrl}">{if $rssTitle}{$rssTitle|escape}{else}{t}RSS feed{/t}{/if}</a>
 		</div>
 	{/if}

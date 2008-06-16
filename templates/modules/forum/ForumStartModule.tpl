@@ -69,6 +69,6 @@
 	{/if}
 </p>
 <p style="text-align: right">
-	<span class="rss-icon"><img src="/files--common/theme/base/images/feed/feed-icon-14x14.png" alt="rss icon"/></span> RSS: <a href="/feed/forum/threads.xml">{t}new threads{/t}</a> | <a href="/feed/forum/posts.xml">{t}new posts{/t}</a>
+	<span class="rss-icon"><img src="/common--theme/base/images/feed/feed-icon-14x14.png" alt="rss icon"/></span> RSS: <a href="/feed/forum/threads.xml">{t}new threads{/t}</a> | <a href="/feed/forum/posts.xml">{t}new posts{/t}</a>
 </p>
 {/strip}

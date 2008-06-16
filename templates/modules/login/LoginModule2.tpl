@@ -8,7 +8,7 @@
 				<td style="width: 50%; text-align: center;  padding: 10px;">
 					
 					
-					<iframe src="/files--common/misc/blank.html"
+					<iframe src="/common--misc/blank.html"
 						id="login-iframe"
 						scrolling="no" frameBorder="0"></iframe>
 					

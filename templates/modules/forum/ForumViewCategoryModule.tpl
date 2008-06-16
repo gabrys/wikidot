@@ -11,7 +11,7 @@
 		<div class="statistics">
 			{t}number of threads{/t}: {$category->getNumberThreads()}<br/>
 			{t}number of posts{/t}: {$category->getNumberPosts()}<br/>
-			<span class="rss-icon"><img src="/files--common/theme/base/images/feed/feed-icon-14x14.png" alt="rss icon"/></span>
+			<span class="rss-icon"><img src="/common--theme/base/images/feed/feed-icon-14x14.png" alt="rss icon"/></span>
 			RSS: <a href="/feed/forum/ct-{$category->getCategoryId()}.xml">{t}new threads{/t}</a> | <a href="/feed/forum/cp-{$category->getCategoryId()}.xml">{t}new posts{/t}</a>
 		
 		</div>

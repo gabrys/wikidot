@@ -3,7 +3,7 @@
 	<div class="content" style="width: auto; position: static; margin:0; padding:0; border: none;">
 		<h2 id="login-head">{t}Login{/t}</h2>
 		<div class="error-block" id="loginerror" style="display: none"></div>
-		<form id="login-form" action="/files--common/misc/blank.html" method="post"
+		<form id="login-form" action="/common--misc/blank.html" method="post"
 			{*onsubmit="WIKIDOT.modules.LoginModule3.listeners.loginClick(event);"*}>		
 			<div style="text-align: center">			
 				{if $user}

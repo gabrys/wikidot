@@ -29,7 +29,7 @@
 			{t}started by{/t}: {printuser user=$thread->getUserOrString() image=true}<br/>
 			{t}on:{/t}  <span class="odate">{$thread->getDateStarted()->getTimestamp()}|%e %b %Y, %H:%M %Z|agohover</span><br/>
 			{t}number of posts{/t}: {$thread->getNumberPosts()}<br/>
-			<span class="rss-icon"><img src="/files--common/theme/base/images/feed/feed-icon-14x14.png" alt="rss icon"/></span>
+			<span class="rss-icon"><img src="/common--theme/base/images/feed/feed-icon-14x14.png" alt="rss icon"/></span>
 			RSS: <a href="/feed/forum/t-{$thread->getThreadId()}.xml">{t}new posts{/t}</a>
 		</div>
 		{if $wpage == null}
