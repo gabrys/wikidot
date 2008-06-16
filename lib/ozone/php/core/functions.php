@@ -307,3 +307,28 @@ function glue_path() {
     return implode(DIRECTORY_SEPARATOR, $c);
 
 }
+
+/**
+ * executes a command with the use of a special wrapper that limits time of execution
+ *
+ * @param string $cmd command to execute
+ * @param int $timelimit execution time limit -- default null = no limit
+ * @param array $output lines of output
+ * @param int $ret_val the return status of the executed command
+ */
+function exec_time($cmd, $time_limit = null, &$output = null, &$ret_val = null) {
+	if ($time_limit == null) {
+		exec($cmd, $exec_output, $exec_return_val);
+	} else {
+		$prog = escapeshellcmd(OZONE_ROOT . "/bin/timelimit.sh");
+		$time = (int) $time_limit;
+		$newcmd = escapeshellcmd("$prog $time $cmd");
+		exec($newcmd, $exec_output, $exec_return_val);
+	}
+	if ($output != null) {
+		$output = $exec_output;
+	}
+	if ($ret_val != null) {
+		$ret_val = $exec_return_val;
+	}
+}

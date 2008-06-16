@@ -216,7 +216,7 @@ class FileAction extends SmartyAction {
 			// DO NOT RUN identify ON ALL FILES!!!!!!!!!!!!
 			// OR limit the resources please
 			$cmd = 'identify -limit memory 100 -limit disk 0.2 '.escapeshellarg($dest); 
-			$res = exec($cmd, $out);
+			$res = exec_time($cmd, 8, $out);
 			if($res){
 				// is at least "imageable" - can have thumbnails
 				// resized images dir
@@ -699,17 +699,17 @@ class FileAction extends SmartyAction {
 			copy($filename, $tmpfile);
 			$cmd = 	'convert -size '.escapeshellarg($is[0].'x'.$is[1]).'  ' .
 					'-draw \'image Over 0,0 0,0 "'.$tmpfile.'"\'  xc:white '.$tmpfile .' 2>&1';
-			exec($cmd, $out);
+			exec_time($cmd, 8);
 			$cmd = 'convert '.$tmpfile.' -resize \'500x500>\'  +profile \'*\'  '.$medium.' 2>&1';
 		}else{
 			$cmd = 'convert '.escapeshellarg($filename.'[0]').' -resize \'500x500>\'  +profile \'*\'  '.$medium.' 2>&1';
 		}
-		exec($cmd, $out);
+		exec_time($cmd, 8);
 		if(file_exists($tmpfile)){unlink($tmpfile);}
 		$cmd = 'convert '.$medium.' -resize \'240x240>\' -unsharp 0x1.0+1.0+0.10 '.$small.'';
-		exec($cmd, $out);
+		exec_time($cmd, 8);
 		$cmd = 'convert '.$small.' -resize \'100x100>\' -unsharp 0x1.0+1.0+0.10 '.$thumbnail.'';
-		exec($cmd, $out);
+		exec_time($cmd, 8);
 		// get  dimension
 		if(!file_exists($path.'/small.jpg')){
 			return 	false;
@@ -722,10 +722,10 @@ class FileAction extends SmartyAction {
 			$ns = $w*75.0/$h.'x75';	
 		}
 		$cmd = 'convert '.$small.' -resize '.$ns.'  '.$square.'';
-		exec($cmd, $out);
+		exec_time($cmd, 8);
 		// and crop it!
 		$cmd = 'convert '.$square.'  -gravity Center -crop 75x75+0+0 +repage '.$square.'';
-		exec($cmd);
+		exec_time($cmd, 8);
 		return true;
 	}
 	
