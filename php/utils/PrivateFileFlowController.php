@@ -62,12 +62,16 @@ class PrivateFileFlowController extends WebFlowController {
 	
 	protected function userAllowed($user, $site) {
 	
-		if (! $user || ! $site) {
+		if (! $site) {
 			return false; 
 		}
 		
 		if (! $site->getPrivate()) { // site is public
 			return true;
+		}
+	
+		if (! $user) {
+			return false; 
 		}
 		
 		if ($user->getSuperAdmin() || $user->getSuperModerator()) { // user is a superuser
