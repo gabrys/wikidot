@@ -28,7 +28,7 @@
  * this file creates configuration files that is needed to run Wikidot
  */
 
-$files = array("/web/.htaccess", "/files/apache.vhost.wikidot.conf", "/files/crontab");
+$files = array("/web/.htaccess", "/files/apache.vhost.wikidot.conf", "/files/crontab", "/files/lighttpd-wikidot.conf");
 
 chdir(dirname(__FILE__));
 if(!file_exists('../conf/GlobalProperties.php')){
