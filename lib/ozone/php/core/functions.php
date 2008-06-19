@@ -322,7 +322,7 @@ function exec_time($cmd, $time_limit = null, &$output = null, &$ret_val = null) 
 	} else {
 		$prog = escapeshellcmd(OZONE_ROOT . "/bin/timelimit.sh");
 		$time = (int) $time_limit;
-		$newcmd = escapeshellcmd("$prog $time $cmd");
+		$newcmd = "$prog $time $cmd";
 		$out = exec($newcmd, $exec_output, $exec_return_val);
 	}
 	if ($output != null) {
