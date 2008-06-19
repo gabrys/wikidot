@@ -34,36 +34,52 @@ class UploadedFileFlowController extends PrivateFileFlowController {
 
 		// handle session at the begging of procession
 		$runData->handleSessionStart();
-
-		if (! $this->userAllowed($runData->getUser(), $site)) {
-			header("HTTP/1.0 401 Unauthorized");
-			echo "Not authorized. This is a private site with access restricted to its members.";
-			exit();
-		}
 		
+		// Mangle the $file.
 		$file = $_SERVER['QUERY_STRING'];
+		$file = preg_replace("/\\?[0-9]*\$/", "", $file);
+		$file = preg_replace("|^/*|", "", $file);
+		
 		if (! $file) {
 			exit();
 		}
 		
-		/* Mangle the $file. */
+		$dir = array_shift(explode("/", $file));
+		
+		if ($dir == "resized-images" || $dir == "files") {
+			
+			if (! $this->userAllowed($runData->getUser(), $site)) {
+				header("HTTP/1.0 401 Unauthorized");
+				echo "Not authorized. This is a private site with access restricted to its members.";
+				exit();
+			}
+				
+		}
 		
 		$path = WIKIDOT_ROOT.'/web/files--sites/'.$site->getUnixName().'/'.$file;
 		
-		$mime_insecure = $this->fileMime($path, false);
-		
-		if ($secure_domain) {
-			$this->serveFile($path, $mime_insecure);
-			return;
-		}
-		
-		// we must redirect user
-		$proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
-		$domain = $site->getUnixName() . "." . GlobalProperties::$URL_UPLOAD_DOMAIN;
-		
-		header ('HTTP/1.1 301 Moved Permanently');
-		header ("Location: ${proto}://${domain}/local--${file}");
+		if ($secure_domain) { /* SERVE FILE */
+			
+			$path = WIKIDOT_ROOT.'/web/files--sites/'.$site->getUnixName().'/'.$file;
+			
+			if ($dir == "theme") {
+				$mime = "text/css";
+			}
+			
+			if (! $mime) {
+				$mime = $this->fileMime($path, false);
+			}
+			
+			$this->serveFile($path, $mime);
+			
+			
+		} else { /* OR REDIRECT */
 
-		return;
+			$proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
+			$domain = $site->getUnixName() . "." . GlobalProperties::$URL_UPLOAD_DOMAIN;
+			
+			header ('HTTP/1.1 301 Moved Permanently');
+			header ("Location: ${proto}://${domain}/local--${file}");
+		}
 	}
 }

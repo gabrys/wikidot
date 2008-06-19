@@ -146,6 +146,8 @@ class GlobalProperties {
 	public static $URL_HOST;
 	public static $URL_HOST_PREG;
 	public static $URL_DOMAIN_PREG;
+	public static $URL_UPLOAD_DOMAIN = null;
+	public static $URL_UPLOAD_DOMAIN_PREG;
 	
 	/**
 	 * set some default values 
@@ -154,7 +156,7 @@ class GlobalProperties {
 		self::$URL_HOST = 'www.'.self::$URL_DOMAIN;
 		self::$URL_HOST_PREG = preg_quote(self::$URL_HOST);
 		self::$URL_DOMAIN_PREG = preg_quote(self::$URL_DOMAIN);
-		if (! isset(self::$URL_UPLOAD_DOMAIN)) {
+		if (! self::$URL_UPLOAD_DOMAIN) {
 			self::$URL_UPLOAD_DOMAIN = 'wdupload.' . self::$URL_DOMAIN;
 		}
 		self::$URL_UPLOAD_DOMAIN_PREG = preg_quote(self::$URL_UPLOAD_DOMAIN);
