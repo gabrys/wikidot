@@ -158,7 +158,7 @@ class GlobalProperties {
 			self::$URL_UPLOAD_DOMAIN = 'wdupload.' . self::$URL_DOMAIN;
 		}
 		self::$URL_UPLOAD_DOMAIN_PREG = preg_quote(self::$URL_UPLOAD_DOMAIN);
-		if(! isset(self::$SESSION_COOKIE_DOMAIN)) {
+		if(! self::$SESSION_COOKIE_DOMAIN) {
 			self::$SESSION_COOKIE_DOMAIN = '.'.self::$URL_DOMAIN;
 		}
 	}
