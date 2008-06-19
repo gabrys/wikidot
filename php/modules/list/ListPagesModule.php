@@ -220,11 +220,38 @@ class ListPagesModule extends SmartyModule {
                     $tagsAll[] = substr($t, 1);
                 } elseif (substr($t, 0, 1) == '-') {
                     $tagsNone[] = substr($t, 1);
+                } elseif($t == '=') {
+                    /* It means: any tags of the current page. */
+                    if($runData->getTemp('page')){
+                        $pageId = $runData->getTemp('page')->getPageId();
+                        $co = new Criteria();
+            			$co->add("page_id", $pageId);
+            			$co->addOrderAscending("tag");
+            			$tagso = DB_PageTagPeer::instance()->select($co);
+            			foreach($tagso as $to){
+            				$tagsAny[] = $to->getTag();	
+            			}
+            			if(count($tagsAny) == 0) {
+            			    /*
+            			     * If someone uses the '=' tag, the line below guarantees that
+            			     * only pages that DO have tags and share at least one similar tag with the 
+            			     * current page are listed.
+            			     */
+            			    $tagsAny[] = '   ';
+            			}
+                    }
                 } else {
                     $tagsAny[] = $t;
                 }
             }
             
+            /*
+             * One more condition: if $tagString is equal to "=" only (which means "similar pages by tags),
+             * it is reasonable to drop current page from being displayed.
+             */
+            if($tagString == '=' && $runData->getTemp('page')) {
+                $c->add('page_id', $runData->getTemp('page')->getPageId(), '!=');
+            }
             /* Create extra conditions to the SELECT */
             
             /* ANY */
