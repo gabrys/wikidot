@@ -50,11 +50,10 @@ class UploadedFileFlowController extends PrivateFileFlowController {
 		
 		$path = WIKIDOT_ROOT.'/web/files--sites/'.$site->getUnixName().'/'.$file;
 		
-		$mime_secure = $this->fileMime($path, true);
 		$mime_insecure = $this->fileMime($path, false);
 		
-		if ($mime_insecure == $mime_secure || $secure_domain) {
-			$this->serveFile($path, $mime_secure);
+		if ($secure_domain) {
+			$this->serveFile($path, $mime_insecure);
 			return;
 		}
 		
