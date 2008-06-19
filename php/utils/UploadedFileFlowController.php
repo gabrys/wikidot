@@ -62,7 +62,7 @@ class UploadedFileFlowController extends PrivateFileFlowController {
 		$domain = $site->getUnixName() . "." . GlobalProperties::$URL_UPLOAD_DOMAIN;
 		
 		header ('HTTP/1.1 301 Moved Permanently');
-		header ("Location: ${proto}://${domain}/local--files/${file}");
+		header ("Location: ${proto}://${domain}/local--${file}");
 
 		return;
 	}
