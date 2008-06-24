@@ -11,20 +11,30 @@ class UploadedFileFlowController extends PrivateFileFlowController {
 		
 		$siteHost = $_SERVER['HTTP_HOST'];
 		
-		$secure_domain = false;
-		
-		// manage the special trusted upload domain
-		if (preg_match("/^[^.]*\." . GlobalProperties::$URL_UPLOAD_DOMAIN_PREG . "$/", $siteHost)) {
-			$secure_domain = true;
-			$siteHost = preg_replace("/" . GlobalProperties::$URL_UPLOAD_DOMAIN_PREG . "$/", GlobalProperties::$URL_DOMAIN, $siteHost);
+		/* Redirect everything outside the secure domain to corresponding secure domain */
+
+		if (! preg_match("/^[^.]*\." . GlobalProperties::$URL_UPLOAD_DOMAIN_PREG . "$/", $siteHost)) {
+
+			$proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
+			$domain = $this->getSite($siteHost)->getUnixName() . "." . GlobalProperties::$URL_UPLOAD_DOMAIN;
+			$file = $_SERVER['QUERY_STRING'];
+			
+			header ('HTTP/1.1 301 Moved Permanently');
+			header ("Location: ${proto}://${domain}/local--${file}");
+			
+			/* Just redirect, don't serve anything */
+			return;
 		}
+		
+		/* Here we are in the secure domain */
+
+		$siteHost = preg_replace("/" . GlobalProperties::$URL_UPLOAD_DOMAIN_PREG . "$/", GlobalProperties::$URL_DOMAIN, $siteHost);
 		
 		$site = $this->getSite($siteHost);
 		
 		if (! $site) {
-			$content = file_get_contents(WIKIDOT_ROOT."/files/site_not_exists.html");
-			echo $content;
-			return $content;
+			$this->serveFile(WIKIDOT_ROOT."/files/site_not_exists.html", "text/html");
+			return;
 		}
 		
 		$runData->setTemp("site", $site);	
@@ -41,45 +51,37 @@ class UploadedFileFlowController extends PrivateFileFlowController {
 		$file = preg_replace("|^/*|", "", $file);
 		
 		if (! $file) {
-			exit();
+			return;
 		}
 		
 		$dir = array_shift(explode("/", $file));
 		
+		/* Check permissions for uplodade files and resized images */
+
 		if ($dir == "resized-images" || $dir == "files") {
 			
 			if (! $this->userAllowed($runData->getUser(), $site)) {
 				header("HTTP/1.0 401 Unauthorized");
 				echo "Not authorized. This is a private site with access restricted to its members.";
-				exit();
+				return;
 			}
-				
+			
 		}
 		
+		/* file path */
 		$path = WIKIDOT_ROOT.'/web/files--sites/'.$site->getUnixName().'/'.$file;
 		
-		if ($secure_domain) { /* SERVE FILE */
-			
-			$path = WIKIDOT_ROOT.'/web/files--sites/'.$site->getUnixName().'/'.$file;
-			
-			if ($dir == "theme") {
-				$mime = "text/css";
-			}
-			
-			if (! $mime) {
-				$mime = $this->fileMime($path, false);
-			}
-			
-			$this->serveFile($path, $mime);
-			
-			
-		} else { /* OR REDIRECT */
-
-			$proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
-			$domain = $site->getUnixName() . "." . GlobalProperties::$URL_UPLOAD_DOMAIN;
-			
-			header ('HTTP/1.1 301 Moved Permanently');
-			header ("Location: ${proto}://${domain}/local--${file}");
+		/* guess/set the mime type for the file */
+		if ($dir == "theme") {
+			$mime = "text/css";
 		}
+		
+		if (! isset($mime)) {
+			$mime = $this->fileMime($path, false);
+		}
+		
+		/* serve file */
+		$this->serveFile($path, $mime);
+		
 	}
 }
