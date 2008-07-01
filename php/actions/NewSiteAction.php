@@ -129,6 +129,17 @@ class NewSiteAction extends SmartyAction {
 		
 		$site->setPrivate($private);
 		
+		if($private){
+			// change file flag too
+			$flagDir = WIKIDOT_ROOT.'/web/files--sites/'.$site->getUnixName().'/flags';
+			$flagFile = $flagDir.'/private';
+			mkdirfull($flagDir); //just to make sure
+			
+			if(!file_exists($flagFile)){
+				file_put_contents($flagFile, "private");
+			}	
+		}
+		
 		$site->save();
 		
 		$dup->addExcludedCategory("forum"); // should be initialized independently
