@@ -78,7 +78,7 @@ class ForumViewCategoryModule extends SmartyModule {
 	}
 	
 	public function build($runData){
-	
+		
 		$site = $runData->getTemp("site");
 		$pl = $runData->getParameterList();
 		$categoryId = $pl->getParameterValue("c");
@@ -118,10 +118,12 @@ class ForumViewCategoryModule extends SmartyModule {
 		$c->add("category_id", $categoryId);
 		$c->add("site_id", $site->getSiteId());
 		$c->addOrderDescending("sticky");
+		
 		if($sort == "start"){
 			$c->addOrderDescending("thread_id");
 		}else{
-			$c->addOrderDescending("last_post_id");
+			$c->addOrderDescending("last_post_id", "NULLS LAST");
+			$c->addOrderDescending("thread_id");
 		}
 		$c->setLimit($perPage, $offset);
 		

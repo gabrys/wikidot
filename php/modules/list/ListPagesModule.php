@@ -371,6 +371,20 @@ class ListPagesModule extends SmartyModule {
             case 'titleAsc':
                 $c->addOrderAscending("COALESCE(title, unix_name)");
                 break;
+            case 'ratingAsc':
+            	$c->addOrderAscending('rate');
+            	break;
+            case 'ratingDesc':
+            	$c->addOrderDescending('rate');
+            	break;
+            case 'pageLengthAsc':
+            	$c->addJoin('source_id', 'page_source.source_id');
+            	$c->addOrderAscending('char_length(page_source.text)');
+            	break;
+            case 'pageLengthDesc':
+            	$c->addJoin('source_id', 'page_source.source_id');
+            	$c->addOrderDescending('char_length(page_source.text)');
+            	break;
             default:
             case 'dateCreatedDesc':
                 $c->addOrderDescending('page_id');
@@ -490,6 +504,13 @@ class ListPagesModule extends SmartyModule {
                 $this, 
                 '_handleFirstParagraph'), $b);
             
+            /* %%rating%% */
+            $b = str_ireplace('%%rating%%', $page->getRate(), $b);
+                
+             /* %%comments%% */
+            $b = preg_replace_callback("/%%comments%%/i", array(
+                $this, '_handleComementsCount'), $b);
+                
             /* %%page_unix_name%% */
             $b = str_ireplace('%%page_unix_name%%', $page->getUnixName(), $b);
             
@@ -666,6 +687,18 @@ class ListPagesModule extends SmartyModule {
             return _('//no tags found for this page//');
         }
         return implode(' ', $t2);
+    }
+    
+    private function _handleComementsCount($m){
+    	$page = $this->_tmpPage;
+    	$threadId = $page->getThreadId();
+    	if($threadId) {
+    		$thread = DB_ForumThreadPeer::instance()->selectByPrimaryKey($threadId);
+    	}
+    	if($thread) {
+    		return $thread->getNumberPosts();
+    	}
+    	return 0;
     }
 
     public function processPage($out, $runData) {

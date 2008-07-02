@@ -25,8 +25,8 @@ url.rewrite-once = (
 	
 	# forums
 		"^/forum/start(.*)$"					=> "index.php?wiki__WikiScreen/wiki_page/forum:start$1",
-		"^/forum/t-([0-9]+)(/.*)?$"				=> "index.php?wiki__WikiScreen/wiki_page/forum:thread/t/$1/",
-		"^/forum/c-([0-9]+)(/.*)?$" 				=> "index.php?wiki__WikiScreen/wiki_page/forum:category/c/$1/",
+		"^/forum/t-([0-9]+)(/.*)?$"				=> "index.php?wiki__WikiScreen/wiki_page/forum:thread/t/$1$2",
+		"^/forum/c-([0-9]+)(/.*)?$" 				=> "index.php?wiki__WikiScreen/wiki_page/forum:category/c/$1$2",
 	
 	# feeds for forum
 		"^/feed/forum/t\-([0-9]+)\.xml$"			=> "feed.php?feed__ForumThreadPostsFeed/t/$1",

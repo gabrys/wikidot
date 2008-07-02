@@ -193,16 +193,16 @@ class Criteria{
 	 * Add order element (ascending)
 	 * @param string $columnName 
 	 */
-	public function addOrderAscending($columnName){
-		$this->order["$columnName"] = "ASC";
+	public function addOrderAscending($columnName, $extra = ''){
+		$this->order["$columnName"] = "ASC" . ($extra?(' '.$extra):'');
 	}
 	
 	/**
 	 * Add order element (descending)
 	 * @param string $columnName 
 	 */
-	public function addOrderDescending($columnName){
-		$this->order["$columnName"] = "DESC";
+	public function addOrderDescending($columnName, $extra = ''){
+		$this->order["$columnName"] = "DESC" . ($extra?(' '.$extra):'');
 	}
 	
 	/**
