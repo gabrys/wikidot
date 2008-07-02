@@ -122,7 +122,8 @@ class ForumViewCategoryModule extends SmartyModule {
 		if($sort == "start"){
 			$c->addOrderDescending("thread_id");
 		}else{
-			$c->addOrderDescending("last_post_id", "NULLS LAST");
+			//$c->addOrderDescending("last_post_id", "NULLS LAST"); // sorry, requires postgresql 8.3?
+			$c->addOrderDescending('COALESCE(last_post_id, 0)');
 			$c->addOrderDescending("thread_id");
 		}
 		$c->setLimit($perPage, $offset);

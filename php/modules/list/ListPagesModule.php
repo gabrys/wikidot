@@ -150,6 +150,13 @@ class ListPagesModule extends SmartyModule {
         $order = $pl->getParameterValue("order");
         $limit = $pl->getParameterValue("limit");
         $perPage = $pl->getParameterValue("perPage");
+        $skipCurrent = $pl->getParameterValue('skipCurrent');
+        
+        if($skipCurrent && ($skipCurrent == 'yes' || $skipCurrent == 'true')) {
+            $skipCurrent = true;
+        } else {
+            $skipCurrent = false;
+        }
         
         $categories = array();
         $categoryNames = array();
@@ -249,7 +256,11 @@ class ListPagesModule extends SmartyModule {
              * One more condition: if $tagString is equal to "=" only (which means "similar pages by tags),
              * it is reasonable to drop current page from being displayed.
              */
-            if($tagString == '=' && $runData->getTemp('page')) {
+            if($tagString == '=') {
+                $skipCurrent = true;
+            }
+            
+            if($skipCurrent && $runData->getTemp('page') && $runData->getTemp('page')->getPageId()) {
                 $c->add('page_id', $runData->getTemp('page')->getPageId(), '!=');
             }
             /* Create extra conditions to the SELECT */
@@ -514,6 +525,17 @@ class ListPagesModule extends SmartyModule {
             /* %%page_unix_name%% */
             $b = str_ireplace('%%page_unix_name%%', $page->getUnixName(), $b);
             
+            /* %%category%% */
+            
+            if(strpos( $page->getUnixName(), ":") != false){
+				$tmp0 = explode(':',$page->getUnixName()); 
+				$categoryName00 = $tmp0[0];
+			} else {
+				$categoryName00 = "_default";
+			}
+            
+			$b = str_ireplace('%%category%%', $categoryName00, $b);
+			
             /* %%link%% */
             $b = str_ireplace('%%link%%', 'http://' . $site->getDomain().'/'.$page->getUnixName(), $b);
             
