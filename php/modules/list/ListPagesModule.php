@@ -514,6 +514,11 @@ class ListPagesModule extends SmartyModule {
             $b = preg_replace_callback("/%%first_paragraph%%/i", array(
                 $this, 
                 '_handleFirstParagraph'), $b);
+                
+            /* %%preview%% */
+            $b = preg_replace_callback("/%%preview(?:\(([0-9]+)\))?%%/i", array(
+                $this, 
+                '_handlePreview'), $b);
             
             /* %%rating%% */
             $b = str_ireplace('%%rating%%', $page->getRate(), $b);
@@ -709,6 +714,16 @@ class ListPagesModule extends SmartyModule {
             return _('//no tags found for this page//');
         }
         return implode(' ', $t2);
+    }
+    
+    private function _handlePreview($m) {
+    	$page = $this->_tmpPage;
+    	$length = 200;
+    	if(isset($m[1])){
+    		$length = $m[1];
+    	}
+    	
+    	return $page->getPreview($length);
     }
     
     private function _handleComementsCount($m){
