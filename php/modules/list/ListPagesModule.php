@@ -34,14 +34,21 @@ class ListPagesModule extends SmartyModule {
     private $_tmpPage;
     
     private $_vars = array();
+    
+    private $_pl;
 
     public function render($runData) {
         
         $site = $runData->getTemp("site");
         $pl = $runData->getParameterList();
-        $categoryName = $pl->getParameterValue("category", "MODULE", "AMODULE");
+        $this->_pl = $pl;
+        /*
+         * Read all parameters.
+         */
+        
+        $categoryName = $this->_readParameter('category', false);
         if(!$categoryName) {
-            $categoryName = $pl->getParameterValue("categories", "MODULE", "AMODULE");
+            $categoryName = $this->_readParameter('categories', false);
         }
         
         $categoryName = strtolower($categoryName);
@@ -140,17 +147,17 @@ class ListPagesModule extends SmartyModule {
         $pl = $runData->getParameterList();
         $site = $runData->getTemp("site");
         
-        $categoryName = $pl->getParameterValue("category", "MODULE", "AMODULE");
+    	$categoryName = $this->_readParameter('category', false);
         if(!$categoryName) {
-            $categoryName = $pl->getParameterValue("categories", "MODULE", "AMODULE");
+            $categoryName = $this->_readParameter('categories', false);
         }
         
         $categoryName = strtolower($categoryName);
         
-        $order = $pl->getParameterValue("order");
-        $limit = $pl->getParameterValue("limit");
-        $perPage = $pl->getParameterValue("perPage");
-        $skipCurrent = $pl->getParameterValue('skipCurrent');
+        $order = $this->_readParameter("order", true);
+        $limit = $this->_readParameter("limit", true);
+        $perPage = $this->_readParameter("perPage", true);
+        $skipCurrent = $this->_readParameter('skipCurrent');
         
         if($skipCurrent && ($skipCurrent == 'yes' || $skipCurrent == 'true')) {
             $skipCurrent = true;
@@ -209,9 +216,9 @@ class ListPagesModule extends SmartyModule {
         
         /* Handle tags! */
         
-        $tagString = $pl->getParameterValue("tag");
+        $tagString = $this->_readParameter("tag", true);
         if (!$tagString) {
-            $tagString = $pl->getParameterValue("tags");
+            $tagString = $this->_readParameter("tags", true);
         }
         
         if ($tagString) {
@@ -301,13 +308,13 @@ class ListPagesModule extends SmartyModule {
         
         /* Handle date ranges. */
         
-        $date = $pl->getParameterValue("date");
+        $date = $this->_readParameter("date", true);
         
         $dateA = array();
-        if (preg_match(';^[0-9]{4};', $date)) {
+        if (preg_match(';^[0-9]{4}$;', $date)) {
             $dateA['year'] = $date;
         }
-        if (preg_match(';^[0-9]{4}\.[0-9]{1,2};', $date)) {
+        if (preg_match(';^[0-9]{4}\.[0-9]{1,2}$;', $date)) {
             $dateS = explode('.', $date);
             $dateA['year'] = $dateS[0];
             $dateA['month'] = $dateS[1];
@@ -319,6 +326,19 @@ class ListPagesModule extends SmartyModule {
         
         if (isset($dateA['month'])) {
             $c->add('EXTRACT(MONTH FROM date_created)', $dateA['month']);
+        }
+        
+        /* Handle date "last X day(s)/week(s)/month(s)" */
+        
+        $m = array();
+        if (preg_match(';^last (?:([1-9][0-9]*) )?(day|week|month)s?$;', $date, $m)) {
+        	$dateObj = new ODate();
+        	$n = $m[1];
+        	if(!$n) {$n = 1;}
+        	$unit = $m[2];
+        	$convarray = array('day' => 86400, 'week' => 604800, 'month' => 2592000);
+        	$dateObj->subtractSeconds($n * $convarray[$unit]);
+        	$c->add('date_created', $dateObj, '>');
         }
         
         /* Handle pagination. */
@@ -388,6 +408,15 @@ class ListPagesModule extends SmartyModule {
             case 'ratingDesc':
             	$c->addOrderDescending('rate');
             	break;
+            /*
+            case 'commentsAsc':
+            	$c->addJoin('thread_id', 'forum_thread.thread_id', 'LEFT');
+            	$c->addOrderAscending('number_posts');
+            	break;
+            case 'commentsDesc':
+            	$c->addOrderDescending('number_posts');
+            	break;
+			*/
             case 'pageLengthAsc':
             	$c->addJoin('source_id', 'page_source.source_id');
             	$c->addOrderAscending('char_length(page_source.text)');
@@ -405,7 +434,7 @@ class ListPagesModule extends SmartyModule {
         $pages = DB_PagePeer::instance()->select($c);
         
         /* Process... */
-        $format = $pl->getParameterValue("module_body");
+        $format = $this->_readParameter("module_body");
         if (!$format) {
             $format = "" . "+ %%linked_title%%\n\n" . _("by") . " %%author%% %%date|%O ago (%e %b %Y, %H:%M %Z)%%\n\n" . "%%short%%";
         }
@@ -422,7 +451,7 @@ class ListPagesModule extends SmartyModule {
         //$template = $format;
         $items = array();
         
-        $separation = $pl->getParameterValue("separate", "MODULE", "AMODULE");
+        $separation = $this->_readParameter("separate");
         if ($separation == 'no' || $separation == 'false') {
             $separation = false;
         } else {
@@ -563,8 +592,8 @@ class ListPagesModule extends SmartyModule {
             $items[] = trim($b);
         }
         if (!$separation) {
-            $prependLine = $pl->getParameterValue('prependLine', 'MODULE', 'AMODULE');
-            $appendLine = $pl->getParameterValue('appendLine', 'MODULE', 'AMODULE');
+            $prependLine = $this->_readParameter('prependLine');
+            $appendLine = $this->_readParameter('appendLine');
             $wt = new WikiTransformation();
             $wt->setMode("list");
             $glue = "\n";
@@ -591,45 +620,59 @@ class ListPagesModule extends SmartyModule {
         
         /* Also build an URL for the feed. */
         
-        $url = 'http://' . $site->getDomain() . '/feed/pages';
-        if (count($categoryNames) > 0) {
-            $url .= '/category/' . urlencode(implode(',', $categoryNames));
-        }
-        if (isset($tags)) {
-            $url .= '/tags/' . urlencode(implode(',', $tags));
-        }
-        if (isset($date)) {
-            $url .= '/date/' . urlencode($date);
+        $rssTitle = $this->_readParameter('rss');
+        if(!$rssTitle){
+        	$rssTitle = $this->_readParameter('rssTitle');
         }
         
-        if ($order) {
-            $url .= '/order/' . urlencode($order);
-        }
-        
-        $erss = $pl->getParameterValue('rssEmbed');
-        if ($erss == 'no' || $erss == 'false') {
-            $erss = false;
-        } else {
-            $erss = true;
-        }
-        $srss = $pl->getParameterValue('rssShow');
-        if ($srss == 'no' || $srss == 'false') {
-            $srss = false;
-        } else {
-            $srss = true;
-        }
-        
-        $trss = $pl->getParameterValue('rssTitle');
-        if ($trss) {
-            $url .= '/t/' . urlencode($trss);
-        }
-        if ($erss) {
-            $this->_vars['rssUrl'] = $url;
-            $this->_vars['rssTitle'] = $trss;
-        }
-        if ($srss) {
-            $runData->contextAdd('rssUrl', $url);
-            $runData->contextAdd('rssTitle', $trss);
+        if($rssTitle !== null) {
+	        
+	        $url = 'http://' . $site->getDomain() . '/feed/pages';
+	        if (count($categoryNames) > 0) {
+	            $url .= '/category/' . urlencode(implode(',', $categoryNames));
+	        }
+	        if (isset($tags)) {
+	            $url .= '/tags/' . urlencode(implode(',', $tags));
+	        }
+	        
+	        /*
+	         * Ignore date in RSS generation.
+	         */
+	        /*
+	        if (isset($date)) {
+	            $url .= '/date/' . urlencode($date);
+	        }*/
+	        
+	        if ($order) {
+	            $url .= '/order/' . urlencode($order);
+	        }
+	        
+	        //$erss = $pl->getParameterValue('rssEmbed');
+	        //if ($erss == 'no' || $erss == 'false') {
+	        //    $erss = false;
+	        //} else {
+	        //    $erss = true;
+	        //}
+	        //$srss = $pl->getParameterValue('rssShow');
+	        //if ($srss == 'no' || $srss == 'false') {
+	        //    $srss = false;
+	        //} else {
+	        //    $srss = true;
+	        //}
+	        
+	        //$trss = $pl->getParameterValue('rssTitle');
+	        //if ($trss) {
+	        //    $url .= '/t/' . urlencode($trss);
+	        //}
+	        $url .= '/t/'  . urlencode($rssTitle);
+	        //if ($erss) {
+	            $this->_vars['rssUrl'] = $url;
+	            $this->_vars['rssTitle'] = $rssTitle;
+	        //}
+	        //if ($srss) {
+	            $runData->contextAdd('rssUrl', $url);
+	            $runData->contextAdd('rssTitle', $rssTitle);
+	        //}
         }
     }
 
@@ -738,6 +781,16 @@ class ListPagesModule extends SmartyModule {
     	return 0;
     }
 
+    protected function _readParameter($name, $fromUrl = false){
+    	$pl = $this->_pl;
+    	$val = $pl->getParameterValue($name, "MODULE", "AMODULE");
+    	if($fromUrl && $val == '@URL') {
+    		$val = $pl->resolveParameter($name, 'GET');
+    	}
+    	
+    	return $val;
+    }
+    
     public function processPage($out, $runData) {
         $pl = $runData->getParameterList();
         $pl->getParameterValue('t');

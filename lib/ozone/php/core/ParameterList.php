@@ -32,10 +32,13 @@ class ParameterList {
 	private $parameterArray = array ();
 	private $parameterTypes = array ();
 	private $parameterFrom = array();
+	
+	private $allParameters = array();
 
 	public function initParameterList($runData) {
 		
 		if($runData->isAjaxMode()){
+			$this->allParameters['AMODULE'] = array();
 			foreach ($_POST as $key => $value) {
 			  // 	if magic_quotes_gpc are set, reove escaping
 			 	if(get_magic_quotes_gpc()){
@@ -47,6 +50,7 @@ class ParameterList {
 				$this->parameterArray[$key] = $value;
 				$this->parameterTypes[$key] = "AMODULE";
 				$this->parameterFrom[$key] = 0; // 0 means "direct", + values means 'inherited'
+				$this->allParameters['AMODULE'][$key] = $value;
 				
 			}
 		} else{
@@ -59,17 +63,18 @@ class ParameterList {
 			}
 			
 			// now populate other parameters...
-			
+			$this->allParameters['GET'] = array();
 			for($i=1; $i<count($splited); $i+=2){
 				$key = $splited[$i];
 				$value=$splited[$i+1];
 				$this->parameterArray[$key] = urldecode($value);
 				$this->parameterTypes[$key] = "GET";
 				$this->parameterFrom[$key] = 0;
+				$this->allParameters['GET'][$key] = $value;
 			}
 
 			// POST parameters are not affected by mod_rewrite
-			
+			$this->allParameters['POST'] = array();
 			foreach ($_POST as $key => $value) {
 			  // 	if magic_quotes_gpc are set, reove escaping
 			 	if(get_magic_quotes_gpc()){
@@ -81,6 +86,7 @@ class ParameterList {
 				$this->parameterArray[$key] = $value;
 				$this->parameterTypes[$key] = "POST";
 				$this->parameterFrom[$key] = 0;
+				$this->allParameters['POST'][$key] = $value;
 			}
 		
 		}
@@ -137,6 +143,14 @@ class ParameterList {
 			}	
 		}	
 		return $out;
+	}
+	
+	public function resolveParameter($key, $from) {
+		if(isset($this->allParameters[$from][$key])) {
+			return $this->allParameters[$from][$key];
+		} else {
+ 			return null;
+		}
 	}
 
 }

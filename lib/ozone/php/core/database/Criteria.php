@@ -222,12 +222,12 @@ class Criteria{
 	 * @param string $localKey - name of the local key
 	 * @param string $foreignKey - name of the foreign key in the format "foreign_table.key"
 	 */
-	public function addJoin($localKey, $foreignKey){
+	public function addJoin($localKey, $foreignKey, $type = null){
 		if($this->joins === null){
 			$this->joins = array();	
 		}
 		$tmp = explode('.', $foreignKey);
-		$entry = array('localKey' => $localKey, 'foreignTable' =>$tmp[0], 'foreignKey' => $tmp[1]);
+		$entry = array('localKey' => $localKey, 'foreignTable' =>$tmp[0], 'foreignKey' => $tmp[1], 'type' => $type);
 		$this->joins[] = $entry;
 	}
 	
