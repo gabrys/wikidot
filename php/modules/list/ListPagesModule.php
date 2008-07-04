@@ -584,7 +584,7 @@ class ListPagesModule extends SmartyModule {
                 $wt->setMode("list");
                 $wt->setPage($page);
                 $b = $wt->processSource($b);
-                $b = "<div class=\"list-pages-item\"\n" . $b . "</div>";
+                $b = "<div class=\"list-pages-item\">\n" . $b . "</div>";
                 //$b = "[[div class=\"list-pages-item\"]]\n".$b."\n[[/div]]";
             }
             
@@ -621,7 +621,7 @@ class ListPagesModule extends SmartyModule {
         /* Also build an URL for the feed. */
         
         $rssTitle = $this->_readParameter('rss');
-        if(!$rssTitle){
+        if($rssTitle === null){
         	$rssTitle = $this->_readParameter('rssTitle');
         }
         
