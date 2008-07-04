@@ -296,7 +296,7 @@ class AccountMembershipAction extends SmartyAction {
 		
 		// validate unix name
 		$errors = array();
-		if($unixName === null || strlen($unixName)<3 || WDStringUtils::toUnixName($unixName) < 3){
+		if($unixName === null || strlen($unixName)<3 || strlen(WDStringUtils::toUnixName($unixName)) < 3){
 			$errors['unixname'] = _("Web address must be present and should be at least 3 characters long.");	
 		}elseif(strlen($unixName)>30){
 			$errors['unixname']	 = _("Web address name should not be longer than 30 characters.");
