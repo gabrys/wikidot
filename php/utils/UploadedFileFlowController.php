@@ -18,93 +18,119 @@
  * 
  * @category Wikidot
  * @package Wikidot
- * @version $Id: PrivateFileFlowController.php,v 1.5 2008/06/24 10:36:53 quake Exp $
+ * @version $Id: UploadedFileFlowController.php,v 1.2 2008/06/24 12:25:48 quake Exp $
  * @copyright Copyright (c) 2008, Wikidot Inc.
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
 
 class UploadedFileFlowController extends PrivateFileFlowController {
+	
+	protected function serveFileWithMime($path) {
+		
+		/* guess/set the mime type for the file */
+		if ($dir == "theme" || preg_match("/\.css$/", $path)) {
+			$mime = "text/css";
+		} else if (preg_match("/\.js$/", $path)) {
+			$mime = "text/javascript";
+		}
+		
+		if (! isset($mime)) {
+			$mime = $this->fileMime($path, true);
+		}
+		
+		$this->serveFile($path, $mime);
+	}
+	
 	public function process() {
 
 		Ozone ::init();
 		
 		$runData = new RunData();
 		$runData->init();
-		Ozone :: setRunData($runData);
+		Ozone::setRunData($runData);
 		
 		$siteHost = $_SERVER['HTTP_HOST'];
-		
-		/* Redirect everything outside the secure domain to corresponding secure domain */
-
-		if (! preg_match("/^[^.]*\." . GlobalProperties::$URL_UPLOAD_DOMAIN_PREG . "$/", $siteHost)) {
-
-			$proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
-			$domain = $this->getSite($siteHost)->getUnixName() . "." . GlobalProperties::$URL_UPLOAD_DOMAIN;
-			$file = $_SERVER['QUERY_STRING'];
-			
-			header ('HTTP/1.1 301 Moved Permanently');
-			header ("Location: ${proto}://${domain}/local--${file}");
-			
-			/* Just redirect, don't serve anything */
-			return;
-		}
-		
-		/* Here we are in the secure domain */
-
-		$siteHost = preg_replace("/" . GlobalProperties::$URL_UPLOAD_DOMAIN_PREG . "$/", GlobalProperties::$URL_DOMAIN, $siteHost);
-		
 		$site = $this->getSite($siteHost);
 		
 		if (! $site) {
-			$this->serveFile(WIKIDOT_ROOT."/files/site_not_exists.html", "text/html");
+			$this->siteNotExists();
 			return;
 		}
 		
-		$runData->setTemp("site", $site);	
-		//nasty global thing...
-		$GLOBALS['siteId'] = $site->getSiteId();
-		$GLOBALS['site'] = $site;
-
-		// handle session at the begging of procession
-		$runData->handleSessionStart();
-		
-		// Mangle the $file.
 		$file = $_SERVER['QUERY_STRING'];
-		$file = preg_replace("/\\?[0-9]*\$/", "", $file);
+		$file = preg_replace("/\\?.*\$/", "", $file);
 		$file = preg_replace("|^/*|", "", $file);
 		
 		if (! $file) {
+			$this->fileNotExists();
 			return;
 		}
 		
-		$dir = array_shift(explode("/", $file));
-		
-		/* Check permissions for uplodade files and resized images */
+		$path = $this->buildPath($site, $file);
 
-		if ($dir == "resized-images" || $dir == "files") {
+		if ($this->isUploadDomain($siteHost)) {
 			
-			if (! $this->userAllowed($runData->getUser(), $site)) {
-				header("HTTP/1.0 401 Unauthorized");
-				echo "Not authorized. This is a private site with access restricted to its members.";
+			if ($this->publicArea($site, $file)) {
+				
+				$this->serveFileWithMime($path);
 				return;
+				
+			} else {
+			
+				/* NON PUBLIC AREA -- CHECK PERMISSION! */
+	
+				if (preg_match("/\\?ukey=(.*)\$/", $_SERVER['QUERY_STRING'], $matches)) {
+					setcookie("ucookie", $matches[1], 0, "/", $siteHost);
+					$this->redirect($site, GlobalProperties::$URL_UPLOAD_DOMAIN, $file);
+					return;
+				}
+				if (! isset($_COOKIE["ucookie"])) {
+					$this->redirect($site, GlobalProperties::$URL_DOMAIN, $file);
+					return;
+				}
+				
+				$ucookie = DB_UcookiePeer::instance()->selectByPrimaryKey($_COOKIE["ucookie"]);
+				
+				if (! $ucookie || ! $ucookie->getOzoneSession() || ! $ucookie->getOzoneSession()->getOzoneUser()) {
+					$this->redirect($site, GlobalProperties::$URL_DOMAIN, $file);
+					return;
+				}
+				
+				$user = $ucookie->getOzoneSession()->getOzoneUser();
+				
+				if ($this->userAllowed($user, $site, $file)) {
+					$this->serveFileWithMime($path);
+					return;
+				}
 			}
 			
+		} else {
+
+			/* NOT UPLOAD DOMAIN, so it's *.wikidot.com or a custom domain */
+			
+			if ($this->publicArea($site, $file)) {
+				
+				$this->redirect($site, GlobalProperties::$URL_UPLOAD_DOMAIN, $file);
+				return;
+				
+			} else {
+				
+				$runData->handleSessionStart();
+
+				if ($this->userAllowed($runData->getUser(), $site, $file)) {
+					
+					$ucookie = new DB_Ucookie();
+					$ucookie->generate($site, $runData->getSession());
+					$ucookie->save();
+					
+					$this->redirect($site, GlobalProperties::$URL_UPLOAD_DOMAIN, $file, $ucookie->getUcookieId());
+					return;
+					
+				}
+			}
 		}
 		
-		/* file path */
-		$path = WIKIDOT_ROOT.'/web/files--sites/'.$site->getUnixName().'/'.$file;
-		
-		/* guess/set the mime type for the file */
-		if ($dir == "theme") {
-			$mime = "text/css";
-		}
-		
-		if (! isset($mime)) {
-			$mime = $this->fileMime($path, false);
-		}
-		
-		/* serve file */
-		$this->serveFile($path, $mime);
+		$this->forbidden();
 		
 	}
 }

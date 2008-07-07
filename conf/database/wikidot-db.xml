@@ -213,6 +213,16 @@
 		
 	</table>
 	
+	<!-- cookies for granting access to uploaded files -->
+	<table name="ucookie">
+		<column name="ucookie_id" type="varchar(100)" primaryKey="true"/>
+		<column name="site_id" type="int"/>
+		<column name="session_id" type="varchar(60)"/>
+		<column name="date_granted"  type="timestamp"/>
+		<foreignReference localKey="site_id" foreignTable="site" foreignKey="site_id" />
+		<foreignReference localKey="session_id" foreignTable="ozone_session" foreignKey="session_id" />
+	</table>
+	
 	<!-- used to store files history for the given page -->
 	<table name="files_event">
 		<column name="file_event_id" type="serial" primaryKey="true"/>

@@ -25,13 +25,63 @@
 
 class PrivateFileFlowController extends WebFlowController {
 
+	protected function isUploadDomain($siteHost) {
+		
+		if (preg_match("/^[^.]*\." . GlobalProperties::$URL_UPLOAD_DOMAIN_PREG . "$/", $siteHost)) {
+			return true;
+		}
+		
+		return false;
+		
+	}
+	
+	protected function siteNotExists() {
+		$this->serveFile(WIKIDOT_ROOT."/files/site_not_exists.html", "text/html");
+	}
+	
+	protected function fileNotExists() {
+		$this->serveFile(WIKIDOT_ROOT."/files/file_not_exists.html", "text/html");
+	}
+	
+	protected function forbidden() {
+		header("HTTP/1.0 401 Unauthorized");
+		header("Content-type: text/html; charset=utf-8");
+		echo "Not authorized. This is a private site with access restricted to its members.";
+	}
+	
+	/**
+	 * Redirects browser to certain URL build from site name, domain and file name
+	 *
+	 * @param DB_Site $site site to get name from
+	 * @param string $domain domain to use
+	 * @param string $file file to redirect to
+	 * @param string $key optional key to set
+	 */
+	protected function redirect($site, $domain, $file, $key = null) {
+		
+		$proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
+		$host = $site->getUnixName() . "." . $domain;
+		
+		$url = "${proto}://${host}/local--${file}";
+		
+		if ($key) {
+			$url .= "?ukey=" . urlencode($key);
+		}
+		
+		header('HTTP/1.1 301 Moved Permanently');
+		header("Location: $url");
+		
+	}
+	
 	protected function getSite($siteHost) {
 		
 		$memcache = Ozone::$memcache;
 		
-		if(preg_match("/^([a-zA-Z0-9\-]+)\." . GlobalProperties::$URL_DOMAIN_PREG . "$/", $siteHost, $matches)==1){
-			$siteUnixName=$matches[1];
+		$regexp = "/^([a-zA-Z0-9\-]+)\.(" . GlobalProperties::$URL_DOMAIN_PREG . "|" . GlobalProperties::$URL_UPLOAD_DOMAIN_PREG . ")$/";
+		if (preg_match($regexp, $siteHost, $matches) == 1) {
 			// select site based on the unix name
+			
+			$siteUnixName=$matches[1];
 			$mcKey = 'site..'.$siteUnixName;
 			$site = $memcache->get($mcKey); 
 			if($site == false){
@@ -43,6 +93,7 @@ class PrivateFileFlowController extends WebFlowController {
 			}
 		} else {
 			// select site based on the custom domain
+			
 			$mcKey = 'site_cd..'.$siteHost;
 			$site = $memcache->get($mcKey);
 			if($site == false){	
@@ -60,30 +111,57 @@ class PrivateFileFlowController extends WebFlowController {
 		return $site;
 	}
 	
-	protected function userAllowed($user, $site) {
-	
+	/**
+	 * checks whether file is from a public area (public wiki or non-restricted directory)
+	 *
+	 * @param DB_Site $site
+	 * @param string $file
+	 * @return boolean
+	 */
+	protected function publicArea($site, $file) {
 		if (! $site) {
-			return false; 
+			return false;
 		}
 		
 		if (! $site->getPrivate()) { // site is public
 			return true;
 		}
-	
-		if (! $user) {
-			return false; 
-		}
 		
-		if ($user->getSuperAdmin() || $user->getSuperModerator()) { // user is a superuser
+		$dir = array_shift(explode("/", $file));
+		if ($dir != "resized-images" && $dir != "files") {
 			return true;
 		}
 		
-		// check if member
+		return false;
+	}
+	
+	protected function member($user, $site) {
+		if (! $site || ! $user) {
+			return false;
+		}
+		
 		$c = new Criteria();
 		$c->add("site_id", $site->getSiteId());
 		$c->add("user_id", $user->getUserId());
 		
 		if (DB_MemberPeer::instance()->selectOne($c)) { // user is a member of the wiki
+			return true;
+		}
+		
+		return false;
+	}
+	
+	protected function userAllowed($user, $site, $file) {
+	
+		if ($this->publicArea($site, $file)) {
+			return true;
+		}
+		
+		if (! $user) {
+			return false;
+		}
+		
+		if ($user->getSuperAdmin() || $user->getSuperModerator() || $this->member($user, $site)) {
 			return true;
 		}
 		
@@ -115,11 +193,13 @@ class PrivateFileFlowController extends WebFlowController {
 	}
 	
 	protected function serveFile($path, $mime) {
-		if(file_exists($path)){
+		if (file_exists($path)) {
   			if($mime){
 				header("Content-Type: ".$mime);
   			}
 			$this->readfile($path);
+		} else {
+			$this->serveFile(WIKIDOT_ROOT."/files/file_not_exists.html", "text/html");
 		}
 	}
 	
@@ -129,6 +209,10 @@ class PrivateFileFlowController extends WebFlowController {
 		} else {
 			readfile($path);
 		}
+	}
+	
+	protected function buildPath($site, $file) {
+		return WIKIDOT_ROOT.'/web/files--sites/'.$site->getUnixName().'/'.$file;
 	}
 	
 	public function process() {
@@ -156,9 +240,8 @@ class PrivateFileFlowController extends WebFlowController {
 		$site = $this->getSite($siteHost);
 		
 		if($site == null){
-			$content = file_get_contents(WIKIDOT_ROOT."/files/site_not_exists.html");
-			echo $content;
-			return $content;
+			$this->serveFile(WIKIDOT_ROOT."/files/site_not_exists.html", "text/html");
+			return;
 		} 
 		
 		$runData->setTemp("site", $site);	
@@ -169,20 +252,19 @@ class PrivateFileFlowController extends WebFlowController {
 		// handle session at the begging of procession
 		$runData->handleSessionStart();
 
-		if (! $this->userAllowed($runData->getUser(), $site)) {
+		$file = "files/" . $_SERVER['QUERY_STRING'];
+
+		if (! $this->userAllowed($runData->getUser(), $site, $file)) {
 			header("HTTP/1.0 401 Unauthorized");
 			echo "Not authorized. This is a private site with access restricted to its members.";
 			exit();
 		}
-
-		$file = $_SERVER['QUERY_STRING'];
 		
 		if(!$file){exit();}
 		
-		$path = WIKIDOT_ROOT.'/web/files--sites/'.$site->getUnixName().'/files/'.$file;
 		
-		$mime = $this->fileMime($path);
-		
+		$path = $this->buildPath($site, "files/" . $file);
+		$mime = $this->fileMime($path, false); // no HTML MIME please!
 		$this->serveFile($path, $mime);
 
 		return;
