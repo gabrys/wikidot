@@ -30,8 +30,8 @@ url.rewrite-once = (
 	
 	# feeds for forum
 		"^/feed/forum/t\-([0-9]+)\.xml$"			=> "feed.php?feed__ForumThreadPostsFeed/t/$1",
-		"^/feed/forum/ct\-([0-9]+)\.xml$"			=> "feed.php?feed__ForumCategoryThreadsFeed/c/$1",
-		"^/feed/forum/cp\-([0-9]+)\.xml$"			=> "feed.php?feed__ForumCategoryPostsFeed/c/$1",
+		"^/feed/forum/ct\-([0-9]+)\.xml$"			=> "feed.php?feed__ForumCategoryThreadsFeed/c/$1$2",
+		"^/feed/forum/cp\-([0-9]+)\.xml$"			=> "feed.php?feed__ForumCategoryPostsFeed/c/$1$2",
 		"^/feed/forum/posts\.xml$"				=> "feed.php?feed__ForumPostsFeed",
 		"^/feed/forum/threads\.xml$"				=> "feed.php?feed__ForumThreadsFeed",
 	
