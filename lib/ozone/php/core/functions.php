@@ -141,6 +141,10 @@ function findNodeWithAttribute($list, $attrName, $attrValue) {
  */
 function mkdirfull($dir) {
     //split by '/' and check if all subsequent parrent directories exist. if not - create them all.
+    /* remove duplicated '/', e.g. in /path//subdir */
+	/* and remove trailing slash too. */
+	$dir = preg_replace(';/{2,};', '/', $dir);
+	$dir = preg_replace(';/$', '', $dir);
     $splited = split('/', $dir);
     $n = count($splited);
     $dir0 = '';

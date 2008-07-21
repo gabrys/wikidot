@@ -339,6 +339,7 @@ class AccountMembershipAction extends SmartyAction {
 		@rename(WIKIDOT_ROOT.'/web/files--sites/'.$oldUnixName, WIKIDOT_ROOT.'/web/files--sites/'.$site->getUnixName());
 		
 		$site->setDeleted(false);
+		$site->setCustomDomain(null);
 		$site->save();
 		
 		$db->commit();

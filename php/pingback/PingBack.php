@@ -113,7 +113,8 @@ class PingBack {
 		
 		$ret["title"] = $this->getExternalTitle();
 		$ret["context"] = $this->getExternalContext();
-		
+		$ret['extrnalURI'] = $this->externalURI;
+		$ret['wikidotURI'] = $this->wikidotURI;
 		return $ret;
 	}
 	

@@ -165,15 +165,17 @@ class ListPagesModule extends SmartyModule {
             $skipCurrent = false;
         }
         
+    	$pageUnixName = $runData->getTemp('pageUnixName');
+        if (!$pageUnixName) {
+            $pageUnixName = $pl->getParameterValue('page_unix_name'); // from preview
+       	}
+        
         $categories = array();
         $categoryNames = array();
         if ($categoryName != '*') {
             if (!$categoryName) {
                 /* No category name specified, use the current category! */
-                $pageUnixName = $runData->getTemp('pageUnixName');
-                if (!$pageUnixName) {
-                    $pageUnixName = $pl->getParameterValue('page_unix_name'); // from preview
-                }
+                
                 if (strpos($pageUnixName, ":") != false) {
                     $tmp0 = explode(':', $pageUnixName);
                     $categoryName = $tmp0[0];
@@ -382,6 +384,9 @@ class ListPagesModule extends SmartyModule {
         
         /* Pager's base url */
         $url = $_SERVER['REQUEST_URI'];
+        if(($url == '' || $url == '/') && isset($pageUnixName)) {
+        	$url = '/' . $pageUnixName;
+        }
         $url = preg_replace(';(/p/[0-9]+)|$;', '/p/%d', $url, 1);
         $runData->contextAdd("pagerUrl", $url);
         

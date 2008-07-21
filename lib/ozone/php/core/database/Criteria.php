@@ -210,7 +210,7 @@ class Criteria{
 	 * @param string $field
 	 */
 	public function addGroupBy($field){
-		$this->groupBy[]="field";
+		$this->groupBy[]=$field;
 	}
 
 	public function clearOrder(){
@@ -286,15 +286,8 @@ class Criteria{
 	public function groupByString(){
 		if(count($this->groupBy) >0){
 			$out = 'GROUP BY ';
-			$first = true;
-			foreach($this->groupBy as $value){
-				if(!$first){
-					$out .= ", ";
-				}else{
-					$first = false;
-				}
-				$out .= " $value ";	
-			}		
+			$out .= implode(', ', $this->groupBy);
+			return $out;
 		}else{
 			return null;
 		}

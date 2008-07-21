@@ -338,9 +338,9 @@ class PagesFeed extends FeedScreen {
     	    $b .= $cont ."\n\n";
     	  	
 		    /* %%author%% */
-		    
-		    $user = DB_OzoneUserPeer::instance()->selectByPrimaryKey($page->getOwnerUserId());
-			if($user->getUserId() > 0){
+		    $ownerUserId = $page->getOwnerUserId();
+		    if($ownerUserId){
+		    	$user = DB_OzoneUserPeer::instance()->selectByPrimaryKey($ownerUserId);
 			    $userString = '[[*user '.$user->getNickName().']]';
 			} else {
 			    $userString = 'Anonymous user';
