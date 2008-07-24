@@ -265,6 +265,6 @@ div > #page-title,
 	margin-right: 20px;
 }
 
-#page-content .yui-nav li {
-	margin: 0;
+#page-content ul.yui-nav {
+	margin-bottom: 0;
 }
