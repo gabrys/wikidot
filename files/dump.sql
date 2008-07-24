@@ -3,14 +3,19 @@
 --
 
 SET client_encoding = 'UTF8';
+SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
+SET escape_string_warning = off;
 
 --
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
+-- Name: plpgsql; Type: PROCEDURAL LANGUAGE; Schema: -; Owner: postgres
 --
 
-COMMENT ON SCHEMA public IS 'Standard public schema';
+CREATE PROCEDURAL LANGUAGE plpgsql;
+
+
+ALTER PROCEDURAL LANGUAGE plpgsql OWNER TO postgres;
 
 SET search_path = public, pg_catalog;
 
@@ -22,32 +27,25 @@ SET default_with_oids = false;
 -- Name: admin; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
-CREATE TABLE "admin" (
-    admin_id serial NOT NULL,
+CREATE TABLE admin (
+    admin_id integer NOT NULL,
     site_id integer,
     user_id integer,
     founder boolean DEFAULT false
 );
 
 
-ALTER TABLE public."admin" OWNER TO wd;
-
---
--- Name: admin_admin_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('"admin"', 'admin_id'), 1, false);
-
+ALTER TABLE public.admin OWNER TO wd;
 
 --
 -- Name: admin_notification; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE admin_notification (
-    notification_id serial NOT NULL,
+    notification_id integer NOT NULL,
     site_id integer,
     body text,
-    "type" character varying(50),
+    type character varying(50),
     viewed boolean DEFAULT false,
     date timestamp without time zone,
     extra bytea,
@@ -60,18 +58,11 @@ CREATE TABLE admin_notification (
 ALTER TABLE public.admin_notification OWNER TO wd;
 
 --
--- Name: admin_notification_notification_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('admin_notification', 'notification_id'), 1, false);
-
-
---
 -- Name: anonymous_abuse_flag; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE anonymous_abuse_flag (
-    flag_id serial NOT NULL,
+    flag_id integer NOT NULL,
     user_id integer,
     address inet,
     proxy boolean DEFAULT false,
@@ -84,18 +75,11 @@ CREATE TABLE anonymous_abuse_flag (
 ALTER TABLE public.anonymous_abuse_flag OWNER TO wd;
 
 --
--- Name: anonymous_abuse_flag_flag_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('anonymous_abuse_flag', 'flag_id'), 1, false);
-
-
---
 -- Name: category; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE category (
-    category_id serial NOT NULL,
+    category_id integer NOT NULL,
     site_id integer,
     name character varying(80),
     theme_default boolean DEFAULT true,
@@ -111,25 +95,72 @@ CREATE TABLE category (
     template_id integer,
     per_page_discussion boolean,
     per_page_discussion_default boolean DEFAULT true,
-    rating character varying(10)
+    rating character varying(10),
+    category_template_id integer
 );
 
 
 ALTER TABLE public.category OWNER TO wd;
 
 --
--- Name: category_category_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+-- Name: category_template; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('category', 'category_id'), 20, true);
+CREATE TABLE category_template (
+    category_template_id integer NOT NULL,
+    source text
+);
 
+
+ALTER TABLE public.category_template OWNER TO wd;
+
+--
+-- Name: comment; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
+--
+
+CREATE TABLE comment (
+    comment_id integer NOT NULL,
+    page_id integer,
+    parent_id integer,
+    user_id integer,
+    user_string character varying(80),
+    title character varying(256),
+    text text,
+    date_posted timestamp without time zone,
+    site_id integer,
+    revision_number integer DEFAULT 0,
+    revision_id integer,
+    date_last_edited timestamp without time zone,
+    edited_user_id integer,
+    edited_user_string character varying(80)
+);
+
+
+ALTER TABLE public.comment OWNER TO wd;
+
+--
+-- Name: comment_revision; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
+--
+
+CREATE TABLE comment_revision (
+    revision_id integer NOT NULL,
+    comment_id integer,
+    user_id integer,
+    user_string character varying(80),
+    text text,
+    title character varying(256),
+    date timestamp without time zone
+);
+
+
+ALTER TABLE public.comment_revision OWNER TO wd;
 
 --
 -- Name: contact; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE contact (
-    contact_id serial NOT NULL,
+    contact_id integer NOT NULL,
     user_id integer,
     target_user_id integer
 );
@@ -138,18 +169,11 @@ CREATE TABLE contact (
 ALTER TABLE public.contact OWNER TO wd;
 
 --
--- Name: contact_contact_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('contact', 'contact_id'), 1, false);
-
-
---
 -- Name: domain_redirect; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE domain_redirect (
-    redirect_id serial NOT NULL,
+    redirect_id integer NOT NULL,
     site_id integer,
     url character varying(80)
 );
@@ -158,18 +182,11 @@ CREATE TABLE domain_redirect (
 ALTER TABLE public.domain_redirect OWNER TO wd;
 
 --
--- Name: domain_redirect_redirect_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('domain_redirect', 'redirect_id'), 1, false);
-
-
---
 -- Name: email_invitation; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE email_invitation (
-    invitation_id serial NOT NULL,
+    invitation_id integer NOT NULL,
     hash character varying(200),
     email character varying(128),
     name character varying(100),
@@ -188,25 +205,18 @@ CREATE TABLE email_invitation (
 ALTER TABLE public.email_invitation OWNER TO wd;
 
 --
--- Name: email_invitation_invitation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('email_invitation', 'invitation_id'), 1, false);
-
-
---
 -- Name: file; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE file (
-    file_id serial NOT NULL,
+    file_id integer NOT NULL,
     page_id integer,
     site_id integer,
     filename character varying(100),
     mimetype character varying(100),
     description character varying(200),
     description_short character varying(200),
-    "comment" character varying(400),
+    comment character varying(400),
     size integer,
     date_added timestamp without time zone,
     user_id integer,
@@ -218,35 +228,21 @@ CREATE TABLE file (
 ALTER TABLE public.file OWNER TO wd;
 
 --
--- Name: file_file_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('file', 'file_id'), 1, false);
-
-
---
 -- Name: files_event; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE files_event (
-    file_event_id serial NOT NULL,
+    file_event_id integer NOT NULL,
     filename character varying(100),
     date timestamp without time zone,
     user_id integer,
     user_string character varying(80),
-    "action" character varying(80),
+    action character varying(80),
     action_extra character varying(80)
 );
 
 
 ALTER TABLE public.files_event OWNER TO wd;
-
---
--- Name: files_event_file_event_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('files_event', 'file_event_id'), 1, false);
-
 
 --
 -- Name: form_submission_key; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
@@ -265,7 +261,7 @@ ALTER TABLE public.form_submission_key OWNER TO wd;
 --
 
 CREATE TABLE forum_category (
-    category_id serial NOT NULL,
+    category_id integer NOT NULL,
     group_id integer,
     name character varying(80),
     description text,
@@ -284,18 +280,11 @@ CREATE TABLE forum_category (
 ALTER TABLE public.forum_category OWNER TO wd;
 
 --
--- Name: forum_category_category_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('forum_category', 'category_id'), 1, false);
-
-
---
 -- Name: forum_group; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE forum_group (
-    group_id serial NOT NULL,
+    group_id integer NOT NULL,
     name character varying(80),
     description text,
     sort_index integer DEFAULT 0,
@@ -307,18 +296,11 @@ CREATE TABLE forum_group (
 ALTER TABLE public.forum_group OWNER TO wd;
 
 --
--- Name: forum_group_group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('forum_group', 'group_id'), 1, false);
-
-
---
 -- Name: forum_post; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE forum_post (
-    post_id serial NOT NULL,
+    post_id integer NOT NULL,
     thread_id integer,
     parent_id integer,
     user_id integer,
@@ -338,18 +320,11 @@ CREATE TABLE forum_post (
 ALTER TABLE public.forum_post OWNER TO wd;
 
 --
--- Name: forum_post_post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('forum_post', 'post_id'), 1, false);
-
-
---
 -- Name: forum_post_revision; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE forum_post_revision (
-    revision_id serial NOT NULL,
+    revision_id integer NOT NULL,
     post_id integer,
     user_id integer,
     user_string character varying(80),
@@ -360,13 +335,6 @@ CREATE TABLE forum_post_revision (
 
 
 ALTER TABLE public.forum_post_revision OWNER TO wd;
-
---
--- Name: forum_post_revision_revision_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('forum_post_revision', 'revision_id'), 1, false);
-
 
 --
 -- Name: forum_settings; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
@@ -387,7 +355,7 @@ ALTER TABLE public.forum_settings OWNER TO wd;
 --
 
 CREATE TABLE forum_thread (
-    thread_id serial NOT NULL,
+    thread_id integer NOT NULL,
     user_id integer,
     user_string character varying(80),
     category_id integer,
@@ -406,18 +374,11 @@ CREATE TABLE forum_thread (
 ALTER TABLE public.forum_thread OWNER TO wd;
 
 --
--- Name: forum_thread_thread_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('forum_thread', 'thread_id'), 1, false);
-
-
---
 -- Name: front_forum_feed; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE front_forum_feed (
-    feed_id serial NOT NULL,
+    feed_id integer NOT NULL,
     page_id integer,
     title character varying(90),
     label character varying(90),
@@ -431,18 +392,11 @@ CREATE TABLE front_forum_feed (
 ALTER TABLE public.front_forum_feed OWNER TO wd;
 
 --
--- Name: front_forum_feed_feed_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('front_forum_feed', 'feed_id'), 1, false);
-
-
---
 -- Name: fts_entry; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE fts_entry (
-    fts_id serial NOT NULL,
+    fts_id integer NOT NULL,
     page_id integer,
     title character varying(256),
     unix_name character varying(100),
@@ -456,18 +410,11 @@ CREATE TABLE fts_entry (
 ALTER TABLE public.fts_entry OWNER TO wd;
 
 --
--- Name: fts_entry_fts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('fts_entry', 'fts_id'), 52, true);
-
-
---
 -- Name: global_ip_block; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE global_ip_block (
-    block_id serial NOT NULL,
+    block_id integer NOT NULL,
     address inet,
     flag_proxy boolean DEFAULT false,
     reason text,
@@ -479,18 +426,11 @@ CREATE TABLE global_ip_block (
 ALTER TABLE public.global_ip_block OWNER TO wd;
 
 --
--- Name: global_ip_block_block_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('global_ip_block', 'block_id'), 1, false);
-
-
---
 -- Name: global_user_block; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE global_user_block (
-    block_id serial NOT NULL,
+    block_id integer NOT NULL,
     site_id integer,
     user_id integer,
     reason text,
@@ -501,18 +441,11 @@ CREATE TABLE global_user_block (
 ALTER TABLE public.global_user_block OWNER TO wd;
 
 --
--- Name: global_user_block_block_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('global_user_block', 'block_id'), 1, false);
-
-
---
 -- Name: ip_block; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE ip_block (
-    block_id serial NOT NULL,
+    block_id integer NOT NULL,
     site_id integer,
     ip inet,
     flag_proxy boolean DEFAULT false,
@@ -524,18 +457,11 @@ CREATE TABLE ip_block (
 ALTER TABLE public.ip_block OWNER TO wd;
 
 --
--- Name: ip_block_block_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('ip_block', 'block_id'), 1, false);
-
-
---
 -- Name: license; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE license (
-    license_id serial NOT NULL,
+    license_id integer NOT NULL,
     name character varying(100),
     description text,
     sort integer DEFAULT 0
@@ -545,23 +471,16 @@ CREATE TABLE license (
 ALTER TABLE public.license OWNER TO wd;
 
 --
--- Name: license_license_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('license', 'license_id'), 8, true);
-
-
---
 -- Name: log_event; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE log_event (
-    event_id bigserial NOT NULL,
+    event_id bigint NOT NULL,
     date timestamp without time zone,
     user_id integer,
     ip inet,
     proxy inet,
-    "type" character varying(256),
+    type character varying(256),
     site_id integer,
     page_id integer,
     revision_id integer,
@@ -575,18 +494,11 @@ CREATE TABLE log_event (
 ALTER TABLE public.log_event OWNER TO wd;
 
 --
--- Name: log_event_event_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('log_event', 'event_id'), 85, true);
-
-
---
 -- Name: member; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE member (
-    member_id serial NOT NULL,
+    member_id integer NOT NULL,
     site_id integer,
     user_id integer,
     date_joined timestamp without time zone,
@@ -601,12 +513,12 @@ ALTER TABLE public.member OWNER TO wd;
 --
 
 CREATE TABLE member_application (
-    application_id serial NOT NULL,
+    application_id integer NOT NULL,
     site_id integer,
     user_id integer,
     status character varying(20) DEFAULT 'pending'::character varying,
     date timestamp without time zone,
-    "comment" text,
+    comment text,
     reply text
 );
 
@@ -614,18 +526,11 @@ CREATE TABLE member_application (
 ALTER TABLE public.member_application OWNER TO wd;
 
 --
--- Name: member_application_application_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('member_application', 'application_id'), 1, false);
-
-
---
 -- Name: member_invitation; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE member_invitation (
-    invitation_id serial NOT NULL,
+    invitation_id integer NOT NULL,
     site_id integer,
     user_id integer,
     by_user_id integer,
@@ -637,48 +542,27 @@ CREATE TABLE member_invitation (
 ALTER TABLE public.member_invitation OWNER TO wd;
 
 --
--- Name: member_invitation_invitation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('member_invitation', 'invitation_id'), 1, false);
-
-
---
--- Name: member_member_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('member', 'member_id'), 1, false);
-
-
---
 -- Name: membership_link; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE membership_link (
-    link_id serial NOT NULL,
+    link_id integer NOT NULL,
     site_id integer,
     by_user_id integer,
     user_id integer,
     date timestamp without time zone,
-    "type" character varying(20)
+    type character varying(20)
 );
 
 
 ALTER TABLE public.membership_link OWNER TO wd;
 
 --
--- Name: membership_link_link_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('membership_link', 'link_id'), 1, false);
-
-
---
 -- Name: moderator; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE moderator (
-    moderator_id serial NOT NULL,
+    moderator_id integer NOT NULL,
     site_id integer,
     user_id integer,
     permissions character(10)
@@ -688,21 +572,14 @@ CREATE TABLE moderator (
 ALTER TABLE public.moderator OWNER TO wd;
 
 --
--- Name: moderator_moderator_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('moderator', 'moderator_id'), 1, false);
-
-
---
 -- Name: notification; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE notification (
-    notification_id serial NOT NULL,
+    notification_id integer NOT NULL,
     user_id integer,
     body text,
-    "type" character varying(50),
+    type character varying(50),
     viewed boolean DEFAULT false,
     date timestamp without time zone,
     extra bytea,
@@ -715,21 +592,14 @@ CREATE TABLE notification (
 ALTER TABLE public.notification OWNER TO wd;
 
 --
--- Name: notification_notification_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('notification', 'notification_id'), 1, false);
-
-
---
 -- Name: openid_entry; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE openid_entry (
-    openid_id serial NOT NULL,
+    openid_id integer NOT NULL,
     site_id integer,
     page_id integer,
-    "type" character varying(10),
+    type character varying(10),
     user_id integer,
     url character varying(100),
     server_url character varying(100)
@@ -739,18 +609,11 @@ CREATE TABLE openid_entry (
 ALTER TABLE public.openid_entry OWNER TO wd;
 
 --
--- Name: openid_entry_openid_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('openid_entry', 'openid_id'), 1, false);
-
-
---
 -- Name: ozone_group; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE ozone_group (
-    group_id serial NOT NULL,
+    group_id integer NOT NULL,
     parent_group_id integer,
     name character varying(50),
     description text
@@ -760,18 +623,11 @@ CREATE TABLE ozone_group (
 ALTER TABLE public.ozone_group OWNER TO wd;
 
 --
--- Name: ozone_group_group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('ozone_group', 'group_id'), 1, false);
-
-
---
 -- Name: ozone_group_permission_modifier; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE ozone_group_permission_modifier (
-    group_permission_id serial NOT NULL,
+    group_permission_id integer NOT NULL,
     group_id character varying(20),
     permission_id character varying(20),
     modifier integer
@@ -781,18 +637,11 @@ CREATE TABLE ozone_group_permission_modifier (
 ALTER TABLE public.ozone_group_permission_modifier OWNER TO wd;
 
 --
--- Name: ozone_group_permission_modifier_group_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('ozone_group_permission_modifier', 'group_permission_id'), 1, false);
-
-
---
 -- Name: ozone_lock; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE ozone_lock (
-    "key" character varying(100) NOT NULL
+    key character varying(100) NOT NULL
 );
 
 
@@ -803,20 +652,13 @@ ALTER TABLE public.ozone_lock OWNER TO wd;
 --
 
 CREATE TABLE ozone_permission (
-    permission_id serial NOT NULL,
+    permission_id integer NOT NULL,
     name character varying(50),
     description text
 );
 
 
 ALTER TABLE public.ozone_permission OWNER TO wd;
-
---
--- Name: ozone_permission_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('ozone_permission', 'permission_id'), 1, false);
-
 
 --
 -- Name: ozone_session; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
@@ -841,17 +683,17 @@ ALTER TABLE public.ozone_session OWNER TO wd;
 --
 
 CREATE TABLE ozone_user (
-    user_id serial NOT NULL,
+    user_id integer NOT NULL,
     name character varying(99),
     nick_name character varying(70),
-    "password" character varying(99),
+    password character varying(99),
     email character varying(99),
     unix_name character varying(99),
     last_login timestamp without time zone,
     registered_date timestamp without time zone,
     super_admin boolean DEFAULT false,
     super_moderator boolean DEFAULT false,
-    "language" character varying(10) DEFAULT 'en'::character varying
+    language character varying(10) DEFAULT 'en'::character varying
 );
 
 
@@ -862,7 +704,7 @@ ALTER TABLE public.ozone_user OWNER TO wd;
 --
 
 CREATE TABLE ozone_user_group_relation (
-    user_group_id serial NOT NULL,
+    user_group_id integer NOT NULL,
     user_id integer,
     group_id integer
 );
@@ -871,18 +713,11 @@ CREATE TABLE ozone_user_group_relation (
 ALTER TABLE public.ozone_user_group_relation OWNER TO wd;
 
 --
--- Name: ozone_user_group_relation_user_group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('ozone_user_group_relation', 'user_group_id'), 1, false);
-
-
---
 -- Name: ozone_user_permission_modifier; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE ozone_user_permission_modifier (
-    user_permission_id serial NOT NULL,
+    user_permission_id integer NOT NULL,
     user_id integer,
     permission_id character varying(20),
     modifier integer
@@ -892,25 +727,11 @@ CREATE TABLE ozone_user_permission_modifier (
 ALTER TABLE public.ozone_user_permission_modifier OWNER TO wd;
 
 --
--- Name: ozone_user_permission_modifier_user_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('ozone_user_permission_modifier', 'user_permission_id'), 1, false);
-
-
---
--- Name: ozone_user_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('ozone_user', 'user_id'), 1, true);
-
-
---
 -- Name: page; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE page (
-    page_id serial NOT NULL,
+    page_id integer NOT NULL,
     site_id integer,
     category_id integer,
     parent_page_id integer,
@@ -938,7 +759,7 @@ ALTER TABLE public.page OWNER TO wd;
 --
 
 CREATE TABLE page_abuse_flag (
-    flag_id serial NOT NULL,
+    flag_id integer NOT NULL,
     user_id integer,
     site_id integer,
     path character varying(100),
@@ -948,13 +769,6 @@ CREATE TABLE page_abuse_flag (
 
 
 ALTER TABLE public.page_abuse_flag OWNER TO wd;
-
---
--- Name: page_abuse_flag_flag_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('page_abuse_flag', 'flag_id'), 1, true);
-
 
 --
 -- Name: page_compiled; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
@@ -974,9 +788,9 @@ ALTER TABLE public.page_compiled OWNER TO wd;
 --
 
 CREATE TABLE page_edit_lock (
-    lock_id serial NOT NULL,
+    lock_id integer NOT NULL,
     page_id integer,
-    "mode" character varying(10) DEFAULT 'page'::character varying,
+    mode character varying(10) DEFAULT 'page'::character varying,
     section_id integer,
     range_start integer,
     range_end integer,
@@ -994,18 +808,11 @@ CREATE TABLE page_edit_lock (
 ALTER TABLE public.page_edit_lock OWNER TO wd;
 
 --
--- Name: page_edit_lock_lock_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('page_edit_lock', 'lock_id'), 76, true);
-
-
---
 -- Name: page_inclusion; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE page_inclusion (
-    inclusion_id serial NOT NULL,
+    inclusion_id integer NOT NULL,
     including_page_id integer,
     included_page_id integer,
     included_page_name character varying(128),
@@ -1016,18 +823,11 @@ CREATE TABLE page_inclusion (
 ALTER TABLE public.page_inclusion OWNER TO wd;
 
 --
--- Name: page_inclusion_inclusion_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('page_inclusion', 'inclusion_id'), 1, false);
-
-
---
 -- Name: page_link; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE page_link (
-    link_id serial NOT NULL,
+    link_id integer NOT NULL,
     from_page_id integer,
     to_page_id integer,
     to_page_name character varying(128),
@@ -1038,18 +838,11 @@ CREATE TABLE page_link (
 ALTER TABLE public.page_link OWNER TO wd;
 
 --
--- Name: page_link_link_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('page_link', 'link_id'), 67, true);
-
-
---
 -- Name: page_metadata; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE page_metadata (
-    metadata_id serial NOT NULL,
+    metadata_id integer NOT NULL,
     parent_page_id integer,
     title character varying(256),
     unix_name character varying(80),
@@ -1060,25 +853,11 @@ CREATE TABLE page_metadata (
 ALTER TABLE public.page_metadata OWNER TO wd;
 
 --
--- Name: page_metadata_metadata_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('page_metadata', 'metadata_id'), 52, true);
-
-
---
--- Name: page_page_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('page', 'page_id'), 48, true);
-
-
---
 -- Name: page_rate_vote; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE page_rate_vote (
-    rate_id serial NOT NULL,
+    rate_id integer NOT NULL,
     user_id integer,
     page_id integer,
     rate integer DEFAULT 1,
@@ -1089,18 +868,11 @@ CREATE TABLE page_rate_vote (
 ALTER TABLE public.page_rate_vote OWNER TO wd;
 
 --
--- Name: page_rate_vote_rate_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('page_rate_vote', 'rate_id'), 1, false);
-
-
---
 -- Name: page_revision; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE page_revision (
-    revision_id serial NOT NULL,
+    revision_id integer NOT NULL,
     page_id integer,
     source_id integer,
     metadata_id integer,
@@ -1126,18 +898,11 @@ CREATE TABLE page_revision (
 ALTER TABLE public.page_revision OWNER TO wd;
 
 --
--- Name: page_revision_revision_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('page_revision', 'revision_id'), 59, true);
-
-
---
 -- Name: page_source; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE page_source (
-    source_id serial NOT NULL,
+    source_id integer NOT NULL,
     text text
 );
 
@@ -1145,18 +910,11 @@ CREATE TABLE page_source (
 ALTER TABLE public.page_source OWNER TO wd;
 
 --
--- Name: page_source_source_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('page_source', 'source_id'), 58, true);
-
-
---
 -- Name: page_tag; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE page_tag (
-    tag_id bigserial NOT NULL,
+    tag_id bigint NOT NULL,
     site_id integer,
     page_id integer,
     tag character varying(20)
@@ -1166,18 +924,11 @@ CREATE TABLE page_tag (
 ALTER TABLE public.page_tag OWNER TO wd;
 
 --
--- Name: page_tag_tag_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('page_tag', 'tag_id'), 1, true);
-
-
---
 -- Name: petition_campaign; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE petition_campaign (
-    campaign_id serial NOT NULL,
+    campaign_id integer NOT NULL,
     site_id integer,
     name character varying(256),
     identifier character varying(256),
@@ -1202,18 +953,11 @@ CREATE TABLE petition_campaign (
 ALTER TABLE public.petition_campaign OWNER TO wd;
 
 --
--- Name: petition_campaign_campaign_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('petition_campaign', 'campaign_id'), 1, false);
-
-
---
 -- Name: petition_signature; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE petition_signature (
-    signature_id serial NOT NULL,
+    signature_id integer NOT NULL,
     campaign_id integer,
     first_name character varying(256),
     last_name character varying(256),
@@ -1236,17 +980,11 @@ CREATE TABLE petition_signature (
 ALTER TABLE public.petition_signature OWNER TO wd;
 
 --
--- Name: petition_signature_signature_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('petition_signature', 'signature_id'), 1, false);
-
---
 -- Name: private_message; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE private_message (
-    message_id serial NOT NULL,
+    message_id integer NOT NULL,
     from_user_id integer,
     to_user_id integer,
     subject character varying(256),
@@ -1260,31 +998,17 @@ CREATE TABLE private_message (
 ALTER TABLE public.private_message OWNER TO wd;
 
 --
--- Name: private_message_message_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('private_message', 'message_id'), 1, false);
-
-
---
 -- Name: private_user_block; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE private_user_block (
-    block_id serial NOT NULL,
+    block_id integer NOT NULL,
     user_id integer,
     blocked_user_id integer
 );
 
 
 ALTER TABLE public.private_user_block OWNER TO wd;
-
---
--- Name: private_user_block_block_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('private_user_block', 'block_id'), 1, false);
-
 
 --
 -- Name: profile; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
@@ -1298,7 +1022,7 @@ CREATE TABLE profile (
     birthday_month integer,
     birthday_year integer,
     about text,
-    "location" character varying(70),
+    location character varying(70),
     website character varying(100),
     im_aim character varying(100),
     im_gadu_gadu character varying(100),
@@ -1318,7 +1042,7 @@ ALTER TABLE public.profile OWNER TO wd;
 --
 
 CREATE TABLE simpletodo_list (
-    list_id serial NOT NULL,
+    list_id integer NOT NULL,
     site_id integer,
     label character varying(256),
     title character varying(256),
@@ -1329,23 +1053,16 @@ CREATE TABLE simpletodo_list (
 ALTER TABLE public.simpletodo_list OWNER TO wd;
 
 --
--- Name: simpletodo_list_list_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('simpletodo_list', 'list_id'), 1, false);
-
-
---
 -- Name: site; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE site (
-    site_id serial NOT NULL,
+    site_id integer NOT NULL,
     name character varying(50),
     subtitle character varying(60),
     unix_name character varying(80),
     description text,
-    "language" character varying(10) DEFAULT 'en'::character varying,
+    language character varying(10) DEFAULT 'en'::character varying,
     date_created timestamp without time zone,
     custom_domain character varying(60),
     visible boolean DEFAULT true,
@@ -1362,7 +1079,7 @@ ALTER TABLE public.site OWNER TO wd;
 --
 
 CREATE TABLE site_backup (
-    backup_id serial NOT NULL,
+    backup_id integer NOT NULL,
     site_id integer,
     status character varying(50),
     backup_source boolean DEFAULT true,
@@ -1373,13 +1090,6 @@ CREATE TABLE site_backup (
 
 
 ALTER TABLE public.site_backup OWNER TO wd;
-
---
--- Name: site_backup_backup_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('site_backup', 'backup_id'), 1, false);
-
 
 --
 -- Name: site_settings; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
@@ -1406,13 +1116,6 @@ CREATE TABLE site_settings (
 ALTER TABLE public.site_settings OWNER TO wd;
 
 --
--- Name: site_site_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('site', 'site_id'), 3, true);
-
-
---
 -- Name: site_super_settings; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
@@ -1429,7 +1132,7 @@ ALTER TABLE public.site_super_settings OWNER TO wd;
 --
 
 CREATE TABLE site_tag (
-    tag_id serial NOT NULL,
+    tag_id integer NOT NULL,
     site_id integer,
     tag character varying(20)
 );
@@ -1438,31 +1141,17 @@ CREATE TABLE site_tag (
 ALTER TABLE public.site_tag OWNER TO wd;
 
 --
--- Name: site_tag_tag_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('site_tag', 'tag_id'), 1, true);
-
-
---
 -- Name: site_viewer; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE site_viewer (
-    viewer_id serial NOT NULL,
+    viewer_id integer NOT NULL,
     site_id integer,
     user_id integer
 );
 
 
 ALTER TABLE public.site_viewer OWNER TO wd;
-
---
--- Name: site_viewer_viewer_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('site_viewer', 'viewer_id'), 1, false);
-
 
 --
 -- Name: storage_item; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
@@ -1483,7 +1172,7 @@ ALTER TABLE public.storage_item OWNER TO wd;
 --
 
 CREATE TABLE theme (
-    theme_id serial NOT NULL,
+    theme_id integer NOT NULL,
     name character varying(100),
     unix_name character varying(100),
     abstract boolean DEFAULT false,
@@ -1514,11 +1203,18 @@ CREATE TABLE theme_preview (
 ALTER TABLE public.theme_preview OWNER TO wd;
 
 --
--- Name: theme_theme_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+-- Name: ucookie; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('theme', 'theme_id'), 23, true);
+CREATE TABLE ucookie (
+    ucookie_id character varying(100) NOT NULL,
+    site_id integer,
+    session_id character varying(60),
+    date_granted timestamp without time zone
+);
 
+
+ALTER TABLE public.ucookie OWNER TO wd;
 
 --
 -- Name: unique_string_broker; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
@@ -1536,7 +1232,7 @@ ALTER TABLE public.unique_string_broker OWNER TO wd;
 --
 
 CREATE TABLE user_abuse_flag (
-    flag_id serial NOT NULL,
+    flag_id integer NOT NULL,
     user_id integer,
     target_user_id integer,
     site_id integer,
@@ -1548,18 +1244,11 @@ CREATE TABLE user_abuse_flag (
 ALTER TABLE public.user_abuse_flag OWNER TO wd;
 
 --
--- Name: user_abuse_flag_flag_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('user_abuse_flag', 'flag_id'), 1, false);
-
-
---
 -- Name: user_block; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE user_block (
-    block_id serial NOT NULL,
+    block_id integer NOT NULL,
     site_id integer,
     user_id integer,
     reason text,
@@ -1570,11 +1259,17 @@ CREATE TABLE user_block (
 ALTER TABLE public.user_block OWNER TO wd;
 
 --
--- Name: user_block_block_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+-- Name: user_karma; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('user_block', 'block_id'), 1, false);
+CREATE TABLE user_karma (
+    user_id integer NOT NULL,
+    points integer DEFAULT 0,
+    level integer DEFAULT 0
+);
 
+
+ALTER TABLE public.user_karma OWNER TO wd;
 
 --
 -- Name: user_settings; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
@@ -1601,7 +1296,7 @@ ALTER TABLE public.user_settings OWNER TO wd;
 --
 
 CREATE TABLE watched_forum_thread (
-    watched_id serial NOT NULL,
+    watched_id integer NOT NULL,
     user_id integer,
     thread_id integer
 );
@@ -1610,18 +1305,11 @@ CREATE TABLE watched_forum_thread (
 ALTER TABLE public.watched_forum_thread OWNER TO wd;
 
 --
--- Name: watched_forum_thread_watched_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
---
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('watched_forum_thread', 'watched_id'), 1, false);
-
-
---
 -- Name: watched_page; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
 CREATE TABLE watched_page (
-    watched_id serial NOT NULL,
+    watched_id integer NOT NULL,
     user_id integer,
     page_id integer
 );
@@ -1630,17 +1318,2129 @@ CREATE TABLE watched_page (
 ALTER TABLE public.watched_page OWNER TO wd;
 
 --
+-- Name: admin_admin_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE admin_admin_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.admin_admin_id_seq OWNER TO wd;
+
+--
+-- Name: admin_admin_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE admin_admin_id_seq OWNED BY admin.admin_id;
+
+
+--
+-- Name: admin_admin_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('admin_admin_id_seq', 1, false);
+
+
+--
+-- Name: admin_notification_notification_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE admin_notification_notification_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.admin_notification_notification_id_seq OWNER TO wd;
+
+--
+-- Name: admin_notification_notification_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE admin_notification_notification_id_seq OWNED BY admin_notification.notification_id;
+
+
+--
+-- Name: admin_notification_notification_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('admin_notification_notification_id_seq', 1, false);
+
+
+--
+-- Name: anonymous_abuse_flag_flag_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE anonymous_abuse_flag_flag_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.anonymous_abuse_flag_flag_id_seq OWNER TO wd;
+
+--
+-- Name: anonymous_abuse_flag_flag_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE anonymous_abuse_flag_flag_id_seq OWNED BY anonymous_abuse_flag.flag_id;
+
+
+--
+-- Name: anonymous_abuse_flag_flag_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('anonymous_abuse_flag_flag_id_seq', 1, false);
+
+
+--
+-- Name: category_category_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE category_category_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.category_category_id_seq OWNER TO wd;
+
+--
+-- Name: category_category_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE category_category_id_seq OWNED BY category.category_id;
+
+
+--
+-- Name: category_category_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('category_category_id_seq', 20, true);
+
+
+--
+-- Name: category_template_category_template_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE category_template_category_template_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.category_template_category_template_id_seq OWNER TO wd;
+
+--
+-- Name: category_template_category_template_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE category_template_category_template_id_seq OWNED BY category_template.category_template_id;
+
+
+--
+-- Name: category_template_category_template_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('category_template_category_template_id_seq', 1, false);
+
+
+--
+-- Name: comment_comment_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE comment_comment_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.comment_comment_id_seq OWNER TO wd;
+
+--
+-- Name: comment_comment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE comment_comment_id_seq OWNED BY comment.comment_id;
+
+
+--
+-- Name: comment_comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('comment_comment_id_seq', 1, false);
+
+
+--
+-- Name: comment_revision_revision_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE comment_revision_revision_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.comment_revision_revision_id_seq OWNER TO wd;
+
+--
+-- Name: comment_revision_revision_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE comment_revision_revision_id_seq OWNED BY comment_revision.revision_id;
+
+
+--
+-- Name: comment_revision_revision_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('comment_revision_revision_id_seq', 1, false);
+
+
+--
+-- Name: contact_contact_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE contact_contact_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.contact_contact_id_seq OWNER TO wd;
+
+--
+-- Name: contact_contact_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE contact_contact_id_seq OWNED BY contact.contact_id;
+
+
+--
+-- Name: contact_contact_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('contact_contact_id_seq', 1, false);
+
+
+--
+-- Name: domain_redirect_redirect_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE domain_redirect_redirect_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.domain_redirect_redirect_id_seq OWNER TO wd;
+
+--
+-- Name: domain_redirect_redirect_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE domain_redirect_redirect_id_seq OWNED BY domain_redirect.redirect_id;
+
+
+--
+-- Name: domain_redirect_redirect_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('domain_redirect_redirect_id_seq', 1, false);
+
+
+--
+-- Name: email_invitation_invitation_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE email_invitation_invitation_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.email_invitation_invitation_id_seq OWNER TO wd;
+
+--
+-- Name: email_invitation_invitation_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE email_invitation_invitation_id_seq OWNED BY email_invitation.invitation_id;
+
+
+--
+-- Name: email_invitation_invitation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('email_invitation_invitation_id_seq', 1, false);
+
+
+--
+-- Name: file_file_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE file_file_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.file_file_id_seq OWNER TO wd;
+
+--
+-- Name: file_file_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE file_file_id_seq OWNED BY file.file_id;
+
+
+--
+-- Name: file_file_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('file_file_id_seq', 1, false);
+
+
+--
+-- Name: files_event_file_event_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE files_event_file_event_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.files_event_file_event_id_seq OWNER TO wd;
+
+--
+-- Name: files_event_file_event_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE files_event_file_event_id_seq OWNED BY files_event.file_event_id;
+
+
+--
+-- Name: files_event_file_event_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('files_event_file_event_id_seq', 1, false);
+
+
+--
+-- Name: forum_category_category_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE forum_category_category_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.forum_category_category_id_seq OWNER TO wd;
+
+--
+-- Name: forum_category_category_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE forum_category_category_id_seq OWNED BY forum_category.category_id;
+
+
+--
+-- Name: forum_category_category_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('forum_category_category_id_seq', 1, false);
+
+
+--
+-- Name: forum_group_group_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE forum_group_group_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.forum_group_group_id_seq OWNER TO wd;
+
+--
+-- Name: forum_group_group_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE forum_group_group_id_seq OWNED BY forum_group.group_id;
+
+
+--
+-- Name: forum_group_group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('forum_group_group_id_seq', 1, false);
+
+
+--
+-- Name: forum_post_post_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE forum_post_post_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.forum_post_post_id_seq OWNER TO wd;
+
+--
+-- Name: forum_post_post_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE forum_post_post_id_seq OWNED BY forum_post.post_id;
+
+
+--
+-- Name: forum_post_post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('forum_post_post_id_seq', 1, false);
+
+
+--
+-- Name: forum_post_revision_revision_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE forum_post_revision_revision_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.forum_post_revision_revision_id_seq OWNER TO wd;
+
+--
+-- Name: forum_post_revision_revision_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE forum_post_revision_revision_id_seq OWNED BY forum_post_revision.revision_id;
+
+
+--
+-- Name: forum_post_revision_revision_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('forum_post_revision_revision_id_seq', 1, false);
+
+
+--
+-- Name: forum_thread_thread_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE forum_thread_thread_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.forum_thread_thread_id_seq OWNER TO wd;
+
+--
+-- Name: forum_thread_thread_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE forum_thread_thread_id_seq OWNED BY forum_thread.thread_id;
+
+
+--
+-- Name: forum_thread_thread_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('forum_thread_thread_id_seq', 1, false);
+
+
+--
+-- Name: front_forum_feed_feed_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE front_forum_feed_feed_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.front_forum_feed_feed_id_seq OWNER TO wd;
+
+--
+-- Name: front_forum_feed_feed_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE front_forum_feed_feed_id_seq OWNED BY front_forum_feed.feed_id;
+
+
+--
+-- Name: front_forum_feed_feed_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('front_forum_feed_feed_id_seq', 1, false);
+
+
+--
+-- Name: fts_entry_fts_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE fts_entry_fts_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.fts_entry_fts_id_seq OWNER TO wd;
+
+--
+-- Name: fts_entry_fts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE fts_entry_fts_id_seq OWNED BY fts_entry.fts_id;
+
+
+--
+-- Name: fts_entry_fts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('fts_entry_fts_id_seq', 52, true);
+
+
+--
+-- Name: global_ip_block_block_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE global_ip_block_block_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.global_ip_block_block_id_seq OWNER TO wd;
+
+--
+-- Name: global_ip_block_block_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE global_ip_block_block_id_seq OWNED BY global_ip_block.block_id;
+
+
+--
+-- Name: global_ip_block_block_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('global_ip_block_block_id_seq', 1, false);
+
+
+--
+-- Name: global_user_block_block_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE global_user_block_block_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.global_user_block_block_id_seq OWNER TO wd;
+
+--
+-- Name: global_user_block_block_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE global_user_block_block_id_seq OWNED BY global_user_block.block_id;
+
+
+--
+-- Name: global_user_block_block_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('global_user_block_block_id_seq', 1, false);
+
+
+--
+-- Name: ip_block_block_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE ip_block_block_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.ip_block_block_id_seq OWNER TO wd;
+
+--
+-- Name: ip_block_block_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE ip_block_block_id_seq OWNED BY ip_block.block_id;
+
+
+--
+-- Name: ip_block_block_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('ip_block_block_id_seq', 1, false);
+
+
+--
+-- Name: license_license_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE license_license_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.license_license_id_seq OWNER TO wd;
+
+--
+-- Name: license_license_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE license_license_id_seq OWNED BY license.license_id;
+
+
+--
+-- Name: license_license_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('license_license_id_seq', 8, true);
+
+
+--
+-- Name: log_event_event_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE log_event_event_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.log_event_event_id_seq OWNER TO wd;
+
+--
+-- Name: log_event_event_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE log_event_event_id_seq OWNED BY log_event.event_id;
+
+
+--
+-- Name: log_event_event_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('log_event_event_id_seq', 85, true);
+
+
+--
+-- Name: member_application_application_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE member_application_application_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.member_application_application_id_seq OWNER TO wd;
+
+--
+-- Name: member_application_application_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE member_application_application_id_seq OWNED BY member_application.application_id;
+
+
+--
+-- Name: member_application_application_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('member_application_application_id_seq', 1, false);
+
+
+--
+-- Name: member_invitation_invitation_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE member_invitation_invitation_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.member_invitation_invitation_id_seq OWNER TO wd;
+
+--
+-- Name: member_invitation_invitation_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE member_invitation_invitation_id_seq OWNED BY member_invitation.invitation_id;
+
+
+--
+-- Name: member_invitation_invitation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('member_invitation_invitation_id_seq', 1, false);
+
+
+--
+-- Name: member_member_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE member_member_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.member_member_id_seq OWNER TO wd;
+
+--
+-- Name: member_member_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE member_member_id_seq OWNED BY member.member_id;
+
+
+--
+-- Name: member_member_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('member_member_id_seq', 1, false);
+
+
+--
+-- Name: membership_link_link_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE membership_link_link_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.membership_link_link_id_seq OWNER TO wd;
+
+--
+-- Name: membership_link_link_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE membership_link_link_id_seq OWNED BY membership_link.link_id;
+
+
+--
+-- Name: membership_link_link_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('membership_link_link_id_seq', 1, false);
+
+
+--
+-- Name: moderator_moderator_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE moderator_moderator_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.moderator_moderator_id_seq OWNER TO wd;
+
+--
+-- Name: moderator_moderator_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE moderator_moderator_id_seq OWNED BY moderator.moderator_id;
+
+
+--
+-- Name: moderator_moderator_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('moderator_moderator_id_seq', 1, false);
+
+
+--
+-- Name: notification_notification_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE notification_notification_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.notification_notification_id_seq OWNER TO wd;
+
+--
+-- Name: notification_notification_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE notification_notification_id_seq OWNED BY notification.notification_id;
+
+
+--
+-- Name: notification_notification_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('notification_notification_id_seq', 1, false);
+
+
+--
+-- Name: openid_entry_openid_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE openid_entry_openid_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.openid_entry_openid_id_seq OWNER TO wd;
+
+--
+-- Name: openid_entry_openid_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE openid_entry_openid_id_seq OWNED BY openid_entry.openid_id;
+
+
+--
+-- Name: openid_entry_openid_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('openid_entry_openid_id_seq', 1, false);
+
+
+--
+-- Name: ozone_group_group_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE ozone_group_group_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.ozone_group_group_id_seq OWNER TO wd;
+
+--
+-- Name: ozone_group_group_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE ozone_group_group_id_seq OWNED BY ozone_group.group_id;
+
+
+--
+-- Name: ozone_group_group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('ozone_group_group_id_seq', 1, false);
+
+
+--
+-- Name: ozone_group_permission_modifier_group_permission_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE ozone_group_permission_modifier_group_permission_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.ozone_group_permission_modifier_group_permission_id_seq OWNER TO wd;
+
+--
+-- Name: ozone_group_permission_modifier_group_permission_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE ozone_group_permission_modifier_group_permission_id_seq OWNED BY ozone_group_permission_modifier.group_permission_id;
+
+
+--
+-- Name: ozone_group_permission_modifier_group_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('ozone_group_permission_modifier_group_permission_id_seq', 1, false);
+
+
+--
+-- Name: ozone_permission_permission_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE ozone_permission_permission_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.ozone_permission_permission_id_seq OWNER TO wd;
+
+--
+-- Name: ozone_permission_permission_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE ozone_permission_permission_id_seq OWNED BY ozone_permission.permission_id;
+
+
+--
+-- Name: ozone_permission_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('ozone_permission_permission_id_seq', 1, false);
+
+
+--
+-- Name: ozone_user_group_relation_user_group_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE ozone_user_group_relation_user_group_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.ozone_user_group_relation_user_group_id_seq OWNER TO wd;
+
+--
+-- Name: ozone_user_group_relation_user_group_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE ozone_user_group_relation_user_group_id_seq OWNED BY ozone_user_group_relation.user_group_id;
+
+
+--
+-- Name: ozone_user_group_relation_user_group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('ozone_user_group_relation_user_group_id_seq', 1, false);
+
+
+--
+-- Name: ozone_user_permission_modifier_user_permission_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE ozone_user_permission_modifier_user_permission_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.ozone_user_permission_modifier_user_permission_id_seq OWNER TO wd;
+
+--
+-- Name: ozone_user_permission_modifier_user_permission_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE ozone_user_permission_modifier_user_permission_id_seq OWNED BY ozone_user_permission_modifier.user_permission_id;
+
+
+--
+-- Name: ozone_user_permission_modifier_user_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('ozone_user_permission_modifier_user_permission_id_seq', 1, false);
+
+
+--
+-- Name: ozone_user_user_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE ozone_user_user_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.ozone_user_user_id_seq OWNER TO wd;
+
+--
+-- Name: ozone_user_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE ozone_user_user_id_seq OWNED BY ozone_user.user_id;
+
+
+--
+-- Name: ozone_user_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('ozone_user_user_id_seq', 1, true);
+
+
+--
+-- Name: page_abuse_flag_flag_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE page_abuse_flag_flag_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.page_abuse_flag_flag_id_seq OWNER TO wd;
+
+--
+-- Name: page_abuse_flag_flag_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE page_abuse_flag_flag_id_seq OWNED BY page_abuse_flag.flag_id;
+
+
+--
+-- Name: page_abuse_flag_flag_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('page_abuse_flag_flag_id_seq', 1, true);
+
+
+--
+-- Name: page_edit_lock_lock_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE page_edit_lock_lock_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.page_edit_lock_lock_id_seq OWNER TO wd;
+
+--
+-- Name: page_edit_lock_lock_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE page_edit_lock_lock_id_seq OWNED BY page_edit_lock.lock_id;
+
+
+--
+-- Name: page_edit_lock_lock_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('page_edit_lock_lock_id_seq', 76, true);
+
+
+--
+-- Name: page_inclusion_inclusion_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE page_inclusion_inclusion_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.page_inclusion_inclusion_id_seq OWNER TO wd;
+
+--
+-- Name: page_inclusion_inclusion_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE page_inclusion_inclusion_id_seq OWNED BY page_inclusion.inclusion_id;
+
+
+--
+-- Name: page_inclusion_inclusion_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('page_inclusion_inclusion_id_seq', 1, false);
+
+
+--
+-- Name: page_link_link_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE page_link_link_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.page_link_link_id_seq OWNER TO wd;
+
+--
+-- Name: page_link_link_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE page_link_link_id_seq OWNED BY page_link.link_id;
+
+
+--
+-- Name: page_link_link_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('page_link_link_id_seq', 67, true);
+
+
+--
+-- Name: page_metadata_metadata_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE page_metadata_metadata_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.page_metadata_metadata_id_seq OWNER TO wd;
+
+--
+-- Name: page_metadata_metadata_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE page_metadata_metadata_id_seq OWNED BY page_metadata.metadata_id;
+
+
+--
+-- Name: page_metadata_metadata_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('page_metadata_metadata_id_seq', 52, true);
+
+
+--
+-- Name: page_page_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE page_page_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.page_page_id_seq OWNER TO wd;
+
+--
+-- Name: page_page_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE page_page_id_seq OWNED BY page.page_id;
+
+
+--
+-- Name: page_page_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('page_page_id_seq', 48, true);
+
+
+--
+-- Name: page_rate_vote_rate_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE page_rate_vote_rate_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.page_rate_vote_rate_id_seq OWNER TO wd;
+
+--
+-- Name: page_rate_vote_rate_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE page_rate_vote_rate_id_seq OWNED BY page_rate_vote.rate_id;
+
+
+--
+-- Name: page_rate_vote_rate_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('page_rate_vote_rate_id_seq', 1, false);
+
+
+--
+-- Name: page_revision_revision_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE page_revision_revision_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.page_revision_revision_id_seq OWNER TO wd;
+
+--
+-- Name: page_revision_revision_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE page_revision_revision_id_seq OWNED BY page_revision.revision_id;
+
+
+--
+-- Name: page_revision_revision_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('page_revision_revision_id_seq', 59, true);
+
+
+--
+-- Name: page_source_source_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE page_source_source_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.page_source_source_id_seq OWNER TO wd;
+
+--
+-- Name: page_source_source_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE page_source_source_id_seq OWNED BY page_source.source_id;
+
+
+--
+-- Name: page_source_source_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('page_source_source_id_seq', 58, true);
+
+
+--
+-- Name: page_tag_tag_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE page_tag_tag_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.page_tag_tag_id_seq OWNER TO wd;
+
+--
+-- Name: page_tag_tag_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE page_tag_tag_id_seq OWNED BY page_tag.tag_id;
+
+
+--
+-- Name: page_tag_tag_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('page_tag_tag_id_seq', 1, true);
+
+
+--
+-- Name: petition_campaign_campaign_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE petition_campaign_campaign_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.petition_campaign_campaign_id_seq OWNER TO wd;
+
+--
+-- Name: petition_campaign_campaign_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE petition_campaign_campaign_id_seq OWNED BY petition_campaign.campaign_id;
+
+
+--
+-- Name: petition_campaign_campaign_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('petition_campaign_campaign_id_seq', 1, false);
+
+
+--
+-- Name: petition_signature_signature_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE petition_signature_signature_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.petition_signature_signature_id_seq OWNER TO wd;
+
+--
+-- Name: petition_signature_signature_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE petition_signature_signature_id_seq OWNED BY petition_signature.signature_id;
+
+
+--
+-- Name: petition_signature_signature_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('petition_signature_signature_id_seq', 1, false);
+
+
+--
+-- Name: private_message_message_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE private_message_message_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.private_message_message_id_seq OWNER TO wd;
+
+--
+-- Name: private_message_message_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE private_message_message_id_seq OWNED BY private_message.message_id;
+
+
+--
+-- Name: private_message_message_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('private_message_message_id_seq', 1, false);
+
+
+--
+-- Name: private_user_block_block_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE private_user_block_block_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.private_user_block_block_id_seq OWNER TO wd;
+
+--
+-- Name: private_user_block_block_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE private_user_block_block_id_seq OWNED BY private_user_block.block_id;
+
+
+--
+-- Name: private_user_block_block_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('private_user_block_block_id_seq', 1, false);
+
+
+--
+-- Name: simpletodo_list_list_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE simpletodo_list_list_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.simpletodo_list_list_id_seq OWNER TO wd;
+
+--
+-- Name: simpletodo_list_list_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE simpletodo_list_list_id_seq OWNED BY simpletodo_list.list_id;
+
+
+--
+-- Name: simpletodo_list_list_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('simpletodo_list_list_id_seq', 1, false);
+
+
+--
+-- Name: site_backup_backup_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE site_backup_backup_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.site_backup_backup_id_seq OWNER TO wd;
+
+--
+-- Name: site_backup_backup_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE site_backup_backup_id_seq OWNED BY site_backup.backup_id;
+
+
+--
+-- Name: site_backup_backup_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('site_backup_backup_id_seq', 1, false);
+
+
+--
+-- Name: site_site_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE site_site_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.site_site_id_seq OWNER TO wd;
+
+--
+-- Name: site_site_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE site_site_id_seq OWNED BY site.site_id;
+
+
+--
+-- Name: site_site_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('site_site_id_seq', 3, true);
+
+
+--
+-- Name: site_tag_tag_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE site_tag_tag_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.site_tag_tag_id_seq OWNER TO wd;
+
+--
+-- Name: site_tag_tag_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE site_tag_tag_id_seq OWNED BY site_tag.tag_id;
+
+
+--
+-- Name: site_tag_tag_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('site_tag_tag_id_seq', 1, true);
+
+
+--
+-- Name: site_viewer_viewer_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE site_viewer_viewer_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.site_viewer_viewer_id_seq OWNER TO wd;
+
+--
+-- Name: site_viewer_viewer_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE site_viewer_viewer_id_seq OWNED BY site_viewer.viewer_id;
+
+
+--
+-- Name: site_viewer_viewer_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('site_viewer_viewer_id_seq', 1, false);
+
+
+--
+-- Name: theme_theme_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE theme_theme_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.theme_theme_id_seq OWNER TO wd;
+
+--
+-- Name: theme_theme_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE theme_theme_id_seq OWNED BY theme.theme_id;
+
+
+--
+-- Name: theme_theme_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('theme_theme_id_seq', 26, true);
+
+
+--
+-- Name: user_abuse_flag_flag_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE user_abuse_flag_flag_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.user_abuse_flag_flag_id_seq OWNER TO wd;
+
+--
+-- Name: user_abuse_flag_flag_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE user_abuse_flag_flag_id_seq OWNED BY user_abuse_flag.flag_id;
+
+
+--
+-- Name: user_abuse_flag_flag_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('user_abuse_flag_flag_id_seq', 1, false);
+
+
+--
+-- Name: user_block_block_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE user_block_block_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.user_block_block_id_seq OWNER TO wd;
+
+--
+-- Name: user_block_block_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE user_block_block_id_seq OWNED BY user_block.block_id;
+
+
+--
+-- Name: user_block_block_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('user_block_block_id_seq', 1, false);
+
+
+--
+-- Name: watched_forum_thread_watched_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE watched_forum_thread_watched_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.watched_forum_thread_watched_id_seq OWNER TO wd;
+
+--
+-- Name: watched_forum_thread_watched_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE watched_forum_thread_watched_id_seq OWNED BY watched_forum_thread.watched_id;
+
+
+--
+-- Name: watched_forum_thread_watched_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('watched_forum_thread_watched_id_seq', 1, false);
+
+
+--
+-- Name: watched_page_watched_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE watched_page_watched_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.watched_page_watched_id_seq OWNER TO wd;
+
+--
+-- Name: watched_page_watched_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE watched_page_watched_id_seq OWNED BY watched_page.watched_id;
+
+
+--
 -- Name: watched_page_watched_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
 --
 
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('watched_page', 'watched_id'), 1, false);
+SELECT pg_catalog.setval('watched_page_watched_id_seq', 1, false);
+
+
+--
+-- Name: admin_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE admin ALTER COLUMN admin_id SET DEFAULT nextval('admin_admin_id_seq'::regclass);
+
+
+--
+-- Name: notification_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE admin_notification ALTER COLUMN notification_id SET DEFAULT nextval('admin_notification_notification_id_seq'::regclass);
+
+
+--
+-- Name: flag_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE anonymous_abuse_flag ALTER COLUMN flag_id SET DEFAULT nextval('anonymous_abuse_flag_flag_id_seq'::regclass);
+
+
+--
+-- Name: category_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE category ALTER COLUMN category_id SET DEFAULT nextval('category_category_id_seq'::regclass);
+
+
+--
+-- Name: category_template_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE category_template ALTER COLUMN category_template_id SET DEFAULT nextval('category_template_category_template_id_seq'::regclass);
+
+
+--
+-- Name: comment_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE comment ALTER COLUMN comment_id SET DEFAULT nextval('comment_comment_id_seq'::regclass);
+
+
+--
+-- Name: revision_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE comment_revision ALTER COLUMN revision_id SET DEFAULT nextval('comment_revision_revision_id_seq'::regclass);
+
+
+--
+-- Name: contact_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE contact ALTER COLUMN contact_id SET DEFAULT nextval('contact_contact_id_seq'::regclass);
+
+
+--
+-- Name: redirect_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE domain_redirect ALTER COLUMN redirect_id SET DEFAULT nextval('domain_redirect_redirect_id_seq'::regclass);
+
+
+--
+-- Name: invitation_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE email_invitation ALTER COLUMN invitation_id SET DEFAULT nextval('email_invitation_invitation_id_seq'::regclass);
+
+
+--
+-- Name: file_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE file ALTER COLUMN file_id SET DEFAULT nextval('file_file_id_seq'::regclass);
+
+
+--
+-- Name: file_event_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE files_event ALTER COLUMN file_event_id SET DEFAULT nextval('files_event_file_event_id_seq'::regclass);
+
+
+--
+-- Name: category_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE forum_category ALTER COLUMN category_id SET DEFAULT nextval('forum_category_category_id_seq'::regclass);
+
+
+--
+-- Name: group_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE forum_group ALTER COLUMN group_id SET DEFAULT nextval('forum_group_group_id_seq'::regclass);
+
+
+--
+-- Name: post_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE forum_post ALTER COLUMN post_id SET DEFAULT nextval('forum_post_post_id_seq'::regclass);
+
+
+--
+-- Name: revision_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE forum_post_revision ALTER COLUMN revision_id SET DEFAULT nextval('forum_post_revision_revision_id_seq'::regclass);
+
+
+--
+-- Name: thread_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE forum_thread ALTER COLUMN thread_id SET DEFAULT nextval('forum_thread_thread_id_seq'::regclass);
+
+
+--
+-- Name: feed_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE front_forum_feed ALTER COLUMN feed_id SET DEFAULT nextval('front_forum_feed_feed_id_seq'::regclass);
+
+
+--
+-- Name: fts_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE fts_entry ALTER COLUMN fts_id SET DEFAULT nextval('fts_entry_fts_id_seq'::regclass);
+
+
+--
+-- Name: block_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE global_ip_block ALTER COLUMN block_id SET DEFAULT nextval('global_ip_block_block_id_seq'::regclass);
+
+
+--
+-- Name: block_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE global_user_block ALTER COLUMN block_id SET DEFAULT nextval('global_user_block_block_id_seq'::regclass);
+
+
+--
+-- Name: block_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE ip_block ALTER COLUMN block_id SET DEFAULT nextval('ip_block_block_id_seq'::regclass);
+
+
+--
+-- Name: license_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE license ALTER COLUMN license_id SET DEFAULT nextval('license_license_id_seq'::regclass);
+
+
+--
+-- Name: event_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE log_event ALTER COLUMN event_id SET DEFAULT nextval('log_event_event_id_seq'::regclass);
+
+
+--
+-- Name: member_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE member ALTER COLUMN member_id SET DEFAULT nextval('member_member_id_seq'::regclass);
+
+
+--
+-- Name: application_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE member_application ALTER COLUMN application_id SET DEFAULT nextval('member_application_application_id_seq'::regclass);
+
+
+--
+-- Name: invitation_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE member_invitation ALTER COLUMN invitation_id SET DEFAULT nextval('member_invitation_invitation_id_seq'::regclass);
+
+
+--
+-- Name: link_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE membership_link ALTER COLUMN link_id SET DEFAULT nextval('membership_link_link_id_seq'::regclass);
+
+
+--
+-- Name: moderator_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE moderator ALTER COLUMN moderator_id SET DEFAULT nextval('moderator_moderator_id_seq'::regclass);
+
+
+--
+-- Name: notification_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE notification ALTER COLUMN notification_id SET DEFAULT nextval('notification_notification_id_seq'::regclass);
+
+
+--
+-- Name: openid_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE openid_entry ALTER COLUMN openid_id SET DEFAULT nextval('openid_entry_openid_id_seq'::regclass);
+
+
+--
+-- Name: group_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE ozone_group ALTER COLUMN group_id SET DEFAULT nextval('ozone_group_group_id_seq'::regclass);
+
+
+--
+-- Name: group_permission_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE ozone_group_permission_modifier ALTER COLUMN group_permission_id SET DEFAULT nextval('ozone_group_permission_modifier_group_permission_id_seq'::regclass);
+
+
+--
+-- Name: permission_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE ozone_permission ALTER COLUMN permission_id SET DEFAULT nextval('ozone_permission_permission_id_seq'::regclass);
+
+
+--
+-- Name: user_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE ozone_user ALTER COLUMN user_id SET DEFAULT nextval('ozone_user_user_id_seq'::regclass);
+
+
+--
+-- Name: user_group_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE ozone_user_group_relation ALTER COLUMN user_group_id SET DEFAULT nextval('ozone_user_group_relation_user_group_id_seq'::regclass);
+
+
+--
+-- Name: user_permission_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE ozone_user_permission_modifier ALTER COLUMN user_permission_id SET DEFAULT nextval('ozone_user_permission_modifier_user_permission_id_seq'::regclass);
+
+
+--
+-- Name: page_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE page ALTER COLUMN page_id SET DEFAULT nextval('page_page_id_seq'::regclass);
+
+
+--
+-- Name: flag_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE page_abuse_flag ALTER COLUMN flag_id SET DEFAULT nextval('page_abuse_flag_flag_id_seq'::regclass);
+
+
+--
+-- Name: lock_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE page_edit_lock ALTER COLUMN lock_id SET DEFAULT nextval('page_edit_lock_lock_id_seq'::regclass);
+
+
+--
+-- Name: inclusion_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE page_inclusion ALTER COLUMN inclusion_id SET DEFAULT nextval('page_inclusion_inclusion_id_seq'::regclass);
+
+
+--
+-- Name: link_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE page_link ALTER COLUMN link_id SET DEFAULT nextval('page_link_link_id_seq'::regclass);
+
+
+--
+-- Name: metadata_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE page_metadata ALTER COLUMN metadata_id SET DEFAULT nextval('page_metadata_metadata_id_seq'::regclass);
+
+
+--
+-- Name: rate_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE page_rate_vote ALTER COLUMN rate_id SET DEFAULT nextval('page_rate_vote_rate_id_seq'::regclass);
+
+
+--
+-- Name: revision_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE page_revision ALTER COLUMN revision_id SET DEFAULT nextval('page_revision_revision_id_seq'::regclass);
+
+
+--
+-- Name: source_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE page_source ALTER COLUMN source_id SET DEFAULT nextval('page_source_source_id_seq'::regclass);
+
+
+--
+-- Name: tag_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE page_tag ALTER COLUMN tag_id SET DEFAULT nextval('page_tag_tag_id_seq'::regclass);
+
+
+--
+-- Name: campaign_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE petition_campaign ALTER COLUMN campaign_id SET DEFAULT nextval('petition_campaign_campaign_id_seq'::regclass);
+
+
+--
+-- Name: signature_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE petition_signature ALTER COLUMN signature_id SET DEFAULT nextval('petition_signature_signature_id_seq'::regclass);
+
+
+--
+-- Name: message_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE private_message ALTER COLUMN message_id SET DEFAULT nextval('private_message_message_id_seq'::regclass);
+
+
+--
+-- Name: block_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE private_user_block ALTER COLUMN block_id SET DEFAULT nextval('private_user_block_block_id_seq'::regclass);
+
+
+--
+-- Name: list_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE simpletodo_list ALTER COLUMN list_id SET DEFAULT nextval('simpletodo_list_list_id_seq'::regclass);
+
+
+--
+-- Name: site_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE site ALTER COLUMN site_id SET DEFAULT nextval('site_site_id_seq'::regclass);
+
+
+--
+-- Name: backup_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE site_backup ALTER COLUMN backup_id SET DEFAULT nextval('site_backup_backup_id_seq'::regclass);
+
+
+--
+-- Name: tag_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE site_tag ALTER COLUMN tag_id SET DEFAULT nextval('site_tag_tag_id_seq'::regclass);
+
+
+--
+-- Name: viewer_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE site_viewer ALTER COLUMN viewer_id SET DEFAULT nextval('site_viewer_viewer_id_seq'::regclass);
+
+
+--
+-- Name: theme_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE theme ALTER COLUMN theme_id SET DEFAULT nextval('theme_theme_id_seq'::regclass);
+
+
+--
+-- Name: flag_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE user_abuse_flag ALTER COLUMN flag_id SET DEFAULT nextval('user_abuse_flag_flag_id_seq'::regclass);
+
+
+--
+-- Name: block_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE user_block ALTER COLUMN block_id SET DEFAULT nextval('user_block_block_id_seq'::regclass);
+
+
+--
+-- Name: watched_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE watched_forum_thread ALTER COLUMN watched_id SET DEFAULT nextval('watched_forum_thread_watched_id_seq'::regclass);
+
+
+--
+-- Name: watched_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE watched_page ALTER COLUMN watched_id SET DEFAULT nextval('watched_page_watched_id_seq'::regclass);
 
 
 --
 -- Data for Name: admin; Type: TABLE DATA; Schema: public; Owner: wd
 --
 
-COPY "admin" (admin_id, site_id, user_id, founder) FROM stdin;
+COPY admin (admin_id, site_id, user_id, founder) FROM stdin;
 \.
 
 
@@ -1648,7 +3448,7 @@ COPY "admin" (admin_id, site_id, user_id, founder) FROM stdin;
 -- Data for Name: admin_notification; Type: TABLE DATA; Schema: public; Owner: wd
 --
 
-COPY admin_notification (notification_id, site_id, body, "type", viewed, date, extra, notify_online, notify_feed, notify_email) FROM stdin;
+COPY admin_notification (notification_id, site_id, body, type, viewed, date, extra, notify_online, notify_feed, notify_email) FROM stdin;
 \.
 
 
@@ -1664,26 +3464,50 @@ COPY anonymous_abuse_flag (flag_id, user_id, address, proxy, site_id, site_valid
 -- Data for Name: category; Type: TABLE DATA; Schema: public; Owner: wd
 --
 
-COPY category (category_id, site_id, name, theme_default, theme_id, permissions_default, permissions, license_default, license_id, license_other, nav_default, top_bar_page_name, side_bar_page_name, template_id, per_page_discussion, per_page_discussion_default, rating) FROM stdin;
-6	2	nav	t	20	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N
-7	3	_default	t	20	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	f	1	\N	f	nav:top	nav:side	\N	\N	t	\N
-9	3	admin	f	21	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N
-11	3	nav	t	20	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N
-14	2	search	t	20	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N
-15	1	nav	t	20	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N
-2	2	_default	t	20	f	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	f	1	\N	f	nav:top	nav:side	\N	f	t	\N
-13	2	admin	f	21	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N
-17	2	forum	t	20	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N
-12	2	system	t	20	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N
-1	1	_default	t	20	f	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	f	1	\N	f	nav:top	nav:side	\N	f	t	\N
-4	1	account	f	21	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N
-3	1	admin	f	21	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N
-16	1	search	t	20	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N
-5	1	user	f	21	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N
-8	3	profile	f	20	f	e:o;c:;m:;d:;a:;r:;z:;o:o	t	1	\N	f	nav:top	nav:profile-side	\N	\N	t	\N
-18	2	profile	t	20	t	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N
-19	1	system-all	t	20	t	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N
-20	1	system	t	20	t	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N
+COPY category (category_id, site_id, name, theme_default, theme_id, permissions_default, permissions, license_default, license_id, license_other, nav_default, top_bar_page_name, side_bar_page_name, template_id, per_page_discussion, per_page_discussion_default, rating, category_template_id) FROM stdin;
+6	2	nav	t	20	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
+7	3	_default	t	20	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	f	1	\N	f	nav:top	nav:side	\N	\N	t	\N	\N
+9	3	admin	f	21	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
+11	3	nav	t	20	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
+14	2	search	t	20	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
+15	1	nav	t	20	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
+2	2	_default	t	20	f	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	f	1	\N	f	nav:top	nav:side	\N	f	t	\N	\N
+13	2	admin	f	21	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
+17	2	forum	t	20	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
+12	2	system	t	20	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
+1	1	_default	t	20	f	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	f	1	\N	f	nav:top	nav:side	\N	f	t	\N	\N
+4	1	account	f	21	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
+3	1	admin	f	21	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
+16	1	search	t	20	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
+5	1	user	f	21	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
+8	3	profile	f	20	f	e:o;c:;m:;d:;a:;r:;z:;o:o	t	1	\N	f	nav:top	nav:profile-side	\N	\N	t	\N	\N
+18	2	profile	t	20	t	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
+19	1	system-all	t	20	t	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
+20	1	system	t	20	t	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
+\.
+
+
+--
+-- Data for Name: category_template; Type: TABLE DATA; Schema: public; Owner: wd
+--
+
+COPY category_template (category_template_id, source) FROM stdin;
+\.
+
+
+--
+-- Data for Name: comment; Type: TABLE DATA; Schema: public; Owner: wd
+--
+
+COPY comment (comment_id, page_id, parent_id, user_id, user_string, title, text, date_posted, site_id, revision_number, revision_id, date_last_edited, edited_user_id, edited_user_string) FROM stdin;
+\.
+
+
+--
+-- Data for Name: comment_revision; Type: TABLE DATA; Schema: public; Owner: wd
+--
+
+COPY comment_revision (revision_id, comment_id, user_id, user_string, text, title, date) FROM stdin;
 \.
 
 
@@ -1715,7 +3539,7 @@ COPY email_invitation (invitation_id, hash, email, name, user_id, site_id, becom
 -- Data for Name: file; Type: TABLE DATA; Schema: public; Owner: wd
 --
 
-COPY file (file_id, page_id, site_id, filename, mimetype, description, description_short, "comment", size, date_added, user_id, user_string, has_resized) FROM stdin;
+COPY file (file_id, page_id, site_id, filename, mimetype, description, description_short, comment, size, date_added, user_id, user_string, has_resized) FROM stdin;
 \.
 
 
@@ -1723,7 +3547,7 @@ COPY file (file_id, page_id, site_id, filename, mimetype, description, descripti
 -- Data for Name: files_event; Type: TABLE DATA; Schema: public; Owner: wd
 --
 
-COPY files_event (file_event_id, filename, date, user_id, user_string, "action", action_extra) FROM stdin;
+COPY files_event (file_event_id, filename, date, user_id, user_string, action, action_extra) FROM stdin;
 \.
 
 
@@ -1800,13 +3624,13 @@ COPY fts_entry (fts_id, page_id, title, unix_name, thread_id, site_id, text, vec
 32	32	Top	nav:top	\N	2	\n\n\nexample menu\n\nsubmenu\n\n\ncontact\n\n	'nav':2C 'top':1C,3C 'menu':5 'exampl':4 'contact':7 'submenu':6
 33	33	Template	profile:template	\N	2	\n\nProfile has not been created (yet).\n	'yet':9 'creat':8 'profil':2C,4 'templat':1C,3C
 34	5	Side	nav:side	\N	2	\n\n\nWelcome page\n\n\nWhat is a Wiki Site?\nHow to edit pages?\n\n\nHow to join this site?\nSite members\n\n\nRecent changes\nList all pages\nPage Tags\n\n\nSite Manager\n\nPage tags\n\n\nAdd a new page\n\n\nedit this panel\n	'add':33 'nav':2C 'new':35 'tag':28,32 'edit':13,37 'join':17 'list':24 'page':5,14,26,27,31,36 'side':1C,3C 'site':10,19,20,29 'wiki':9 'chang':23 'manag':30 'panel':39 'member':21 'recent':22 'welcom':4
-37	36	Congratulations, welcome to your new wiki!	start	\N	2	\n\nIf this is your first site\nThen there are some things you need to know:\n\nYou can configure all security and other settings online, using the Site Manager. When you invite other people to help build this site they don't have access to the Site Manager unless you make them administrators like yourself. Check out the Permissions section.\nYour Wikidot site has two menus, one at the side called 'nav:side', and one at the top called 'nav:top'. These are Wikidot pages, and you can edit them like any page.\nTo edit a page, go to the page and click the Edit button at the bottom. You can change everything in the main area of your page. The Wikidot system is easy to learn and powerful.\nYou can attach images and other files to any page, then display them and link to them in the page.\nEvery Wikidot page has a history of edits, and you can undo anything. So feel secure, and experiment.\nTo start a forum on your site, see the Site Manager » Forum.\nThe license for this Wikidot site has been set to Creative Commons Attribution-Share Alike 3.0 License. If you want to change this, use the Site Manager.\nIf you want to learn more, make sure you visit the Documentation section at www.wikidot.org\n\nMore information about the Wikidot project can be found at www.wikidot.org.\n	'go':104 '�':185 '3.0':203 'nav':78,86 'new':5C 'one':73,81 'see':181 'set':30,195 'top':84,87 'two':71 'use':32,211 'alik':202 'area':123 'call':77,85 'easi':131 'edit':95,101,111,163 'feel':170 'file':142 'help':42 'imag':139 'know':22 'like':60,97 'link':150 'main':122 'make':57,221 'need':20 'page':91,99,103,107,126,145,155,158 'side':76,79 'site':13,34,45,53,69,180,183,192,213 'sure':222 'undo':167 'want':207,217 'wiki':6C 'anyth':168 'build':43 'chang':118,209 'check':62 'click':109 'everi':156 'first':12 'forum':177,186 'found':238 'invit':38 'learn':133,219 'manag':35,54,184,214 'menus':72 'onlin':31 'peopl':40 'power':135 'secur':27,171 'share':201 'start':7C,175 'thing':18 'visit':224 'access':50 'attach':138 'bottom':115 'button':112 'common':198 'experi':173 'inform':231 'licens':188,204 'system':129 'unless':55 'welcom':2C 'creativ':197 'display':147 'everyth':119 'histori':161 'permiss':65 'project':235 'section':66,227 'wikidot':68,90,128,157,191,234 'attribut':200 'configur':25 'document':226 'administr':59 'congratul':1C 'www.wikidot.org':229,240 'attribution-shar':199
+37	36	Congratulations, welcome to your new wiki!	start	\N	2	\n\nIf this is your first site\nThen there are some things you need to know:\n\nYou can configure all security and other settings online, using the Site Manager. When you invite other people to help build this site they don't have access to the Site Manager unless you make them administrators like yourself. Check out the Permissions section.\nYour Wikidot site has two menus, one at the side called 'nav:side', and one at the top called 'nav:top'. These are Wikidot pages, and you can edit them like any page.\nTo edit a page, go to the page and click the Edit button at the bottom. You can change everything in the main area of your page. The Wikidot system is easy to learn and powerful.\nYou can attach images and other files to any page, then display them and link to them in the page.\nEvery Wikidot page has a history of edits, and you can undo anything. So feel secure, and experiment.\nTo start a forum on your site, see the Site Manager » Forum.\nThe license for this Wikidot site has been set to Creative Commons Attribution-Share Alike 3.0 License. If you want to change this, use the Site Manager.\nIf you want to learn more, make sure you visit the Documentation section at www.wikidot.org\n\nMore information about the Wikidot project can be found at www.wikidot.org.\n	'go':104 '3.0':203 'nav':78,86 'new':5C 'one':73,81 'see':181 'set':30,195 'top':84,87 'two':71 'use':32,211 '�':185 'alik':202 'area':123 'call':77,85 'easi':131 'edit':95,101,111,163 'feel':170 'file':142 'help':42 'imag':139 'know':22 'like':60,97 'link':150 'main':122 'make':57,221 'need':20 'page':91,99,103,107,126,145,155,158 'side':76,79 'site':13,34,45,53,69,180,183,192,213 'sure':222 'undo':167 'want':207,217 'wiki':6C 'anyth':168 'build':43 'chang':118,209 'check':62 'click':109 'everi':156 'first':12 'forum':177,186 'found':238 'invit':38 'learn':133,219 'manag':35,54,184,214 'menus':72 'onlin':31 'peopl':40 'power':135 'secur':27,171 'share':201 'start':7C,175 'thing':18 'visit':224 'access':50 'attach':138 'bottom':115 'button':112 'common':198 'experi':173 'inform':231 'licens':188,204 'system':129 'unless':55 'welcom':2C 'creativ':197 'display':147 'everyth':119 'histori':161 'permiss':65 'project':235 'section':66,227 'wikidot':68,90,128,157,191,234 'attribut':200 'configur':25 'document':226 'administr':59 'congratul':1C 'www.wikidot.org':229,240 'attribution-shar':199
 39	37	List of all wikis	system-all:all-sites	\N	1	\n\nBelow is the list of public visible Wikis hosted at this service:\n\n	'host':19 'list':1C,14 'site':10C 'wiki':4C,18 'public':16 'servic':22 'system':6C 'visibl':17 'all-sit':8C 'system-al':5C
 40	38	List wikis by tags	system-all:sites-by-tags	\N	1	\n\n\n\n	'tag':4C,11C 'list':1C 'site':9C 'wiki':2C 'system':6C 'system-al':5C 'sites-by-tag':8C
 41	39	Search	system-all:search	\N	1	\n\n\nSearch all Wikis\nPerform a search through all public and visible wikis.\n\n\n\nSearch users\nTo look for someone, please enter:\n\nemail address of a person you are looking for (this will look for exact match)\nany part of the screen name or realname (lists all Users matching the query)\n\n\n\n	'list':49 'look':21,33,37 'name':46 'part':42 'user':19,51 'wiki':8,17 'email':26 'enter':25 'exact':39 'match':40,52 'pleas':24 'queri':54 'person':30 'public':14 'screen':45 'search':1C,5C,6,11,18 'someon':23 'system':3C 'visibl':16 'address':27 'perform':9 'realnam':48 'system-al':2C
 42	40	Activity across all wikis	system-all:activity	\N	1	\n\n\n\n\nRecent edits (all wikis)\n\n\n\nTop Sites\n\n\nTop Forums\n\n\nNew users\n\n\nSome statistics\n\n\n\n\n	'new':17 'top':13,15 'edit':10 'site':14 'user':18 'wiki':4C,12 'activ':1C,8C 'forum':16 'across':2C 'recent':9 'system':6C 'statist':20 'system-al':5C
-43	23	Welcome to your new Wikidot installation!	start	\N	1	\n\nCongratulations, you have successfully installed Wikidot software on your computer!\nWhat to do next\nCustomize this wiki\nWikidot consists of several wiki sites, not just one. Right now you are on the main wiki. Customize it!\n\nYou can configure all security and other settings online, using the Site Manager. When you invite other people to help build this site they don't have access to the Site Manager unless you make them administrators like yourself. Check out the Permissions section.\nYour Wikidot site has two menus, one at the side called 'nav:side', and one at the top called 'nav:top'. These are Wikidot pages, and you can edit them like any page.\nTo edit a page, go to the page and click the Edit button at the bottom. You can change everything in the main area of your page. The Wikidot system is easy to learn and powerful.\nYou can attach images and other files to any page, then display them and link to them in the page.\nEvery Wikidot page has a history of edits, and you can undo anything. So feel secure, and experiment.\nTo start a forum on your site, see the Site Manager » Forum.\nThe license for this Wikidot site has been set to Creative Commons Attribution-Share Alike 3.0 License. If you want to change this, use the Site Manager.\nIf you want to learn more, make sure you visit the Documentation section at www.wikidot.org\n\nCustomize default template\nDefault initial template for other wikis is located at template-en. If someone creates a new wiki, this one is cloned to the new address. A good thing to do is to go to template-en and customize it.\nCreate more templates\nSimply create wikis with unix names starting with "template-" (e.g. "template-pl", "template-blog") and your users will be able to choose which wiki they want to start with.\nVisit Wikidot.org\nGo to www.wikidot.org — home of the Wikidot software — for extra documentation, howtos, tips and support.\n\nMore information about the Wikidot project can be found at www.wikidot.org.\nSearch all wikis\n\n\nSearch users\n\n	'en':265,291 'go':125,287,331 'pl':310 '�':206 '3.0':224 'abl':319 'e.g':307 'nav':99,107 'new':4C,270,278 'one':33,94,102,273 'see':202 'set':51,216 'tip':345 'top':105,108 'two':92 'use':53,232 '—':334,340 'alik':223 'area':144 'blog':313 'call':98,106 'easi':152 'edit':116,122,132,184 'feel':191 'file':163 'good':281 'help':63 'home':335 'imag':160 'like':81,118 'link':171 'main':40,143 'make':78,242 'name':303 'next':21 'page':112,120,124,128,147,166,176,179 'side':97,100 'site':30,55,66,74,90,201,204,213,234 'sure':243 'undo':188 'unix':302 'user':316,363 'want':228,238,325 'wiki':24,29,41,259,271,300,323,361 'anyth':189 'build':64 'chang':139,230 'check':83 'choos':321 'click':130 'clone':275 'creat':268,295,299 'everi':177 'extra':342 'forum':198,207 'found':356 'howto':344 'initi':255 'invit':59 'learn':154,240 'locat':261 'manag':56,75,205,235 'menus':93 'onlin':52 'peopl':61 'power':156 'right':34 'secur':48,192 'sever':28 'share':222 'start':7C,196,304,327 'thing':282 'visit':245,329 'access':71 'attach':159 'bottom':136 'button':133 'common':219 'comput':17 'custom':22,42,251,293 'experi':194 'inform':349 'instal':6C,12 'licens':209,225 'search':359,362 'simpli':298 'someon':267 'system':150 'unless':76 'welcom':1C 'address':279 'consist':26 'creativ':218 'default':252,254 'display':168 'everyth':140 'histori':182 'permiss':86 'project':353 'section':87,248 'softwar':14,339 'success':11 'support':347 'templat':253,256,264,290,297,306,309,312 'wikidot':5C,13,25,89,111,149,178,212,338,352 'attribut':221 'configur':46 'document':247,343 'administr':80 'congratul':8 'template-en':263,289 'template-pl':308 'wikidot.org':330 'template-blog':311 'www.wikidot.org':250,333,358 'attribution-shar':220
-44	41	What Is A Wiki	what-is-a-wiki	\N	1	\n\nAccording to Wikipedia, the world largest wiki site:\n\nA Wiki ([ˈwiː.kiː] &lt;wee-kee&gt; or [ˈwɪ.kiː] &lt;wick-ey&gt;) is a type of website that allows users to add, remove, or otherwise edit and change most content very quickly and easily.\n\nAnd that is it! As a part of a farm of wikis this site is a great tool that you can use to publish content, upload files, communicate and collaborate.\n	'ey':30 'add':40 'kee':24 'use':74 'wee':23 'edit':44 'farm':62 'file':79 'ki�':21,27 'part':59 'site':17,66 'tool':70 'type':33 'user':38 'wick':29 'wiki':4C,9C,16,19,64 'allow':37 'chang':46 'great':69 'quick':50 'remov':41 'world':14 '�w�':26 'accord':10 'easili':52 'upload':78 'websit':35 'wee-ke':22 '�wi�':20 'content':48,77 'largest':15 'publish':76 'wick-ey':28 'collabor':82 'communic':80 'otherwis':43 'wikipedia':12 'what-is-a-wiki':5C
+43	23	Welcome to your new Wikidot installation!	start	\N	1	\n\nCongratulations, you have successfully installed Wikidot software on your computer!\nWhat to do next\nCustomize this wiki\nWikidot consists of several wiki sites, not just one. Right now you are on the main wiki. Customize it!\n\nYou can configure all security and other settings online, using the Site Manager. When you invite other people to help build this site they don't have access to the Site Manager unless you make them administrators like yourself. Check out the Permissions section.\nYour Wikidot site has two menus, one at the side called 'nav:side', and one at the top called 'nav:top'. These are Wikidot pages, and you can edit them like any page.\nTo edit a page, go to the page and click the Edit button at the bottom. You can change everything in the main area of your page. The Wikidot system is easy to learn and powerful.\nYou can attach images and other files to any page, then display them and link to them in the page.\nEvery Wikidot page has a history of edits, and you can undo anything. So feel secure, and experiment.\nTo start a forum on your site, see the Site Manager » Forum.\nThe license for this Wikidot site has been set to Creative Commons Attribution-Share Alike 3.0 License. If you want to change this, use the Site Manager.\nIf you want to learn more, make sure you visit the Documentation section at www.wikidot.org\n\nCustomize default template\nDefault initial template for other wikis is located at template-en. If someone creates a new wiki, this one is cloned to the new address. A good thing to do is to go to template-en and customize it.\nCreate more templates\nSimply create wikis with unix names starting with "template-" (e.g. "template-pl", "template-blog") and your users will be able to choose which wiki they want to start with.\nVisit Wikidot.org\nGo to www.wikidot.org — home of the Wikidot software — for extra documentation, howtos, tips and support.\n\nMore information about the Wikidot project can be found at www.wikidot.org.\nSearch all wikis\n\n\nSearch users\n\n	'en':265,291 'go':125,287,331 'pl':310 '3.0':224 'abl':319 'e.g':307 'nav':99,107 'new':4C,270,278 'one':33,94,102,273 'see':202 'set':51,216 'tip':345 'top':105,108 'two':92 'use':53,232 '—':334,340 '�':206 'alik':223 'area':144 'blog':313 'call':98,106 'easi':152 'edit':116,122,132,184 'feel':191 'file':163 'good':281 'help':63 'home':335 'imag':160 'like':81,118 'link':171 'main':40,143 'make':78,242 'name':303 'next':21 'page':112,120,124,128,147,166,176,179 'side':97,100 'site':30,55,66,74,90,201,204,213,234 'sure':243 'undo':188 'unix':302 'user':316,363 'want':228,238,325 'wiki':24,29,41,259,271,300,323,361 'anyth':189 'build':64 'chang':139,230 'check':83 'choos':321 'click':130 'clone':275 'creat':268,295,299 'everi':177 'extra':342 'forum':198,207 'found':356 'howto':344 'initi':255 'invit':59 'learn':154,240 'locat':261 'manag':56,75,205,235 'menus':93 'onlin':52 'peopl':61 'power':156 'right':34 'secur':48,192 'sever':28 'share':222 'start':7C,196,304,327 'thing':282 'visit':245,329 'access':71 'attach':159 'bottom':136 'button':133 'common':219 'comput':17 'custom':22,42,251,293 'experi':194 'inform':349 'instal':6C,12 'licens':209,225 'search':359,362 'simpli':298 'someon':267 'system':150 'unless':76 'welcom':1C 'address':279 'consist':26 'creativ':218 'default':252,254 'display':168 'everyth':140 'histori':182 'permiss':86 'project':353 'section':87,248 'softwar':14,339 'success':11 'support':347 'templat':253,256,264,290,297,306,309,312 'wikidot':5C,13,25,89,111,149,178,212,338,352 'attribut':221 'configur':46 'document':247,343 'administr':80 'congratul':8 'template-en':263,289 'template-pl':308 'wikidot.org':330 'template-blog':311 'www.wikidot.org':250,333,358 'attribution-shar':220
+44	41	What Is A Wiki	what-is-a-wiki	\N	1	\n\nAccording to Wikipedia, the world largest wiki site:\n\nA Wiki ([ˈwiː.kiː] &lt;wee-kee&gt; or [ˈwɪ.kiː] &lt;wick-ey&gt;) is a type of website that allows users to add, remove, or otherwise edit and change most content very quickly and easily.\n\nAnd that is it! As a part of a farm of wikis this site is a great tool that you can use to publish content, upload files, communicate and collaborate.\n	'ey':30 'add':40 'kee':24 'use':74 'wee':23 'edit':44 'farm':62 'file':79 'part':59 'site':17,66 'tool':70 'type':33 'user':38 'wick':29 'wiki':4C,9C,16,19,64 'allow':37 'chang':46 'great':69 'ki�':21,27 'quick':50 'remov':41 'world':14 'accord':10 'easili':52 'upload':78 'websit':35 'wee-ke':22 'content':48,77 'largest':15 'publish':76 'wick-ey':28 '�w�':26 'collabor':82 'communic':80 'otherwis':43 '�wi�':20 'wikipedia':12 'what-is-a-wiki':5C
 45	13	How To Edit Pages - Quickstart	how-to-edit-pages	\N	2	\n\nIf you are allowed to edit pages in this Site, simply click on edit button at the bottom of the page. This will open an editor with a toolbar pallette with options.\nTo create a link to a new page, use syntax: [[[new page name]]] or [[[new page name | text to display]]]. Follow the link (which should have a different color if page does not exist) and create a new page and edit it!\nAlthough creating and editing pages is easy, there are a lot more options that allows creating powerful sites. Please visit Documentation pages (at wikidot.org) to learn more.\n	'lot':95 'new':49,53,57,80 'use':51 'easi':91 'edit':3C,9C,16,24,83,88 'link':46,65 'name':55,59 'open':34 'page':4C,10C,17,31,50,54,58,73,81,89,106 'site':20,102 'text':60 'allow':14,99 'click':22 'color':71 'creat':44,78,86,100 'exist':76 'learn':110 'pleas':103 'power':101 'visit':104 'bottom':28 'button':25 'differ':70 'editor':36 'follow':63 'option':42,97 'simpli':21 'syntax':52 'display':62 'pallett':40 'toolbar':39 'although':85 'document':105 'quickstart':5C 'wikidot.org':108 'how-to-edit-pag':6C
 46	42	How To Edit Pages	how-to-edit-pages	\N	1	\n\nIf you are allowed to edit pages in this Site, simply click on edit button at the bottom of the page. This will open an editor with a toolbar pallette with options.\nTo create a link to a new page, use syntax: [[[new page name]]] or [[[new page name | text to display]]]. Follow the link (which should have a different color if page does not exist) and create a new page and edit it!\nAlthough creating and editing pages is easy, there are a lot more options that allows creating powerful sites. Please visit Documentation pages (at wikidot.org) to learn more.\n	'lot':94 'new':48,52,56,79 'use':50 'easi':90 'edit':3C,8C,15,23,82,87 'link':45,64 'name':54,58 'open':33 'page':4C,9C,16,30,49,53,57,72,80,88,105 'site':19,101 'text':59 'allow':13,98 'click':21 'color':70 'creat':43,77,85,99 'exist':75 'learn':109 'pleas':102 'power':100 'visit':103 'bottom':27 'button':24 'differ':69 'editor':35 'follow':62 'option':41,96 'simpli':20 'syntax':51 'display':61 'pallett':39 'toolbar':38 'although':84 'document':104 'wikidot.org':107 'how-to-edit-pag':5C
 47	43	Wiki Members	system:members	\N	1	\n\nMembers:\n\n\nModerators\n\n\nAdmins\n\n	'wiki':1C 'admin':7 'moder':6 'member':2C,4C,5 'system':3C
@@ -1863,7 +3687,7 @@ COPY license (license_id, name, description, sort) FROM stdin;
 -- Data for Name: log_event; Type: TABLE DATA; Schema: public; Owner: wd
 --
 
-COPY log_event (event_id, date, user_id, ip, proxy, "type", site_id, page_id, revision_id, thread_id, post_id, user_agent, text) FROM stdin;
+COPY log_event (event_id, date, user_id, ip, proxy, type, site_id, page_id, revision_id, thread_id, post_id, user_agent, text) FROM stdin;
 1	2008-01-18 01:34:52	\N	127.0.0.1	\N	FAILED_LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Failed login for username "asd"
 2	2008-01-18 01:46:00	\N	127.0.0.1	\N	FAILED_LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Failed login for username "sadasd"
 3	2008-01-18 01:46:47	1	127.0.0.1	\N	LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	User "Admin" (admin@wikidot) logged in.
@@ -1964,7 +3788,7 @@ COPY member (member_id, site_id, user_id, date_joined, allow_newsletter) FROM st
 -- Data for Name: member_application; Type: TABLE DATA; Schema: public; Owner: wd
 --
 
-COPY member_application (application_id, site_id, user_id, status, date, "comment", reply) FROM stdin;
+COPY member_application (application_id, site_id, user_id, status, date, comment, reply) FROM stdin;
 \.
 
 
@@ -1980,7 +3804,7 @@ COPY member_invitation (invitation_id, site_id, user_id, by_user_id, date, body)
 -- Data for Name: membership_link; Type: TABLE DATA; Schema: public; Owner: wd
 --
 
-COPY membership_link (link_id, site_id, by_user_id, user_id, date, "type") FROM stdin;
+COPY membership_link (link_id, site_id, by_user_id, user_id, date, type) FROM stdin;
 \.
 
 
@@ -1996,7 +3820,7 @@ COPY moderator (moderator_id, site_id, user_id, permissions) FROM stdin;
 -- Data for Name: notification; Type: TABLE DATA; Schema: public; Owner: wd
 --
 
-COPY notification (notification_id, user_id, body, "type", viewed, date, extra, notify_online, notify_feed, notify_email) FROM stdin;
+COPY notification (notification_id, user_id, body, type, viewed, date, extra, notify_online, notify_feed, notify_email) FROM stdin;
 \.
 
 
@@ -2004,7 +3828,7 @@ COPY notification (notification_id, user_id, body, "type", viewed, date, extra, 
 -- Data for Name: openid_entry; Type: TABLE DATA; Schema: public; Owner: wd
 --
 
-COPY openid_entry (openid_id, site_id, page_id, "type", user_id, url, server_url) FROM stdin;
+COPY openid_entry (openid_id, site_id, page_id, type, user_id, url, server_url) FROM stdin;
 \.
 
 
@@ -2028,7 +3852,7 @@ COPY ozone_group_permission_modifier (group_permission_id, group_id, permission_
 -- Data for Name: ozone_lock; Type: TABLE DATA; Schema: public; Owner: wd
 --
 
-COPY ozone_lock ("key") FROM stdin;
+COPY ozone_lock (key) FROM stdin;
 \.
 
 
@@ -2052,7 +3876,7 @@ COPY ozone_session (session_id, started, last_accessed, ip_address, check_ip, in
 -- Data for Name: ozone_user; Type: TABLE DATA; Schema: public; Owner: wd
 --
 
-COPY ozone_user (user_id, name, nick_name, "password", email, unix_name, last_login, registered_date, super_admin, super_moderator, "language") FROM stdin;
+COPY ozone_user (user_id, name, nick_name, password, email, unix_name, last_login, registered_date, super_admin, super_moderator, language) FROM stdin;
 -1	Automatic	Automatic	\N	automatic@wikidot	automatic	\N	\N	f	f	en
 0	Anonymous	Anonymous	\N	anonymous@wikidot	anonymous	\N	\N	f	f	en
 1	admin@wikidot	Admin	a9e7f4848e40deb03cba8edd294d3a17	admin@wikidot	admin	2008-01-30 16:08:49	\N	t	f	en
@@ -2193,7 +4017,7 @@ COPY page_compiled (page_id, text, date_compiled) FROM stdin;
 -- Data for Name: page_edit_lock; Type: TABLE DATA; Schema: public; Owner: wd
 --
 
-COPY page_edit_lock (lock_id, page_id, "mode", section_id, range_start, range_end, page_unix_name, user_id, user_string, session_id, date_started, date_last_accessed, secret, site_id) FROM stdin;
+COPY page_edit_lock (lock_id, page_id, mode, section_id, range_start, range_end, page_unix_name, user_id, user_string, session_id, date_started, date_last_accessed, secret, site_id) FROM stdin;
 \.
 
 
@@ -2488,7 +4312,7 @@ COPY private_user_block (block_id, user_id, blocked_user_id) FROM stdin;
 -- Data for Name: profile; Type: TABLE DATA; Schema: public; Owner: wd
 --
 
-COPY profile (user_id, real_name, gender, birthday_day, birthday_month, birthday_year, about, "location", website, im_aim, im_gadu_gadu, im_google_talk, im_icq, im_jabber, im_msn, im_yahoo, change_screen_name_count) FROM stdin;
+COPY profile (user_id, real_name, gender, birthday_day, birthday_month, birthday_year, about, location, website, im_aim, im_gadu_gadu, im_google_talk, im_icq, im_jabber, im_msn, im_yahoo, change_screen_name_count) FROM stdin;
 1	\N	\N	\N	\N	\N	Wikidot administrator.	\N	\N	\N	\N	\N	\N	\N	\N	\N	0
 \.
 
@@ -2505,7 +4329,7 @@ COPY simpletodo_list (list_id, site_id, label, title, data) FROM stdin;
 -- Data for Name: site; Type: TABLE DATA; Schema: public; Owner: wd
 --
 
-COPY site (site_id, name, subtitle, unix_name, description, "language", date_created, custom_domain, visible, default_page, private, deleted) FROM stdin;
+COPY site (site_id, name, subtitle, unix_name, description, language, date_created, custom_domain, visible, default_page, private, deleted) FROM stdin;
 3	User profiles	\N	profiles	\N	en	\N	\N	t	start	f	f
 2	Template site (en)	Default template wiki	template-en		en	\N	\N	t	start	f	f
 1	Wikidot - Free Wiki Software	fresh installation	www		en	\N	\N	t	start	f	f
@@ -2595,6 +4419,9 @@ COPY theme (theme_id, name, unix_name, abstract, extends_theme_id, variant_of_th
 21	Webbish - no side bar	webbish2-no-side-bar	f	20	20	f	\N	f	t	0	\N	0
 22	Shiny	shiny	f	1	\N	f	\N	t	t	0	\N	0
 23	Shiny - no side bar	shiny-no-side-bar	f	22	22	f	\N	f	t	0	\N	0
+24	Bloo	bloo	f	1	\N	f	\N	t	t	0	\N	0
+25	Bloo - no side bar	bloo-no-side-bar	f	24	24	f	\N	f	t	0	\N	0
+26	Basic	basic	f	1	\N	f	\N	t	t	0	\N	0
 \.
 
 
@@ -2603,6 +4430,14 @@ COPY theme (theme_id, name, unix_name, abstract, extends_theme_id, variant_of_th
 --
 
 COPY theme_preview (theme_id, body) FROM stdin;
+\.
+
+
+--
+-- Data for Name: ucookie; Type: TABLE DATA; Schema: public; Owner: wd
+--
+
+COPY ucookie (ucookie_id, site_id, session_id, date_granted) FROM stdin;
 \.
 
 
@@ -2632,13 +4467,21 @@ COPY user_block (block_id, site_id, user_id, reason, date_blocked) FROM stdin;
 
 
 --
+-- Data for Name: user_karma; Type: TABLE DATA; Schema: public; Owner: wd
+--
+
+COPY user_karma (user_id, points, level) FROM stdin;
+\.
+
+
+--
 -- Data for Name: user_settings; Type: TABLE DATA; Schema: public; Owner: wd
 --
 
 COPY user_settings (user_id, receive_invitations, receive_pm, notify_online, notify_feed, notify_email, receive_newsletter, receive_digest, allow_site_newsletters_default, max_sites_admin) FROM stdin;
+1	t	a    	*	*	\N	t	t	t	3
 \.
 
-INSERT INTO user_settings (user_id) VALUES (1);
 
 --
 -- Data for Name: watched_forum_thread; Type: TABLE DATA; Schema: public; Owner: wd
@@ -2660,7 +4503,7 @@ COPY watched_page (watched_id, user_id, page_id) FROM stdin;
 -- Name: admin__site_id__user_id__unique; Type: CONSTRAINT; Schema: public; Owner: wd; Tablespace: 
 --
 
-ALTER TABLE ONLY "admin"
+ALTER TABLE ONLY admin
     ADD CONSTRAINT admin__site_id__user_id__unique UNIQUE (site_id, user_id);
 
 
@@ -2676,7 +4519,7 @@ ALTER TABLE ONLY admin_notification
 -- Name: admin_pkey; Type: CONSTRAINT; Schema: public; Owner: wd; Tablespace: 
 --
 
-ALTER TABLE ONLY "admin"
+ALTER TABLE ONLY admin
     ADD CONSTRAINT admin_pkey PRIMARY KEY (admin_id);
 
 
@@ -2694,6 +4537,30 @@ ALTER TABLE ONLY anonymous_abuse_flag
 
 ALTER TABLE ONLY category
     ADD CONSTRAINT category_pkey PRIMARY KEY (category_id);
+
+
+--
+-- Name: category_template_pkey; Type: CONSTRAINT; Schema: public; Owner: wd; Tablespace: 
+--
+
+ALTER TABLE ONLY category_template
+    ADD CONSTRAINT category_template_pkey PRIMARY KEY (category_template_id);
+
+
+--
+-- Name: comment_pkey; Type: CONSTRAINT; Schema: public; Owner: wd; Tablespace: 
+--
+
+ALTER TABLE ONLY comment
+    ADD CONSTRAINT comment_pkey PRIMARY KEY (comment_id);
+
+
+--
+-- Name: comment_revision_pkey; Type: CONSTRAINT; Schema: public; Owner: wd; Tablespace: 
+--
+
+ALTER TABLE ONLY comment_revision
+    ADD CONSTRAINT comment_revision_pkey PRIMARY KEY (revision_id);
 
 
 --
@@ -2981,7 +4848,7 @@ ALTER TABLE ONLY ozone_group
 --
 
 ALTER TABLE ONLY ozone_lock
-    ADD CONSTRAINT ozone_lock_pkey PRIMARY KEY ("key");
+    ADD CONSTRAINT ozone_lock_pkey PRIMARY KEY (key);
 
 
 --
@@ -3313,6 +5180,14 @@ ALTER TABLE ONLY theme_preview
 
 
 --
+-- Name: ucookie_pkey; Type: CONSTRAINT; Schema: public; Owner: wd; Tablespace: 
+--
+
+ALTER TABLE ONLY ucookie
+    ADD CONSTRAINT ucookie_pkey PRIMARY KEY (ucookie_id);
+
+
+--
 -- Name: user_abuse_flag_pkey; Type: CONSTRAINT; Schema: public; Owner: wd; Tablespace: 
 --
 
@@ -3334,6 +5209,14 @@ ALTER TABLE ONLY user_block
 
 ALTER TABLE ONLY user_block
     ADD CONSTRAINT user_block_pkey PRIMARY KEY (block_id);
+
+
+--
+-- Name: user_karma_pkey; Type: CONSTRAINT; Schema: public; Owner: wd; Tablespace: 
+--
+
+ALTER TABLE ONLY user_karma
+    ADD CONSTRAINT user_karma_pkey PRIMARY KEY (user_id);
 
 
 --
@@ -3590,7 +5473,7 @@ CREATE INDEX log_event__site_id__idx ON log_event USING btree (site_id);
 -- Name: log_event__type__idx; Type: INDEX; Schema: public; Owner: wd; Tablespace: 
 --
 
-CREATE INDEX log_event__type__idx ON log_event USING btree ("type");
+CREATE INDEX log_event__type__idx ON log_event USING btree (type);
 
 
 --
@@ -3825,6 +5708,20 @@ CREATE INDEX site__visible__private__idx ON site USING btree (visible, private);
 
 
 --
+-- Name: ucookie__session_id_idx; Type: INDEX; Schema: public; Owner: wd; Tablespace: 
+--
+
+CREATE INDEX ucookie__session_id_idx ON ucookie USING btree (session_id);
+
+
+--
+-- Name: ucookie__site_id; Type: INDEX; Schema: public; Owner: wd; Tablespace: 
+--
+
+CREATE INDEX ucookie__site_id ON ucookie USING btree (site_id);
+
+
+--
 -- Name: user_abuse_flag__site_id__idx; Type: INDEX; Schema: public; Owner: wd; Tablespace: 
 --
 
@@ -3975,7 +5872,7 @@ CREATE RULE get_pkey_on_insert AS ON INSERT TO member DO SELECT currval('member_
 -- Name: get_pkey_on_insert; Type: RULE; Schema: public; Owner: wd
 --
 
-CREATE RULE get_pkey_on_insert AS ON INSERT TO "admin" DO SELECT currval('admin_admin_id_seq'::regclass) AS id;
+CREATE RULE get_pkey_on_insert AS ON INSERT TO admin DO SELECT currval('admin_admin_id_seq'::regclass) AS id;
 
 
 --
@@ -4234,7 +6131,7 @@ CREATE RULE get_pkey_on_insert AS ON INSERT TO simpletodo_list DO SELECT currval
 -- Name: admin__ozone_user; Type: FK CONSTRAINT; Schema: public; Owner: wd
 --
 
-ALTER TABLE ONLY "admin"
+ALTER TABLE ONLY admin
     ADD CONSTRAINT admin__ozone_user FOREIGN KEY (user_id) REFERENCES ozone_user(user_id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
@@ -4242,7 +6139,7 @@ ALTER TABLE ONLY "admin"
 -- Name: admin__site; Type: FK CONSTRAINT; Schema: public; Owner: wd
 --
 
-ALTER TABLE ONLY "admin"
+ALTER TABLE ONLY admin
     ADD CONSTRAINT admin__site FOREIGN KEY (site_id) REFERENCES site(site_id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
@@ -4799,6 +6696,22 @@ ALTER TABLE ONLY theme
 
 
 --
+-- Name: ucookie__ozone_session; Type: FK CONSTRAINT; Schema: public; Owner: wd
+--
+
+ALTER TABLE ONLY ucookie
+    ADD CONSTRAINT ucookie__ozone_session FOREIGN KEY (session_id) REFERENCES ozone_session(session_id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: ucookie__site; Type: FK CONSTRAINT; Schema: public; Owner: wd
+--
+
+ALTER TABLE ONLY ucookie
+    ADD CONSTRAINT ucookie__site FOREIGN KEY (site_id) REFERENCES site(site_id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
 -- Name: user_abuse_flag__ozone_user__target_user_id; Type: FK CONSTRAINT; Schema: public; Owner: wd
 --
 
@@ -4886,7 +6799,6 @@ REVOKE ALL ON SCHEMA public FROM PUBLIC;
 REVOKE ALL ON SCHEMA public FROM postgres;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO wd;
-GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
