@@ -1400,9 +1400,8 @@ class WikiPageAction extends SmartyAction {
 			}	
 		}
 		// insert all the other
-		var_dump($tags);
+
 		foreach($tags as $tag){
-			echo $tag;
 			if(trim($tag) != ''){
 				$dbTag = new DB_PageTag();
 				$dbTag->setSiteId($site->getSiteId());
