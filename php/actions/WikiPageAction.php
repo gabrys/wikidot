@@ -1383,10 +1383,13 @@ class WikiPageAction extends SmartyAction {
 		
 		$tags = preg_split("/[ ,]+/", $tags);
 		
-		foreach($tags as & $tag){
-			$tag = substr($tag, 0, 64);
+		$tagstmp = array();
+		foreach($tags as $tag){
+			$tagstmp[] = substr($tag, 0, 64);
 		}
 		
+		$tags = $tagstmp;
+
 		$tags = array_unique($tags);
 
 		foreach($dbTags as $dbTag){
@@ -1397,7 +1400,9 @@ class WikiPageAction extends SmartyAction {
 			}	
 		}
 		// insert all the other
+		var_dump($tags);
 		foreach($tags as $tag){
+			echo $tag;
 			if(trim($tag) != ''){
 				$dbTag = new DB_PageTag();
 				$dbTag->setSiteId($site->getSiteId());
