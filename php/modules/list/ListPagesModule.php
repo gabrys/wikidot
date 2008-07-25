@@ -36,12 +36,16 @@ class ListPagesModule extends SmartyModule {
     private $_vars = array();
     
     private $_pl;
+    
+    private $_parameterUrlPrefix = null;
 
     public function render($runData) {
         
         $site = $runData->getTemp("site");
         $pl = $runData->getParameterList();
         $this->_pl = $pl;
+        
+        $this->_parameterUrlPrefix = $pl->getParameterValue('urlAttrPrefix');
         /*
          * Read all parameters.
          */
@@ -53,7 +57,7 @@ class ListPagesModule extends SmartyModule {
         
         $categoryName = strtolower($categoryName);
         
-        $parmHash = md5(serialize($pl->asArray()));
+        $parmHash = md5(serialize($pl->asArrayAll()));
         $this->parameterhash = $parmHash;
     	/* Check if recursive. */
         foreach($this->_moduleChain as $m){
@@ -355,7 +359,7 @@ class ListPagesModule extends SmartyModule {
         	$limit = null;
         }
         
-        $pageNo = $pl->getParameterValue("p");
+        $pageNo = $pl->getParameterValue(($this->_parameterUrlPrefix ? ($this->_parameterUrlPrefix . '_') : '' ) . "p");
         if ($pageNo == null || !preg_match(';^[0-9]+$;', $pageNo)) {
             $pageNo = 1;
         }
@@ -381,13 +385,18 @@ class ListPagesModule extends SmartyModule {
         $runData->contextAdd("currentPage", $pageNo);
         $runData->contextAdd("count", $co);
         $runData->contextAdd("totalPages", $totalPages);
+        $runData->contextAdd('parameterUrlPrefix', $this->_parameterUrlPrefix);
         
         /* Pager's base url */
         $url = $_SERVER['REQUEST_URI'];
         if(($url == '' || $url == '/') && isset($pageUnixName)) {
         	$url = '/' . $pageUnixName;
         }
-        $url = preg_replace(';(/p/[0-9]+)|$;', '/p/%d', $url, 1);
+        $pref = '';
+        if($this->_parameterUrlPrefix) {
+        	$pref = $this->_parameterUrlPrefix . '_';
+        }
+        $url = preg_replace(';(/'.$pref.'p/[0-9]+)|$;', '/'.$pref.'p/%d', $url, 1);
         $runData->contextAdd("pagerUrl", $url);
         
         switch ($order) {
@@ -790,6 +799,9 @@ class ListPagesModule extends SmartyModule {
     	$pl = $this->_pl;
     	$val = $pl->getParameterValue($name, "MODULE", "AMODULE");
     	if($fromUrl && $val == '@URL') {
+    		if($this->_parameterUrlPrefix){
+    			$name = $this->_parameterUrlPrefix . '_' . $name;
+    		}
     		$val = $pl->resolveParameter($name, 'GET');
     	}
     	

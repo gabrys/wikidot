@@ -21,7 +21,7 @@
 	<table name="site_tag">
 		<column name="tag_id" type="serial" primaryKey="true"/>
 		<column name="site_id" type="int"/>
-		<column name="tag" type="varchar(20)"/>
+		<column name="tag" type="varchar(64)"/>
 	</table>
 
 	<table name="category">
@@ -620,7 +620,7 @@
 		<column name="tag_id" type="bigserial" primaryKey="true"/>
 		<column name="site_id" type="int"/>
 		<column name="page_id" type="int"/>
-		<column name="tag" type="varchar(20)"/>
+		<column name="tag" type="varchar(64)"/>
 	</table>
 	
 	<table name="page_rate_vote">

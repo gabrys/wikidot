@@ -120,9 +120,14 @@ class ParameterList {
 		return $this->parameterArray;
 	}
 	
+	public function asArrayAll(){
+		return $this->allParameters;
+	}
+	
 	public function addParameter($key, $value, $type=null){
 			$this->parameterArray["$key"] = $value;
 			$this->parameterTypes["$key"] = $type;
+			$this->allParameters[$type][$key] = $value;
 	}
 	
 	public function numberOfParameters(){

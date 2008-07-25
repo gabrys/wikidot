@@ -23,9 +23,116 @@
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
 
-class BlogCalendarModule extends SmartyModule {
+class PageCalendarModule extends SmartyModule {
     
 	protected $_pl;
+	protected $parameterhash;
+	protected $_vars;
+	private $_parameterUrlPrefix = null;
+	
+	
+	public function render($runData) {
+        
+        $site = $runData->getTemp("site");
+        $pl = $runData->getParameterList();
+        $this->_pl = $pl;
+        
+        $this->_parameterUrlPrefix = $pl->getParameterValue('urlAttrPrefix');
+       
+        /*
+         * Read all parameters.
+         */
+        
+		$categoryName = $this->_readParameter('category', false);
+        if(!$categoryName) {
+            $categoryName = $this->_readParameter('categories', false);
+        }
+        
+        $categoryName = strtolower($categoryName);
+        
+        $parmHash = md5(serialize($pl->asArrayAll()));
+        $this->parameterhash = $parmHash;
+
+        $valid = true;
+        
+        if (!$categoryName) {
+            /* No category name specified, use the current category! */
+            $pageUnixName = $runData->getTemp('pageUnixName');
+            if (!$pageUnixName) {
+                $pageUnixName = $pl->getParameterValue('page_unix_name'); // from preview
+            }
+            if (strpos($pageUnixName, ":") != false) {
+                $tmp0 = explode(':', $pageUnixName);
+                $categoryName = $tmp0[0];
+            } else {
+                $categoryName = "_default";
+            }
+        }
+        
+        $key = 'listpages_v..' . $site->getUnixName() . '..' . $categoryName . '..' . $parmHash;
+
+        $mc = OZONE::$memcache;
+        $struct = $mc->get($key);
+        if (!$struct) {
+            $valid = false;
+        }
+        $cacheTimestamp = $struct['timestamp'];
+        $now = time();
+        
+        // now check lc for ALL categories involved
+        
+
+        $cats = preg_split('/[,;\s]+?/', $categoryName);
+        
+        if ($categoryName != '*') {
+            foreach ($cats as $cat) {
+                
+                $tkey = 'pagecategory_lc..' . $site->getUnixName() . '..' . $cat; // last change timestamp
+                $changeTimestamp = $mc->get($tkey);
+                if ($changeTimestamp && $cacheTimestamp && $changeTimestamp <= $cacheTimestamp) {    //cache valid	
+                } else {
+                    $valid = false;
+                    if (!$changeTimestamp) {
+                        // 	put timestamp
+                        $mc->set($tkey, $now, 0, 864000);
+                        $valid = false;
+                    }
+                }
+            }
+        } else {
+            $akey = 'pageall_lc..' . $site->getUnixName();
+            $allPagesTimestamp = $mc->get($akey);
+            if ($allPagesTimestamp && $cacheTimestamp && $allPagesTimestamp <= $cacheTimestamp) {    //cache valid
+            } else {
+                $valid = false;
+                if (!$allPagesTimestamp) {
+                    // 	put timestamp
+                    $mc->set($akey, $now, 0, 864000);
+                    $valid = false;
+                }
+            }
+        }
+        
+        if ($valid) {
+            $this->_vars = $struct['vars'];
+            //echo 'fromcache';
+            return $struct['content'];
+        }
+        
+        $out = parent::render($runData);
+        
+        // and store the data now
+        $struct = array();
+        $now = time();
+        $struct['timestamp'] = $now;
+        $struct['content'] = $out;
+        $struct['vars'] = $this->_vars;
+        
+        $mc->set($key, $struct, 0, 864000);
+        
+        return $out;
+    
+    }
 	
     public function build($runData) {
         
@@ -75,9 +182,9 @@ class BlogCalendarModule extends SmartyModule {
         //}
         
 
-
-        // now select pages according to the specified criteria
+		$attrUrlPrefix = $pl->getParameterValue('urlAttrPrefix');
         
+        // now select pages according to the specified criteria
 
         $c = new Criteria();
         $c->add("site_id", $site->getSiteId());
@@ -97,7 +204,8 @@ class BlogCalendarModule extends SmartyModule {
         if (!$tagString) {
             $tagString = $this->_readParameter("tags", true);
         }
-        
+        //var_dump($tagString);
+
         if ($tagString) {
             /* Split tags. */
             $tags = preg_split(';[\s,\;]+;', $tagString);
@@ -182,11 +290,15 @@ class BlogCalendarModule extends SmartyModule {
 
 		$r = $db->query($q);
         $r = $r->fetchAll();
+        if($r === false) {
+        	$r = array();
+        }
         $postCount = array();
     	if($lang == 'pl') {
         	$locale = 'pl_PL';
        	}
        	setlocale(LC_TIME, $locale);
+       	
         foreach($r as $mo) {
         	$spl = explode('.', $mo['datestring']);
         	$year = $spl[0];
@@ -205,24 +317,63 @@ class BlogCalendarModule extends SmartyModule {
         
 		$r = $db->query($q);
         $r = $r->fetchAll();
+    	if($r === false) {
+        	$r = array();
+        }
         foreach($r as $mo){
         	$postCount[$mo['datestring']]['count'] = $mo['c'];
         }
         
+     	$uprefix = '';
+        if($attrUrlPrefix) {
+        	$uprefix = $attrUrlPrefix . '_';
+        }
+        
+    	/* Get current (selected) date (if any). */
+    	$date = $this->_pl->getParameterValue($uprefix."date", "GET");
+        
+        $dateA = array();
+        if (preg_match(';^[0-9]{4}$;', $date)) {
+            $dateA['year'] = $date;
+            if(isset($postCount[$date])){
+            	$postCount[$date]['selected'] = true;
+            }
+        }
+        if (preg_match(';^[0-9]{4}\.[0-9]{1,2}$;', $date)) {
+            $dateS = explode('.', $date);
+            $dateA['year'] = $dateS[0];
+            $dateA['month'] = $dateS[1];
+            
+        	if(isset($postCount[$dateA['year']]['months'][$dateA['month']])){
+            	$postCount[$dateA['year']]['months'][$dateA['month']]['selected'] = true;
+            }
+        }
+
         $runData->contextAdd('postCount', $postCount);
         
-        $startUrlBase = '/' . $startPage . '/date/';
+        $startUrlBase = '/' . $startPage;
+    	if($tagString) {
+        	$startUrlBase .= '/'.$uprefix.'tag/'.urldecode($tagString);
+        }
+        
+        $startUrlBase .= '/'.$uprefix.'date/';
+        
         $runData->contextAdd('startUrlBase', $startUrlBase);
         //var_dump($postCount);
+        
+        $runData->contextAdd('attrUrlPrefix', $attrUrlPrefix);
         
         return;
         
     }
 
-    protected function _readParameter($name, $fromUrl = false){
+ 	protected function _readParameter($name, $fromUrl = false){
     	$pl = $this->_pl;
     	$val = $pl->getParameterValue($name, "MODULE", "AMODULE");
     	if($fromUrl && $val == '@URL') {
+    		if($this->_parameterUrlPrefix){
+    			$name = $this->_parameterUrlPrefix . '_' . $name;
+    		}
     		$val = $pl->resolveParameter($name, 'GET');
     	}
     	

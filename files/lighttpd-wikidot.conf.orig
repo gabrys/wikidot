@@ -52,6 +52,11 @@ url.rewrite-once = (
 	# default-screen & printer-friendly
 		"^/default--screen/(.*)$"				=> "index.php?$1",
 		"^/printer--friendly/(.*)$"				=> "index.php?PrinterFriendly/wiki_page/$1",
+		
+	# codeblock fragment 
+	# so that code within [[code]]...[[/code]] can be accessed via /page-name/code/n
+	# where n is the number of the code block (defaults to 1) 
+		"^/([a-z0-9\-]+)/code(?:/([0-9]+))?$"			=> "default_flow.php?wiki__Codeblock/wiki_page/$1/code/$2",
 
 	# uploaded files
 		"^/local--([^/]+/.*)$"					=> "local.php?$1",

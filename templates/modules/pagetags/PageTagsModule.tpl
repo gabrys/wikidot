@@ -23,7 +23,7 @@
 				{t}Tags{/t}:
 			</td>
 			<td>
-				<input type="text" class="text" size="50" maxlength="70" id="page-tags-input" value="{$tags|escape}"/>
+				<input type="text" class="text" size="50" id="page-tags-input" value="{$tags|escape}"/>
 				<div class="sub">
 					{t}Space-separated list of tags.{/t}
 				</div>

@@ -1382,6 +1382,11 @@ class WikiPageAction extends SmartyAction {
 		$dbTags = DB_PageTagPeer::instance()->select($c);
 		
 		$tags = preg_split("/[ ,]+/", $tags);
+		
+		foreach($tags as & $tag){
+			$tag = substr($tag, 0, 64);
+		}
+		
 		$tags = array_unique($tags);
 
 		foreach($dbTags as $dbTag){
