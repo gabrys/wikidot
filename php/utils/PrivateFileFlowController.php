@@ -128,7 +128,7 @@ class PrivateFileFlowController extends WebFlowController {
 		}
 		
 		$dir = array_shift(explode("/", $file));
-		if ($dir != "resized-images" && $dir != "files") {
+		if ($dir != "resized-images" && $dir != "files" && $dir != "code") {
 			return true;
 		}
 		

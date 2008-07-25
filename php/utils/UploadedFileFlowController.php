@@ -41,6 +41,33 @@ class UploadedFileFlowController extends PrivateFileFlowController {
 		$this->serveFile($path, $mime);
 	}
 	
+	// detects from "file" if this is code request
+	protected function isCodeRequest($file) {
+		if (preg_match(";^code/;", $file)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	protected function serveCode($site, $fileName) {
+		$m = array();
+		
+		if (preg_match(";^code/([^/]+)(?:/([0-9]+))?$;", $fileName, $m)) {
+			$pageName = $m[1];
+			$number = 1;
+			if (isset($m[2])) {
+				$number = (int) $m[2];	
+			}
+			$ext = new CodeblockExtractor();
+			header("Content-type: text/plain");
+			echo $ext->extract($site, $pageName, $number);
+			
+		} else {
+			$this->fileNotExists();
+		}
+	}
+	
 	public function process() {
 
 		Ozone ::init();
@@ -71,8 +98,13 @@ class UploadedFileFlowController extends PrivateFileFlowController {
 		if ($this->isUploadDomain($siteHost)) {
 			
 			if ($this->publicArea($site, $file)) {
+					
+				if ($this->isCodeRequest($file)) {
+					$this->serveCode($site, $file);
+				} else {
+					$this->serveFileWithMime($path);
+				}
 				
-				$this->serveFileWithMime($path);
 				return;
 				
 			} else {
@@ -99,7 +131,12 @@ class UploadedFileFlowController extends PrivateFileFlowController {
 				$user = $ucookie->getOzoneSession()->getOzoneUser();
 				
 				if ($this->userAllowed($user, $site, $file)) {
-					$this->serveFileWithMime($path);
+					
+					if ($this->isCodeRequest($file)) {
+						$this->serveCode($site, $file);
+					} else {
+						$this->serveFileWithMime($path);
+					}
 					return;
 				}
 			}
