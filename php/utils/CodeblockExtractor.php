@@ -47,7 +47,7 @@ class CodeblockExtractor {
 			$allMatches = array();
 			preg_match_all($regex, $source, $allMatches);
 			
-			if(count($allMatches) < $codeblockNo ) {
+			if(count($allMatches[2]) < $codeblockNo ) {
 				throw new ProcessException('No valid codeblock found.');
 			}
 			
