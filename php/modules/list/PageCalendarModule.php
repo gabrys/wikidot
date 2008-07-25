@@ -69,7 +69,7 @@ class PageCalendarModule extends SmartyModule {
             }
         }
         
-        $key = 'listpages_v..' . $site->getUnixName() . '..' . $categoryName . '..' . $parmHash;
+        $key = 'pagecalendar_v..' . $site->getUnixName() . '..' . $categoryName . '..' . $parmHash;
 
         $mc = OZONE::$memcache;
         $struct = $mc->get($key);
