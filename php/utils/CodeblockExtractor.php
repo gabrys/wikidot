@@ -25,7 +25,15 @@
 
 class CodeblockExtractor {
 
-	public function extract($site, $pageName, $codeblockNo = 1){
+	protected $mimeType = null;
+	protected $contents = "";
+	
+	protected $mimeMap = array(
+		"css"	=> "text/css",
+		"html"	=> "text/html",
+	);
+	
+	public function __construct($site, $pageName, $codeblockNo = 1){
 		try {
 			$codeblockNo = (int) $codeblockNo;
 			if ($codeblockNo < 1) {
@@ -52,14 +60,34 @@ class CodeblockExtractor {
 			}
 			
 			$code = $allMatches[2][$codeblockNo - 1];
+			if ($allMatches[1][$codeblockNo - 1]) {
+				$params = $allMatches[1][$codeblockNo - 1];
+				$m = array();
+				$type = null;
+				if (preg_match(':type="([^"]+)":', $params, $m)) {
+					$type = $m[1];
+				}
+				if (array_key_exists($type, $this->mimeMap)) {
+					$this->mimeType = $this->mimeMap[$type];
+				}
+			}
 			
-			return trim($code)."\n";
+			$this->contents = trim($code)."\n";
 			
 		} catch(Exception $e) {
-			
-			$out = $e->getMessage(); 	
-			return $out;
+			$this->contents = $e->getMessage();
 		}
+	}
+	
+	public function getContents() {
+		return $this->contents;
+	}
+	
+	public function getMimeType() {
+		if ($this->mimeType) {
+			return $this->mimeType;
+		}
+		return "text/plain";
 	}
 
 }

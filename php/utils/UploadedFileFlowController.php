@@ -59,9 +59,9 @@ class UploadedFileFlowController extends PrivateFileFlowController {
 			if (isset($m[2])) {
 				$number = (int) $m[2];	
 			}
-			$ext = new CodeblockExtractor();
-			header("Content-type: text/plain");
-			echo $ext->extract($site, $pageName, $number);
+			$ext = new CodeblockExtractor($site, $pageName, $number);
+			header("Content-type: " . $ext->getMimeType());
+			echo $ext->getContents();
 			
 		} else {
 			$this->fileNotExists();
