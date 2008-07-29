@@ -63,9 +63,8 @@ class CodeblockExtractor {
 				preg_match_all($regex, $source, $allMatches);
 				
 				$m->set($mkey, $allMatches, 0, 3600);
-			}else {
-				echo 'from cache.';
 			}
+			
 			if(count($allMatches[2]) < $codeblockNo ) {
 				throw new ProcessException('No valid codeblock found.');
 			}
