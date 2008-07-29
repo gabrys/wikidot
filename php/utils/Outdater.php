@@ -492,6 +492,13 @@ class Outdater {
 		$ckey = 'pageall_lc..'.$site->getUnixName();
 		$memcache->set($ckey, $now, 0, 10000);
 		
+		/*
+		 * Outdate code blocks. 
+		 */
+		
+		$ckey = 'pagecodeblocks..' . $site->getSiteId() . '..' . $pageName;
+		$memcache->delete($ckey);
+		
 	}
 	
 	/**

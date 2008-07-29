@@ -148,6 +148,14 @@ class PageCalendarModule extends SmartyModule {
         $categoryName = strtolower($categoryName);
         
         $startPage = $this->_readParameter('startPage');
+        
+        if(!$startPage) {
+        	/* Get curent page. */
+        	$startPage = $runData->getTemp('pageUnixName');
+            if (!$startPage) {
+                $startPage = $pl->getParameterValue('page_unix_name'); // from preview
+            }
+        }
        
         $categories = array();
         $categoryNames = array();
@@ -285,7 +293,8 @@ class PageCalendarModule extends SmartyModule {
         
         $corig = clone($c);
         $c->setExplicitFields("EXTRACT(YEAR FROM date_created)::varchar || '.' || EXTRACT(MONTH FROM date_created)::varchar as datestring, count(*) as c");
-
+		//$c->addOrderDescending("regexp_replace(datestring, '\.[0-9]+$', '')::integer");
+		//$c->addOrderDescending("regexp_replace(datestring, '^[0-9]+\.', '')::integer");
         $q = DB_PagePeer::instance()->criteriaToQuery($c);
 
 		$r = $db->query($q);
@@ -324,6 +333,13 @@ class PageCalendarModule extends SmartyModule {
         	$postCount[$mo['datestring']]['count'] = $mo['c'];
         }
         
+        /* Order the results. */
+        /* Order years. */
+        krsort($postCount, SORT_NUMERIC);
+
+        foreach($postCount as & $year) {
+        	krsort($year['months'], SORT_NUMERIC);
+        }
      	$uprefix = '';
         if($attrUrlPrefix) {
         	$uprefix = $attrUrlPrefix . '_';
@@ -331,6 +347,7 @@ class PageCalendarModule extends SmartyModule {
         
     	/* Get current (selected) date (if any). */
     	$date = $this->_pl->getParameterValue($uprefix."date", "GET");
+    	
         
         $dateA = array();
         if (preg_match(';^[0-9]{4}$;', $date)) {

@@ -40,21 +40,32 @@ class CodeblockExtractor {
 				$codeblockNo = 1;
 			}
 			
-			$page = DB_PagePeer::instance()->selectByName($site->getSiteId(), $pageName);
+			/* Check the cache. */
 			
-			if($page == null){
-				throw new ProcessException("No such page");
+			$mkey = 'pagecodeblocks..' . $site->getSiteId() . '..' . $pageName;
+			$m = OZONE::$memcache;
+			$allMatches = $m->get($mkey);
+			if(!$allMatches) {
+				
+				$page = DB_PagePeer::instance()->selectByName($site->getSiteId(), $pageName);
+				
+				if($page == null){
+					throw new ProcessException("No such page");
+				}
+				// page exists!!! wooo!!!
+				
+				$source = $page->getSource();
+				/* Get code block. */
+				
+				$regex = ';^\[\[code(\s[^\]]*)?\]\]((?:(?R)|.)*?)\[\[/code\]\](\s|$);msi';
+				
+				$allMatches = array();
+				preg_match_all($regex, $source, $allMatches);
+				
+				$m->set($mkey, $allMatches, 0, 3600);
+			}else {
+				echo 'from cache.';
 			}
-			// page exists!!! wooo!!!
-			
-			$source = $page->getSource();
-			/* Get code block. */
-			
-			$regex = ';^\[\[code(\s[^\]]*)?\]\]((?:(?R)|.)*?)\[\[/code\]\](\s|$);msi';
-			
-			$allMatches = array();
-			preg_match_all($regex, $source, $allMatches);
-			
 			if(count($allMatches[2]) < $codeblockNo ) {
 				throw new ProcessException('No valid codeblock found.');
 			}

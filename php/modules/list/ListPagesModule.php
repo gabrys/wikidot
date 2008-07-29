@@ -718,19 +718,15 @@ class ListPagesModule extends SmartyModule {
             /* Try to extract the short version. */
             $s = $this->_tmpSource;
              /* Strip some blocks first. */
-            $s = trim(preg_replace('/^(\+{1,6}) (.*)/m', '', $s));
-            $s = trim(preg_replace('/^\[\[toc(\s[^\]]+)?\]\]/', '', $s));
-            $s = trim(preg_replace('/^\[\[\/?div(\s[^\]]+)?\]\]/', '', $s));
-            $s = trim(preg_replace('/^\[\[\/?module(\s[^\]]+)?\]\]/', '', $s));
+            $s = trim(preg_replace('/^(\+{1,6}) (.*)/m', "\n\n", $s));
+        $s = trim(preg_replace('/^\[\[toc(\s[^\]]+)?\]\]/', "\n\n", $s));
+        $s = trim(preg_replace('/^\[\[\/?div(\s[^\]]+)?\]\]/', "\n\n", $s));
+        $s = trim(preg_replace('/^\[\[\/?module(\s[^\]]+)?\]\]/', "\n\n", $s));
             /* 1. Try the first paragraph. */
             $m1 = array();
-            preg_match(";(^.*?)\n\n;", $s, $m1);
-            if (isset($m1[1])) {
-                $p = $m1[1];
-                return trim($p);
-            } else {
-                return trim($s);
-            }
+            $split = preg_split(";\n{2,};", $s);
+            //var_dump($split);
+            return trim($split[0]);
         }
     
     }
@@ -739,20 +735,15 @@ class ListPagesModule extends SmartyModule {
         /* Try to extract the short version. */
         $s = $this->_tmpSource;
         /* Strip some blocks first. */
-        $s = trim(preg_replace('/^(\+{1,6}) (.*)/m', '', $s));
-        $s = trim(preg_replace('/^\[\[toc(\s[^\]]+)?\]\]/', '', $s));
-        $s = trim(preg_replace('/^\[\[\/?div(\s[^\]]+)?\]\]/', '', $s));
-        $s = trim(preg_replace('/^\[\[\/?module(\s[^\]]+)?\]\]/', '', $s));
-        
+        $s = trim(preg_replace('/^(\+{1,6}) (.*)/m', "\n\n", $s));
+        $s = trim(preg_replace('/^\[\[toc(\s[^\]]+)?\]\]/', "\n\n", $s));
+        $s = trim(preg_replace('/^\[\[\/?div(\s[^\]]+)?\]\]/', "\n\n", $s));
+        $s = trim(preg_replace('/^\[\[\/?module(\s[^\]]+)?\]\]/', "\n\n", $s));
         /* 1. Try the first paragraph. */
         $m1 = array();
-        preg_match(";(^.*?)\n\n;", $s, $m1);
-        if (isset($m1[1])) {
-            $p = $m1[1];
-            return trim($p);
-        } else {
-            return trim($s);
-        }
+        $split = preg_split(";\n{2,};", $s);
+        //var_dump($split);
+        return trim($split[0]);
     }
 
     private function _handleTags($m) {
