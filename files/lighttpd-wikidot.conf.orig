@@ -52,15 +52,12 @@ url.rewrite-once = (
 	# default-screen & printer-friendly
 		"^/default--screen/(.*)$"				=> "index.php?$1",
 		"^/printer--friendly/(.*)$"				=> "index.php?PrinterFriendly/wiki_page/$1",
-		
-	# codeblock fragment 
-	# so that code within [[code]]...[[/code]] can be accessed via /page-name/code/n
-	# where n is the number of the code block (defaults to 1)
-	# this is done with local.php
-		"^/([a-z0-9\-]+)/code(?:(/[0-9]+))?$"			=> "local.php?code/$1$2",
 
 	# uploaded files
 		"^/local--([^/]+/.*)$"							=> "local.php?$1",
+		
+	# codeblock fragment
+		"^/([a-z0-9\-]+)/code(?:(/[0-9]+))?$"			=> "local.php?code/$1$2",
 	
 	# wiki pages
 		"^/(.*)"						=> "index.php?wiki__WikiScreen/wiki_page/$1",
