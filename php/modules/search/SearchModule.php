@@ -75,7 +75,18 @@ class SearchModule extends SmartyModule {
 		// search pages
 		$headlineOptions = "'MaxWords=200, MinWords=100'";
 		
-		$q = "SELECT *, headline(text, q, 'MaxWords=50, MinWords=30') AS headline_text, headline(title, q, $headlineOptions) AS headline_title, rank(vector, q) as rank FROM (SELECT * FROM fts_entry, to_tsquery($eq) AS q " .
+		// 	check if separate database for searching
+		$db = Database::connection();
+		
+		$v = pg_version($db->getLink());
+		$tsprefix = '';
+		if(!preg_match(';^8\.3;', $v['server'])){
+		    $db->query("SELECT set_curcfg('default')");
+		} else {
+			$tsprefix = 'ts_'; // because in postgresql 8.3 functions are ts_rank and ts_header
+		}
+		
+		$q = "SELECT *, {$tsprefix}headline(text, q, 'MaxWords=50, MinWords=30') AS headline_text, {$tsprefix}headline(title, q, $headlineOptions) AS headline_title, {$tsprefix}rank(vector, q) as rank FROM (SELECT * FROM fts_entry, to_tsquery($eq) AS q " .
 				"WHERE " .
 				"site_id='".$site->getSiteId()."'";
 		
@@ -92,14 +103,7 @@ class SearchModule extends SmartyModule {
 				
 		}
 		$q .= " AND " .
-				"vector @@ q ORDER BY rank(vector, q) DESC LIMIT $limit OFFSET $offset ) AS fts_entry ORDER BY rank DESC";
-		// check if separate database for searching
-		$db = Database::connection();
-		
-		$v = pg_version($db->getLink());
-		if(!preg_match(';^8\.3;', $v['server'])){
-		    $db->query("SELECT set_curcfg('default')");
-		}
+				"vector @@ q ORDER BY {$tsprefix}rank(vector, q) DESC LIMIT $limit OFFSET $offset ) AS fts_entry ORDER BY rank DESC";
 		
 		$r = $db->query($q);
 		$res = $r->fetchAll();
