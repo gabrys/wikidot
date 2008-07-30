@@ -49,9 +49,14 @@ url.rewrite-once = (
 	# default-flow
 		"^/default(--|__)flow/(.*)$"			=> "default_flow.php?$2",
 	
+	# forum printer-friendly version
+		"^/printer--friendly/+forum/start(.*)$"					=> "index.php?PrinterFriendly/wiki_page/forum:start$1",
+		"^/printer--friendly/+forum/t-([0-9]+)(/.*)?$"			=> "index.php?PrinterFriendly/wiki_page/forum:thread/t/$1$2",
+		"^/printer--friendly/+forum/c-([0-9]+)(/.*)?$" 			=> "index.php?PrinterFriendly/wiki_page/forum:category/c/$1$2",
+	
 	# default-screen & printer-friendly
-		"^/default--screen/(.*)$"				=> "index.php?$1",
 		"^/printer--friendly/(.*)$"				=> "index.php?PrinterFriendly/wiki_page/$1",
+		"^/default--screen/(.*)$"				=> "index.php?$1",
 
 	# uploaded files
 		"^/local--([^/]+/.*)$"							=> "local.php?$1",
