@@ -96,7 +96,7 @@ class PageEditModule extends SmartyModule {
 			if($category == null){
 				// get the default!
 				//$category = DB_CategoryPeer::instance()->selectByName('_default', $site->getSiteId());
-				$category = $this->createTempCategory($categoryName);
+				$category = $this->createTempCategory($categoryName, $site);
 			}
 			
 			// now check for permissions!!!
@@ -317,8 +317,9 @@ class PageEditModule extends SmartyModule {
 			$category->setThemeDefault(true);
 			$category->setLicenseDefault(true);
 			$category->setNavDefault(true);
-			$category->save();
 		}
+		
+		return $category;
 	}
 
 }
