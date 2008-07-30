@@ -95,7 +95,8 @@ class PageEditModule extends SmartyModule {
 			
 			if($category == null){
 				// get the default!
-				$category = DB_CategoryPeer::instance()->selectByName('_default', $site->getSiteId());
+				//$category = DB_CategoryPeer::instance()->selectByName('_default', $site->getSiteId());
+				$category = $this->createTempCategory($categoryName);
 			}
 			
 			// now check for permissions!!!
@@ -299,6 +300,25 @@ class PageEditModule extends SmartyModule {
 		
 		$db->commit();
 		
+	}
+	
+	protected function createTempCategory($categoryName, $site){
+		$category = DB_CategoryPeer::instance()->selectByName($categoryName, $site->getSiteId(), false);
+		if($category == null){
+			// create the category - just clone the default category!!!
+			$category = DB_CategoryPeer::instance()->selectByName("_default", $site->getSiteId(), false); 
+			$category->setName($categoryName);
+			// fill with some important things - we assume the _default category exists!!! IT REALLY SHOULD!!!
+			$category->setCategoryId(null);
+			$category->setNew(true); // this will make it INSERT, not UPDATE on save()
+			$category->setPerPageDiscussion(null); //default value
+			// set default permissions theme and license
+			$category->setPermissionsDefault(true);
+			$category->setThemeDefault(true);
+			$category->setLicenseDefault(true);
+			$category->setNavDefault(true);
+			$category->save();
+		}
 	}
 
 }
