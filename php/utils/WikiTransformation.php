@@ -43,6 +43,8 @@ class WikiTransformation {
     private $transformationFormat = 'xhtml'; 
     
     public $wiki;
+    
+    private $_tmpPage;
 
 	public function __construct($initialize = true){
 		if($initialize){
@@ -84,7 +86,7 @@ class WikiTransformation {
 		return $out;	
 	}
 	
-	public function assemblyTemplate($source, $template){
+	public function assemblyTemplate($source, $template, $page = null){
 	    /* First check if it is a real "live" template. If not, return the original $source. 
 		 * To be recognized as a live template it mast contain either %%content%% or
 		 * %%content{X}%% tags. */
@@ -98,12 +100,87 @@ class WikiTransformation {
 	    $out = $source;
 
 	    $template = preg_replace(';%%content({[0-9]+})?%%;', '%%%\\0%%%', $template);
+	    $template = preg_replace(';(?<!%)%%[a-z0-9\(\)_]+%%(?!%);i', '%%%\\0%%%', $template);
 	    $template = preg_replace(";%\xFA%(content({[0-9]+}))?%\xFA%;", "%%\\1%%", $template);
 	    
 		/* Check if has a ===== delimiter. */
 	    $split = preg_split(';^={4,}$;sm', $template);
 	    if(count($split) > 1){
 	        $template = trim($split[0]);
+	    }
+	    
+	    /* If there is $page, try substituting more tags. */
+	    if($page) {
+	    	$this->_tmpPage = $page;
+	    	$b = $template;
+	    	$title = $page->getTitle();
+	    	$title = str_replace(array('[',']'), '', $title);
+            //$title = str_replace('%%', "\xFD", $title);
+	    	$b = str_replace('%%%%%title%%%%%', $title, $b);
+            $b = preg_replace(";%%%%%((linked_title)|(title_linked))%%%%%;i", preg_quote_replacement('[[[' . $page->getUnixName() . ' | ' . $title . ']]]'), $b);
+            
+            
+            if($page->getOwnerUserId()){
+	            $user = DB_OzoneUserPeer::instance()->selectByPrimaryKey($page->getOwnerUserId());
+	            if ($user->getUserId() > 0) {
+	                $userString = '[[*user ' . $user->getNickName() . ']]';
+	            } else {
+	                $userString = _('Anonymous user');
+	            }
+            } else {
+                $userString = _('Anonymous user');
+            }
+            $b = str_ireplace("%%%%%author%%%%%", $userString, $b);
+            $b = str_ireplace("%%%%%user%%%%%", $userString, $b);
+            
+//            if($lastRevision->getUserId()){
+//	            $user = DB_OzoneUserPeer::instance()->selectByPrimaryKey($lastRevision->getUserId());
+//	            if ($user->getUserId() > 0) {
+//	                $userString = '[[*user ' . $user->getNickName() . ']]';
+//	            } else {
+//	                $userString = _('Anonymous user');
+//	            }
+//            } else {
+//                $userString = _('Anonymous user');
+//            }
+            //$b = str_ireplace("%%author_edited%%", $userString, $b);
+            $b = str_ireplace("%%%%%user_edited%%%%%", $userString, $b);
+            
+            $b = preg_replace(';%%%%%date(\|.*?)?%%%%%;', '%%%%%date|' . $page->getDateCreated()->getTimestamp() . '\\1%%%%%', $b);
+            $b = preg_replace(';%%%%%date_edited(\|.*?)?%%%%%;', '%%%%%date|' . $page->getDateLastEdited()->getTimestamp() . '\\1%%%%%', $b);
+            
+            /* %%rating%% */
+            $b = str_ireplace('%%%%%rating%%%%%', $page->getRate(), $b);
+                
+             /* %%comments%% */
+            $b = preg_replace_callback("/%%%%%comments%%%%%/i", array(
+                $this, '_handleComementsCount'), $b);
+                
+            /* %%page_unix_name%% */
+            $b = str_ireplace('%%%%%page_unix_name%%%%%', $page->getUnixName(), $b);
+            
+            if(strpos( $page->getUnixName(), ":") != false){
+				$tmp0 = explode(':',$page->getUnixName()); 
+				$categoryName00 = $tmp0[0];
+			} else {
+				$categoryName00 = "_default";
+			}
+            
+			$b = str_ireplace('%%%%%category%%%%%', $categoryName00, $b);
+			
+            /* %%link%% */
+			$site = $page->getSite();
+            $b = str_ireplace('%%%%%link%%%%%', 'http://' . $site->getDomain().'/'.$page->getUnixName(), $b);
+            
+            /* %%tags%% */
+            $b = preg_replace_callback("/%%%%%tags%%%%%/i", array(
+                $this, '_handleTags'), $b);
+                
+            $b = preg_replace_callback(';%%%%%date\|([0-9]+)(\|.*?)?%%%%%;', array(
+            $this, '_formatDate'), $b);
+            
+            $template = $b;
+            //$template = preg_replace(';(%%%%%([a-z0-9\(\)_]+)%%%%%;i', '%%\\1%%', $template);
 	    }
 	    
 	    $out = str_replace('%%%%%content%%%%%', trim($out), $template);
@@ -115,6 +192,46 @@ class WikiTransformation {
 	    $out = preg_replace(';%%%%%content({[0-9]+})?%%%%%;', '', $out);
 	    return $out;
 	}
+	
+	private function _formatDate($m) {
+        if (isset($m[2])) {
+            $format = $m[2];
+        } else {
+            $format = '%e %b %Y, %H:%M %Z|agohover';
+        }
+        $dateString = '[[date ' . $m[1] . ' format="'.$format.'"' . ']]';
+        return $dateString;
+    }
+    
+	private function _handleComementsCount($m){
+    	$page = $this->_tmpPage;
+    	$threadId = $page->getThreadId();
+    	if($threadId) {
+    		$thread = DB_ForumThreadPeer::instance()->selectByPrimaryKey($threadId);
+    	}
+    	if($thread) {
+    		return $thread->getNumberPosts();
+    	}
+    	return 0;
+    }
+    
+	private function _handleTags($m) {
+        $page = $this->_tmpPage;
+        /* Select tags. */
+        // get the tags
+        $c = new Criteria();
+        $c->add("page_id", $page->getPageId());
+        $c->addOrderAscending("tag");
+        $tags = DB_PageTagPeer::instance()->select($c);
+        $t2 = array();
+        foreach ($tags as $t) {
+            $t2[] = $t->getTag();
+        }
+        if(count($t2) == 0) {
+            return _('//no tags found for this page//');
+        }
+        return implode(' ', $t2);
+    }
 	
 	private function _assemblyTemplateHandleListPages($m){
 	    if(preg_match(';^\[\[module;sm', $m[1])){

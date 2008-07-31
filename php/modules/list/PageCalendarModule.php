@@ -150,6 +150,10 @@ class PageCalendarModule extends SmartyModule {
         $startPage = $this->_readParameter('startPage');
         
         if(!$startPage) {
+        	$this->_readParameter('targetPage');
+        }
+        
+        if(!$startPage) {
         	/* Get curent page. */
         	$startPage = $runData->getTemp('pageUnixName');
             if (!$startPage) {

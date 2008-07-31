@@ -69,6 +69,7 @@ class Outdater {
 				$this->handleTemplateChange($page);
 				break;
 			case 'title_changed':
+				$this->recompilePage($page);
 				$this->outdatePageCache($page);
 				$this->outdateDescendantsCache($page);
 				$this->fixInLinks($page); // if dynamical link text = page title
@@ -188,7 +189,7 @@ class Outdater {
     		    ($categoryName == '_default' ? '' : $categoryName.':') .'_template');
     		
     		if($templatePage) {
-        	    $source = $this->assemblySource($source, $templatePage->getSource());
+        	    $source = $this->assemblySource($source, $templatePage->getSource(), $page);
     		}
 		}
 		$wt = new WikiTransformation();
@@ -210,9 +211,9 @@ class Outdater {
 		$this->vars['inclusionsNotExist'] = $inclusionsNotExist;
 	}
 	
-	private function assemblySource($source, $templateSource){
+	private function assemblySource($source, $templateSource, $page = null){
 	    $t = new WikiTransformation(false);
-	    return $t->assemblyTemplate($source, $templateSource);
+	    return $t->assemblyTemplate($source, $templateSource, $page);
 	}
 	
 	/**

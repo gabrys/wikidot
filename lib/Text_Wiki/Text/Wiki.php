@@ -63,6 +63,7 @@ class Text_Wiki {
        
         'Comment',
         'Iframe',
+    	'Date',
         'Math',
         
         'Concatlines',
