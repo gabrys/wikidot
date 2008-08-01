@@ -7,12 +7,14 @@ var.wikidot_host     = "%{WIKIDOT:URL_HOST}"		# your wikidot host (main wiki)
 $HTTP["url"] =~ "a16\.png" { server.error-handler-404   = "/files--common/images/avatars/default/a16.png" }
 $HTTP["url"] =~ "a48\.png" { server.error-handler-404   = "/files--common/images/avatars/default/a48.png" }
 
-$HTTP["host"] =~ "^www\.(.*\." + var.wikidot_domain_r + ")$" {
-	url.redirect            = ( "^/(.*)" => "http://%1/$1" )
+$HTTP["host"] =~ "^www\.([a-z0-9\-]+\." + var.wikidot_domain_r + ")$" {
+		url.redirect            = ( "^/?(.*)" => "http://%1/$1" )
+		url.rewrite				= ()
 }
 
 $HTTP["host"] =~ "^" + var.wikidot_domain_r + "$" {
-        url.redirect = ("." => "http://" + var.wikidot_host)
+        url.redirect = ("^/?(.*)" => "http://" + var.wikidot_host + "/$1")
+		url.rewrite				= ()
 }
 
 url.rewrite-once = (
