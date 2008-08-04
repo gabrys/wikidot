@@ -141,7 +141,7 @@ class Text_Wiki_Parse_Url extends Text_Wiki_Parse {
         // 
         
         // the regular expression for this kind of URL
-        $tmp_regex = '/\[(\*)?((?:' . $this->regexLiberal . ')|(?:#[a-zA-Z0-9_\-%]*)|(?:\/)) ([^\]'.$this->wiki->delim.']+)\]/';
+        $tmp_regex = '/\[(\*)?((?:' . $this->regexLiberal . ')|(?:#[a-zA-Z0-9_\-%]*)|(?:\/[^ \\t\\n\"\''.$this->wiki->delim.']*)) ([^\]'.$this->wiki->delim.']+)\]/';
         
         // use a custom callback processing method to generate
         // the replacement text for matches.
