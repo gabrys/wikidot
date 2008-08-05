@@ -203,8 +203,7 @@ class FileAction extends SmartyAction {
 			$fmime =  finfo_file($finfo, $file['tmp_name']);
 			finfo_close($finfo);
 
-			$uploadDir = WIKIDOT_ROOT."/web/files--sites/".
-					$site->getUnixName()."/files/".$page->getUnixName();
+			$uploadDir = $site->getLocalFilesPath()."/files/".$page->getUnixName();
 			mkdirfull($uploadDir);
 			
 			$dest = $uploadDir."/".$destinationFilename;
@@ -538,8 +537,7 @@ class FileAction extends SmartyAction {
 			throw new ProcessException(_("Error moving files."), "error_moving");
 		}
 		if($file->getHasResized()){
-			$resizedDir = WIKIDOT_ROOT."/web/files--sites/".
-						$site->getUnixName()."/resized-images/".$destinationPage->getUnixName();
+			$resizedDir = $site->getLocalFilesPath()."/resized-images/".$destinationPage->getUnixName();
 			mkdirfull($resizedDir);
 			if(rename("$oldRDir", "$newRDir") == false){
 				throw new ProcessException(_("Error moving resized files."), "error_moving");

@@ -186,7 +186,7 @@ class ManageSiteAction extends SmartyAction {
 		$theme->setUseTopBar($useTopBar);
 	
 		if($nameChanged && $oldName != '' ){
-			$cmd = "rm -r ".escapeshellarg(WIKIDOT_ROOT."/web/files--sites/".$site->getUnixName()."/theme/".$oldName);
+			$cmd = "rm -r ".escapeshellarg($site->getLocalFilesPath()."/theme/".$oldName);
 			exec($cmd);	
 		}
 		
@@ -228,7 +228,7 @@ class ManageSiteAction extends SmartyAction {
 		// ok, delete now!
 		DB_ThemePeer::instance()->deleteByPrimaryKey($theme->getThemeId());
 		
-		$cmd = "rm -r ".escapeshellarg(WIKIDOT_ROOT."/web/files--sites/".$site->getUnixName()."/theme/".$theme->getUnixName());
+		$cmd = "rm -r ".escapeshellarg($site->getLocalFilesPath()."/theme/".$theme->getUnixName());
 		exec($cmd);
 				
 		$db->commit();
@@ -757,7 +757,7 @@ class ManageSiteAction extends SmartyAction {
 			$site->save();
 			
 			// change file flag too
-			$flagDir = WIKIDOT_ROOT.'/web/files--sites/'.$site->getUnixName().'/flags';
+			$flagDir = $site->getLocalFilesPath().'/flags';
 			$flagFile = $flagDir.'/private';
 			if($private){
 				

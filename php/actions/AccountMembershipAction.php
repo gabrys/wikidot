@@ -334,9 +334,11 @@ class AccountMembershipAction extends SmartyAction {
 		}
 
 		$oldUnixName = $site->getUnixName();
+		$oldLocalPath = $site->getLocalFilesPath();
 		$site->setUnixName($unixName);
 		// 	rename the files
-		@rename(WIKIDOT_ROOT.'/web/files--sites/'.$oldUnixName, WIKIDOT_ROOT.'/web/files--sites/'.$site->getUnixName());
+		mkdirfull(dirname($site->getLocalFilesPath()));
+		@rename($oldLocalPath, $site->getLocalFilesPath());
 		
 		$site->setDeleted(false);
 		$site->setCustomDomain(null);
