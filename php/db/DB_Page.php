@@ -161,5 +161,21 @@ class DB_Page extends DB_PageBase {
     public function getSite() {
         return DB_SitePeer::instance()->selectByPrimaryKey($this->getSiteId());
     }
+    
+    public function getTags(){
+    	$c = new Criteria();
+    	$c->add('page_id', $this->getPageId());
+    	$tags = DB_PageTagPeer::instance()->select($c);
+    	return $tags;
+    }
+    
+    public function getTagsAsArray(){
+    	$tags = $this->getTags();
+    	$t = array();
+    	foreach($tags as $ta){
+    		$t[] = $ta->getTag();
+    	}
+    	return $t;
+    }
 
 }

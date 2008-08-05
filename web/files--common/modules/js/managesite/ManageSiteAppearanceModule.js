@@ -57,6 +57,9 @@ WIKIDOT.modules.ManagerSiteAppearanceModule.listeners = {
 				}
 			}
 		}
+		//if(category['theme_external_url']){
+			$('sm-appearance-external-url').value = category['theme_external_url'];
+		//}
 		
 		$("sm-appearance-theme-id").value=category['theme_id'];
 		WIKIDOT.modules.ManagerSiteAppearanceModule.utils.updateThemePreview();
@@ -92,20 +95,30 @@ WIKIDOT.modules.ManagerSiteAppearanceModule.listeners = {
 		// save changes to the array
 		var categoryId = $("sm-appearance-cats").value;
 		var category = WIKIDOT.modules.ManagerSiteModule.utils.getCategoryById(categoryId);
-		category['theme_id'] = this.value;
+		if(this.tagName.toLowerCase() == 'select'){
+			category['theme_id'] = this.value;
+		}
 		WIKIDOT.modules.ManagerSiteAppearanceModule.utils.hideVariants();
 		var ez = $("sm-appearance-variants-"+$("sm-appearance-theme-id").value);
 		category['variant_theme_id'] = null;
+	
 		if(ez){
+			//alert('variant');
 			ez.style.display = "block";
 			if(category['variant_theme_id']){
 				$("sm-appearance-variants-select-"+category['theme_id']).value=category['variant_theme_id'];
-			}else{
+			}else if($("sm-appearance-variants-select-"+category['theme_id'])){
 				$("sm-appearance-variants-select-"+category['theme_id']).value=category['theme_id'];
 			}
 		}else{
 			category['variant_theme_id'] = null;
 		}
+
+		/* Handle external themes. */
+		var exurl = $('sm-appearance-external-url').value;
+		//if(exurl != '' && exurl.match('^https?://')){
+			category['theme_external_url'] = exurl;
+		//}
 		WIKIDOT.modules.ManagerSiteAppearanceModule.utils.updateThemePreview();
 	},
 	
@@ -125,6 +138,7 @@ WIKIDOT.modules.ManagerSiteAppearanceModule.listeners = {
 		// ok, do it the easy way: serialize categories using the JSON method
 		var categories = WIKIDOT.modules.ManagerSiteModule.vars.categories;
 		var serialized = JSON.stringify(categories);
+		//alert(serialized);
 		var parms = new Object();
 		parms['categories'] = serialized;
 		parms['action'] = "ManageSiteAction";
@@ -191,10 +205,12 @@ WIKIDOT.modules.ManagerSiteAppearanceModule.utils = {
 WIKIDOT.modules.ManagerSiteAppearanceModule.init = function(){
 	YAHOO.util.Event.addListener("sm-appearance-cats", "change", WIKIDOT.modules.ManagerSiteAppearanceModule.listeners.categoryChange);
 	YAHOO.util.Event.addListener("sm-appearance-theme-id", "change", WIKIDOT.modules.ManagerSiteAppearanceModule.listeners.themeChange);
+	YAHOO.util.Event.addListener("sm-appearance-external-url", "change", WIKIDOT.modules.ManagerSiteAppearanceModule.listeners.themeChange);
 	YAHOO.util.Event.addListener("sm-appearance-noind", "click", WIKIDOT.modules.ManagerSiteAppearanceModule.listeners.indClick);
 	
 	YAHOO.util.Event.addListener("sm-appearance-cancel", "click", WIKIDOT.modules.ManagerSiteAppearanceModule.listeners.cancel);
 	YAHOO.util.Event.addListener("sm-appearance-save", "click", WIKIDOT.modules.ManagerSiteAppearanceModule.listeners.save);
+	
 	// init categories info
 	WIKIDOT.modules.ManagerSiteAppearanceModule.listeners.categoryChange(null);
 }

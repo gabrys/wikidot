@@ -29,6 +29,8 @@
  */
 class DB_Theme extends DB_ThemeBase {
 
+	protected $_external;
+	
     public function getStyleUrls() {
         
         if ($this->getExtendsThemeId()) {
@@ -52,6 +54,8 @@ class DB_Theme extends DB_ThemeBase {
     public function getStyleUrl() {
         if ($this->getCustom()) {
             return "/local--theme/" . $this->getUnixName() . "/style.css?" . $this->getRevisionNumber();
+        } elseif($this->_external){
+        	return $this->_external;
         } else {
             return "/common--theme/" . $this->getUnixName() . "/css/style.css?" . $this->getRevisionNumber();
         }
@@ -59,6 +63,10 @@ class DB_Theme extends DB_ThemeBase {
 
     public function getThemePreview() {
         return DB_ThemePreviewPeer::instance()->selectByPrimaryKey($this->getThemeId());
+    }
+    
+    public function setExternalUrl($url){
+    	$this->_external = $url;
     }
 
 }

@@ -74,6 +74,15 @@ class ManageSiteAction extends SmartyAction {
 				$dCategory->setThemeDefault($category['theme_default']);
 				$changed = true;	
 			}
+			
+			if($category['theme_external_url'] != $dCategory->getThemeExternalUrl()){
+				if($category['theme_external_url'] && !preg_match(';^https?://;', $category['theme_external_url'])){
+					throw new ProcessException('Url of the external theme for category '.$dCategory->getName(). ' is not valid.');
+				}
+				$dCategory->setThemeExternalUrl($category['theme_external_url']);
+				$changed = true;	
+			}
+			
 			if($changed){
 				$dCategory->save();	
 				// outdate category

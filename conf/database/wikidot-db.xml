@@ -30,6 +30,7 @@
 		<column name="name" type="varchar(80)"/>
 		<column name="theme_default" type="boolean" default="true"/> <!-- true if no specific theme -->
 		<column name="theme_id" type="int"/> 
+		<column name="theme_external_url" type="varchar(512)"/>
 		<column name="permissions_default" type="boolean" default="true"/> <!-- true if no specific permissions -->
 		<column name="permissions" type="varchar(200)"/> <!-- string-encoded permissions -->	
 		<column name="license_default" type="boolean" default="true"/> <!-- true if no specific permissions -->

@@ -110,9 +110,17 @@ class Outdater {
 				$this->recompileInclusionDeps($page);
 				break;
 			case 'tag_change':
+				//$this->outdatePageCache($page);
+				//$this->outdatePageTagsCache($page);
+				//$this->indexPage($page);
+				$this->recompilePage($page);
 				$this->outdatePageCache($page);
-				$this->outdatePageTagsCache($page);
+				$this->fixOutLinks($page);
+				$this->fixInclusions($page);
+				$this->recompileInclusionDeps($page);
+				$this->handleNavigationElement($page);
 				$this->indexPage($page);
+				$this->handleTemplateChange($page);
 				break;
 			case 'page_vote':
 				$this->outdatePageCache($page);

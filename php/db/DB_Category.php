@@ -89,6 +89,20 @@ class DB_Category extends DB_CategoryBase {
 	}	
 	
 	public function getTheme(){
+		if($this->getExternalTheme()){
+			$theme = $this->getExternalTheme();
+			if($this->getName() !== '_default'){
+				if($this->getThemeDefault()){
+					$dc = DB_CategoryPeer::instance()->selectByName('_default', $this->getSiteId());
+					$theme = $dc->getTheme();
+				} else {
+					$theme = DB_ThemePeer::instance()->selectByPrimaryKey($this->getThemeId());
+				}
+			}
+			return $theme;
+		}
+		
+		
 		if($this->getName() === '_default'){
 			$theme = DB_ThemePeer::instance()->selectByPrimaryKey($this->getThemeId());
 		} else {
@@ -100,6 +114,21 @@ class DB_Category extends DB_CategoryBase {
 			}
 		}
 		return $theme;
+	}
+	
+	protected function getExternalTheme(){
+		if(!$this->getThemeExternalUrl()){
+			return null;
+		}
+		$t = new DB_Theme();
+		$t->setExternalUrl($this->getThemeExternalUrl());
+		/* Get base theme. */
+		$c = new Criteria();
+		$c->add('name', 'Base');
+		$baseTheme = DB_ThemePeer::instance()->selectOne($c);
+		$t->setExtendsThemeId($baseTheme->getThemeId());
+		$t->setThemeId($baseTheme->getThemeId()); // needed sometime
+		return $t;
 	}
 	
 	public function getPermissionString(){

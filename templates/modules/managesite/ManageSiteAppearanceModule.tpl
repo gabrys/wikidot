@@ -18,10 +18,14 @@
 					</select>
 				</td>
 				<td>
-					<h3>{t}Choose a  theme{/t}:</h3>
-					
 					<div id="sm-appearance-theme">
-						
+					<table>
+						<tr>
+							<td style="padding-right: 2em;">
+					
+					
+					
+						<h3>{t}Choose a built-in theme{/t}:</h3>
 						<select name="theme" id="sm-appearance-theme-id">
 							{foreach from=$themes item=theme}
 								<option value="{$theme->getThemeId()}">{$theme->getName()|escape} {if $theme->getCustom()}({t}custom{/t}){/if}</option>
@@ -45,7 +49,22 @@
 							{/if}
 						</div>
 					</div>
-					<div id="sm-appearance-noind">
+							</td>
+							<td style="padding-left: 2em; border-left: 1px solid #BBB;">
+								<h3>{t}Or use an external theme{/t}:</h3>
+								<p>
+									Pass the exact URL to the location of the CSS file:
+								</p>
+								<input type="text" class="text" size="36" id="sm-appearance-external-url" name="sm-appearance-external-url"/>
+								<p>
+									Visit <a href="http://themes.wikidot.com">themes.wikidot.com</a> for the central repository of
+									user-submitted themes.
+								</p>
+							</td>
+						</tr>
+					</table>
+					</div>
+					<div id="sm-appearance-noind" style="margin-top: 1em">
 						{t}Inherit from <tt>_default</tt>{/t}: <input class="checkbox" type="checkbox" id="sm-appearance-noin"/>
 					</div>
 				</td>

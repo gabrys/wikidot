@@ -35,20 +35,25 @@ class ThemePreviewerModule extends SmartyModule {
 		$site = $runData->getTemp("site");
 		
 		$pl = $runData->getParameterList();
-		
+
 		$themeId = $pl->getParameterValue('theme_id');
 		if($themeId === null){
-				
-			$page = $runData->getTemp("page");
-			if($page == null){
-				throw new ProcessException(_("Not working in the preview mode. Not a preview mode? So it might be an error."));	
+			$themeUrl = current($_GET); // BAD HACK!!!
+			if($themeUrl){
+				$theme = $this->getExternalTheme($themeUrl);
+			}else{
+			
+				$page = $runData->getTemp("page");
+				if($page == null){
+					throw new ProcessException(_("Not working in the preview mode. Not a preview mode? So it might be an error."));	
+				}
+				$theme = $page->getCategory()->getTheme();
 			}
-			$theme = $page->getCategory()->getTheme();
 		}else{
 			$theme = DB_ThemePeer::instance()->selectByPrimaryKey($themeId);
 		}
 		
-		$this->themeId = $themeId;
+		//$this->themeId = $themeId;
 		
 		if($theme == null || $theme->getAbstract() == true || 
 			($theme->getCustom ==true && $theme->getSiteId() != $site->getSiteId())){
@@ -72,6 +77,7 @@ class ThemePreviewerModule extends SmartyModule {
 		$runData->contextAdd("themes", $themes);
 		
 		$runData->contextAdd("currentTheme", $theme);
+		$runData->contextAdd("noUi", $pl->getParameterValue('noUi'));
 			
 	}
 	
@@ -83,9 +89,24 @@ class ThemePreviewerModule extends SmartyModule {
    			$t .= "@import url($url);\n";
 		}
 		
-		$out = preg_replace('/(@import url\([^\)]*?style\.css\?[0-9]+\);\s*)+/s', $t, $out, 1);
+		$out = preg_replace('/(@import url\([^\)]*?style\.css(\?[0-9]+)?\);\s*)+/s', $t, $out, 1);
 			
 		return $out;
+	}
+	
+	protected function getExternalTheme($url){
+		if(!$url){
+			return null;
+		}
+		$t = new DB_Theme();
+		$t->setExternalUrl($url);
+		/* Get base theme. */
+		$c = new Criteria();
+		$c->add('name', 'Base');
+		$baseTheme = DB_ThemePeer::instance()->selectOne($c);
+		$t->setExtendsThemeId($baseTheme->getThemeId());
+		$t->setThemeId($baseTheme->getThemeId()); // needed sometime
+		return $t;
 	}
 
 }

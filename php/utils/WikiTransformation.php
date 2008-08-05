@@ -247,6 +247,7 @@ class WikiTransformation {
  		$this->wiki->setRenderConf($this->transformationFormat, 'file', 'base', '/local--files/'.$page->getUnixName().'/');
  		$this->wiki->vars['pageName'] = $page->getUnixName();
  		$this->wiki->vars['pageTitle'] = $page->getTitleOrUnixName();
+ 		$this->wiki->vars['page'] = $page;
 		$this->page = $page;
 	}	
 	public function setPageUnixName($pageUnixName){
