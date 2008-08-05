@@ -41,7 +41,7 @@ class Text_Wiki_Render_Xhtml_Math extends Text_Wiki_Render {
         $hashcode = md5($content . '..' . $type);
         $runData = Ozone::getRunData();
         $site = $runData->getTemp('site');
-        $dir = WIKIDOT_ROOT . '/web/files--sites/' . $site->getUnixName() . '/math/eqs';
+        $dir = $site->getLocalFilesPath() . '/math/eqs';
         if (!file_exists($dir)) {
             mkdirfull($dir);
         }

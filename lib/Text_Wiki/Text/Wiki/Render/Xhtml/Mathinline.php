@@ -40,7 +40,7 @@ class Text_Wiki_Render_Xhtml_Mathinline extends Text_Wiki_Render {
         $hashcode = md5($content);
         $runData = Ozone::getRunData();
         $site = $runData->getTemp('site');
-        $dir = WIKIDOT_ROOT . '/web/files--sites/' . $site->getUnixName() . '/math/inline';
+        $dir = $site->getLocalFilesPath() . '/math/inline';
         if (!file_exists($dir)) {
             mkdirfull($dir);
         }
@@ -71,7 +71,7 @@ class Text_Wiki_Render_Xhtml_Mathinline extends Text_Wiki_Render {
         $hashcode = md5($content);
         $runData = Ozone::getRunData();
         $site = $runData->getTemp('site');
-        $dir = WIKIDOT_ROOT . '/web/files--sites/' . $site->getUnixName() . '/math/inline';
+        $dir = $site->getLocalFilesPath() . '/math/inline';
         if (!file_exists($dir)) {
             mkdirfull($dir);
         }
