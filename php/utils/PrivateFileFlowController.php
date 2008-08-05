@@ -211,8 +211,15 @@ class PrivateFileFlowController extends WebFlowController {
 		}
 	}
 	
+	/**
+	 * builds the path to local file
+	 *
+	 * @param DB_Site $site
+	 * @param string $file
+	 * @return string
+	 */
 	protected function buildPath($site, $file) {
-		return WIKIDOT_ROOT.'/web/files--sites/'.$site->getUnixName().'/'.$file;
+		return $site->getLocalFilesPath().'/'.$file;
 	}
 	
 	public function process() {
