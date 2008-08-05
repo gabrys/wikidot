@@ -25,50 +25,162 @@
 
 class PagesTagCloudModule extends SmartyModule{
 	
-	public function render($runData){
-		$site = $runData->getTemp("site");
-		$pl = $runData->getParameterList();
-		
-		$parmArray = $pl->asArray();
+	protected $_pl;
+	protected $parameterhash;
+	protected $_vars;
+	private $_parameterUrlPrefix = null;
+	
+	
+	public function render($runData) {
+        
+        $site = $runData->getTemp("site");
+        $pl = $runData->getParameterList();
+        $this->_pl = $pl;
+        
+        /*
+         * Read all parameters.
+         */
+        
+		$categoryName = $this->_readParameter(array('category', 'categories'), false);
+        
+        $categoryName = strtolower($categoryName);
+        
+        $parmArray = $pl->asArray();
 		unset($parmArray['tag']);
+		unset($parmArray['wiki_page']);
 		$parmHash = md5(serialize($parmArray));
-		
-		$key = 'page_tags_v..'.$site->getSiteId().'..'.$parmHash;
-		$tkey = 'page_tags_lc..'.$site->getSiteId(); // last change timestamp
-		
-		$mc = OZONE::$memcache;
-		$struct = $mc->get($key);
-		
-		$cacheTimestamp = $struct['timestamp'];
-		$changeTimestamp = $mc->get($tkey);
-		
-		if($struct){
-			// check the times
-			
-			if($changeTimestamp && $changeTimestamp <= $cacheTimestamp){
-				
-				$out = $struct['content'];
-				return $out;	
-			}
-		}
-		
-		$out = parent::render($runData);
-		
-		// and store the data now
-		$struct = array();
-		$now = time();
-		$struct['timestamp'] = $now;
-		$struct['content'] = $out;
-		
-		$mc->set($key, $struct, 0, 1000);
-		
-		if(!$changeTimestamp){
-			$changeTimestamp = $now;
-			$mc->set($tkey, $changeTimestamp, 0, 3600);
-		}
+        $this->parameterhash = $parmHash;
 
-		return $out; 
-	}
+        $valid = true;
+        
+        if ($categoryName == '__current__') {
+            /* Use the current category! */
+            $pageUnixName = $runData->getTemp('pageUnixName');
+            if (!$pageUnixName) {
+                $pageUnixName = $pl->getParameterValue('page_unix_name'); // from preview
+            }
+            if (strpos($pageUnixName, ":") != false) {
+                $tmp0 = explode(':', $pageUnixName);
+                $categoryName = $tmp0[0];
+            } else {
+                $categoryName = "_default";
+            }
+        }
+        
+        /* Default to ALL. */
+        if (!$categoryName) {
+        	$categoryName = '*';
+        }
+        
+        $key = 'pagetagcloud_v..' . $site->getUnixName() . '..' . $categoryName . '..' . $parmHash;
+
+        $mc = OZONE::$memcache;
+        $struct = $mc->get($key);
+        if (!$struct) {
+            $valid = false;
+        }
+        $cacheTimestamp = $struct['timestamp'];
+        $now = time();
+        
+        // now check lc for ALL categories involved
+        
+
+        $cats = preg_split('/[,;\s]+?/', $categoryName);
+        
+        if ($categoryName != '*') {
+            foreach ($cats as $cat) {
+                
+                $tkey = 'pagecategory_lc..' . $site->getUnixName() . '..' . $cat; // last change timestamp
+                $changeTimestamp = $mc->get($tkey);
+                if ($changeTimestamp && $cacheTimestamp && $changeTimestamp <= $cacheTimestamp) {    //cache valid	
+                } else {
+                    $valid = false;
+                    if (!$changeTimestamp) {
+                        // 	put timestamp
+                        $mc->set($tkey, $now, 0, 864000);
+                        $valid = false;
+                    }
+                }
+            }
+        } else {
+            $akey = 'pageall_lc..' . $site->getUnixName();
+            $allPagesTimestamp = $mc->get($akey);
+            if ($allPagesTimestamp && $cacheTimestamp && $allPagesTimestamp <= $cacheTimestamp) {    //cache valid
+            } else {
+                $valid = false;
+                if (!$allPagesTimestamp) {
+                    // 	put timestamp
+                    $mc->set($akey, $now, 0, 864000);
+                    $valid = false;
+                }
+            }
+        }
+        
+        if ($valid) {
+            $this->_vars = $struct['vars'];
+            //echo 'fromcache';
+            return $struct['content'];
+        }
+        
+        $out = parent::render($runData);
+        
+        // and store the data now
+        $struct = array();
+        $now = time();
+        $struct['timestamp'] = $now;
+        $struct['content'] = $out;
+        $struct['vars'] = $this->_vars;
+        
+        $mc->set($key, $struct, 0, 864000);
+        
+        return $out;
+    
+    }
+	
+//	public function render($runData){
+//		$site = $runData->getTemp("site");
+//		$pl = $runData->getParameterList();
+//		
+//		$parmArray = $pl->asArray();
+//		unset($parmArray['tag']);
+//		$parmHash = md5(serialize($parmArray));
+//		
+//		$key = 'page_tags_v..'.$site->getSiteId().'..'.$parmHash;
+//		$tkey = 'page_tags_lc..'.$site->getSiteId(); // last change timestamp
+//		
+//		$mc = OZONE::$memcache;
+//		$struct = $mc->get($key);
+//		
+//		$cacheTimestamp = $struct['timestamp'];
+//		$changeTimestamp = $mc->get($tkey);
+//		
+//		if($struct){
+//			// check the times
+//			
+//			if($changeTimestamp && $changeTimestamp <= $cacheTimestamp){
+//				
+//				$out = $struct['content'];
+//				return $out;	
+//			}
+//		}
+//		
+//		$out = parent::render($runData);
+//		
+//		// and store the data now
+//		$struct = array();
+//		$now = time();
+//		$struct['timestamp'] = $now;
+//		$struct['content'] = $out;
+//		
+//		$mc->set($key, $struct, 0, 1000);
+//		
+//		if(!$changeTimestamp){
+//			$changeTimestamp = $now;
+//			$mc->set($tkey, $changeTimestamp, 0, 3600);
+//		}
+//
+//		return $out; 
+//	}
 	
 	public function build($runData){
 		
@@ -76,17 +188,17 @@ class PagesTagCloudModule extends SmartyModule{
 		
 		// get some cool parameters
 		
-		$maxFontSize = $pl->getParameterValue("maxFontSize");
-		$minFontSize = $pl->getParameterValue("minFontSize");
+		$maxFontSize = $pl->getParameterValue("maxFontSize", "MODULE");
+		$minFontSize = $pl->getParameterValue("minFontSize", "MODULE");
 		
-		$minColor = $pl->getParameterValue("minColor");
-		$maxColor = $pl->getParameterValue("maxColor");
+		$minColor = $pl->getParameterValue("minColor", "MODULE");
+		$maxColor = $pl->getParameterValue("maxColor", "MODULE");
 		
-		$target = $pl->getParameterValue("target");
+		$target = $pl->getParameterValue("target", "MODULE");
 		
-		$limit = $pl->getParameterValue("limit");
+		$limit = $pl->getParameterValue("limit", "MODULE");
 		
-		$categoryName =  $pl->getParameterValue("category");
+		$categoryName =  $pl->getParameterValue("category", "MODULE");
 
 		if(!$target){
 			$target = "/system:page-tags/tag/";
@@ -207,4 +319,29 @@ class PagesTagCloudModule extends SmartyModule{
 		$runData->contextAdd("href", $target);
 		
 	}
+	
+	protected function _readParameter($name, $fromUrl = false){
+    	$pl = $this->_pl;
+    	$name = (array) $name;
+    	foreach($name as $n) {
+    		$val = $pl->getParameterValue($n, "MODULE", "AMODULE");
+    		if($val) {
+    			break;
+    		}
+    	}
+    	if($fromUrl && $val == '@URL') {
+    		foreach($name as $n) {
+	    		if($this->_parameterUrlPrefix){
+	    			$n = $this->_parameterUrlPrefix . '_' . $n;
+	    		}
+    			$val = $pl->resolveParameter($n, 'GET');
+	    		if($val) {
+	    			break;
+	    		}
+	    	}
+    	}
+    	
+    	return $val;
+    }
+    
 }
