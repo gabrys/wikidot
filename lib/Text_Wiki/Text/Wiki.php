@@ -61,6 +61,8 @@ class Text_Wiki {
         'Module',
         'Module654',
        
+    	'Iftags',
+    
         'Comment',
         'Iframe',
     	'Date',
