@@ -56,6 +56,8 @@ class ParameterList {
 		} else{
 			//initialize GET parameters from the url... because of mod_rewrite	
 			$qs =  $_SERVER['QUERY_STRING'];
+			/* Check if there is a "?" char - if so, remove it. */
+			$qs = preg_replace(';\?.*$;', '', $qs);
 			$splited = explode("/",$qs);
 			if(count($splited)>= 1){
 				$this->parameterArray['template'] = $splited[0];
@@ -70,7 +72,7 @@ class ParameterList {
 				$this->parameterArray[$key] = urldecode($value);
 				$this->parameterTypes[$key] = "GET";
 				$this->parameterFrom[$key] = 0;
-				$this->allParameters['GET'][$key] = $value;
+				$this->allParameters['GET'][$key] = urldecode($value);
 			}
 
 			// POST parameters are not affected by mod_rewrite
@@ -86,7 +88,7 @@ class ParameterList {
 				$this->parameterArray[$key] = $value;
 				$this->parameterTypes[$key] = "POST";
 				$this->parameterFrom[$key] = 0;
-				$this->allParameters['POST'][$key] = $value;
+				$this->allParameters['POST'][$key] = urldecode($value);
 			}
 		
 		}
