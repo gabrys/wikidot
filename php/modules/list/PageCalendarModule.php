@@ -43,10 +43,7 @@ class PageCalendarModule extends SmartyModule {
          * Read all parameters.
          */
         
-		$categoryName = $this->_readParameter('category', false);
-        if(!$categoryName) {
-            $categoryName = $this->_readParameter('categories', false);
-        }
+		$categoryName = $this->_readParameter(array('category', 'categories'), false);
         
         $categoryName = strtolower($categoryName);
         
@@ -140,18 +137,11 @@ class PageCalendarModule extends SmartyModule {
         $this->_pl = $pl;
         $site = $runData->getTemp("site");
         
-    	$categoryName = $this->_readParameter('category', false);
-        if(!$categoryName) {
-            $categoryName = $this->_readParameter('categories', false);
-        }
+    	$categoryName = $this->_readParameter(array('category', 'categories'), false);
         
         $categoryName = strtolower($categoryName);
         
-        $startPage = $this->_readParameter('startPage');
-        
-        if(!$startPage) {
-        	$this->_readParameter('targetPage');
-        }
+        $startPage = $this->_readParameter(array('startPage', 'targetPage'));
         
         if(!$startPage) {
         	/* Get curent page. */
@@ -212,10 +202,8 @@ class PageCalendarModule extends SmartyModule {
         
         /* Handle tags! */
         
-        $tagString = $this->_readParameter("tag", true);
-        if (!$tagString) {
-            $tagString = $this->_readParameter("tags", true);
-        }
+        $tagString = $this->_readParameter(array('tag', 'tags'), true);
+        
         //var_dump($tagString);
 
         if ($tagString) {
@@ -390,12 +378,23 @@ class PageCalendarModule extends SmartyModule {
 
  	protected function _readParameter($name, $fromUrl = false){
     	$pl = $this->_pl;
-    	$val = $pl->getParameterValue($name, "MODULE", "AMODULE");
-    	if($fromUrl && $val == '@URL') {
-    		if($this->_parameterUrlPrefix){
-    			$name = $this->_parameterUrlPrefix . '_' . $name;
+    	$name = (array) $name;
+    	foreach($name as $n) {
+    		$val = $pl->getParameterValue($n, "MODULE", "AMODULE");
+    		if($val) {
+    			break;
     		}
-    		$val = $pl->resolveParameter($name, 'GET');
+    	}
+    	if($fromUrl && $val == '@URL') {
+    		foreach($name as $n) {
+	    		if($this->_parameterUrlPrefix){
+	    			$n = $this->_parameterUrlPrefix . '_' . $n;
+	    		}
+    			$val = $pl->resolveParameter($n, 'GET');
+	    		if($val) {
+	    			break;
+	    		}
+	    	}
     	}
     	
     	return $val;

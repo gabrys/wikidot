@@ -50,10 +50,7 @@ class ListPagesModule extends SmartyModule {
          * Read all parameters.
          */
         
-        $categoryName = $this->_readParameter('category', false);
-        if(!$categoryName) {
-            $categoryName = $this->_readParameter('categories', false);
-        }
+        $categoryName = $this->_readParameter(array('category', 'categories'), false);
         
         $categoryName = strtolower($categoryName);
         
@@ -151,10 +148,7 @@ class ListPagesModule extends SmartyModule {
         $pl = $runData->getParameterList();
         $site = $runData->getTemp("site");
         
-    	$categoryName = $this->_readParameter('category', false);
-        if(!$categoryName) {
-            $categoryName = $this->_readParameter('categories', false);
-        }
+    	$categoryName = $this->_readParameter(array('category', 'categories'), false);
         
         $categoryName = strtolower($categoryName);
         
@@ -222,11 +216,8 @@ class ListPagesModule extends SmartyModule {
         
         /* Handle tags! */
         
-        $tagString = $this->_readParameter("tag", true);
-        if (!$tagString) {
-            $tagString = $this->_readParameter("tags", true);
-        }
-        
+        $tagString = $this->_readParameter(array('tag', 'tags'), true);
+
         if ($tagString) {
             /* Split tags. */
             $tags = preg_split(';[\s,\;]+;', $tagString);
@@ -634,10 +625,7 @@ class ListPagesModule extends SmartyModule {
         
         /* Also build an URL for the feed. */
         
-        $rssTitle = $this->_readParameter('rss');
-        if($rssTitle === null){
-        	$rssTitle = $this->_readParameter('rssTitle');
-        }
+        $rssTitle = $this->_readParameter(array('rss', 'rssTitle'));
         
         if($rssTitle !== null) {
 	        
@@ -761,6 +749,18 @@ class ListPagesModule extends SmartyModule {
         if(count($t2) == 0) {
             return _('//no tags found for this page//');
         }
+        $tagTarget = $this->_readParameter('tagTarget', true);
+        if($tagTarget){
+        	$t3 = array();
+        	$p = 'tag';
+        	if($this->_parameterUrlPrefix){
+        		$p = $this->_parameterUrlPrefix . '_tag';
+        	}
+        	foreach($t2 as $t){
+        		$t3[] = '[/'.$tagTarget.'/'.$p.'/'.urlencode($t).' '.$t.']';
+        	}
+        	return implode(' ', $t3);
+        }
         return implode(' ', $t2);
     }
     
@@ -786,14 +786,25 @@ class ListPagesModule extends SmartyModule {
     	return 0;
     }
 
-    protected function _readParameter($name, $fromUrl = false){
+	protected function _readParameter($name, $fromUrl = false){
     	$pl = $this->_pl;
-    	$val = $pl->getParameterValue($name, "MODULE", "AMODULE");
-    	if($fromUrl && $val == '@URL') {
-    		if($this->_parameterUrlPrefix){
-    			$name = $this->_parameterUrlPrefix . '_' . $name;
+    	$name = (array) $name;
+    	foreach($name as $n) {
+    		$val = $pl->getParameterValue($n, "MODULE", "AMODULE");
+    		if($val) {
+    			break;
     		}
-    		$val = $pl->resolveParameter($name, 'GET');
+    	}
+    	if($fromUrl && $val == '@URL') {
+    		foreach($name as $n) {
+	    		if($this->_parameterUrlPrefix){
+	    			$n = $this->_parameterUrlPrefix . '_' . $n;
+	    		}
+    			$val = $pl->resolveParameter($n, 'GET');
+	    		if($val) {
+	    			break;
+	    		}
+	    	}
     	}
     	
     	return $val;
