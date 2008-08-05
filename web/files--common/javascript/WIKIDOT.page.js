@@ -323,7 +323,7 @@ WIKIDOT.page.listeners = {
 	search: function(e){
 		var query = $("search-top-box-input").value;
 		// escape query
-		query = encodeURIComponent(encodeURIComponent(query));
+		query = encodeURIComponent(query);
 		var url = "/search:site/q/"+query;
 		window.location.href=url;
 		YAHOO.util.Event.preventDefault(e);

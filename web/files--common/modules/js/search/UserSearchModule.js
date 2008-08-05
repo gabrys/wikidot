@@ -16,7 +16,7 @@ WIKIDOT.modules.UserSearchModule.listeners = {
 		var f = OZONE.utils.formToArray("search-form-user");
 		var query = f['query'];
 		// escape query
-		query = encodeURIComponent(encodeURIComponent(query));
+		query = encodeURIComponent(query);
 		var url = "/search:users";
 		url += "/q/"+query;
 		window.location.href=url;

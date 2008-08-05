@@ -17,7 +17,7 @@ WIKIDOT.modules.SearchAllModulee.listeners = {
 		var query = f['query'];
 		var area = f['area'];
 		// escape query
-		query = encodeURIComponent(encodeURIComponent(query));
+		query = encodeURIComponent(query);
 		var url = "/search:all";
 		if(area && area != ''){
 			url += "/a/"+area;
