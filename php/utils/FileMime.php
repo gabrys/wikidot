@@ -34,8 +34,7 @@ class FileMime {
 	);
 	
 	static protected function execFile($params, $file) {
-		$file = escapeshellarg("$file");
-		$retval = 0;
+		$file = escapeshellarg($file);
 		exec("file $params $file", $output, $retval);
 		if ($retval == 0) {
 			return join("\n", $output);

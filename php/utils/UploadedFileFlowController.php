@@ -45,7 +45,7 @@ class UploadedFileFlowController extends WebFlowController {
 	
 	protected function forbidden() {
 		header("HTTP/1.0 401 Unauthorized");
-		header("Content-type: text/html; charset=utf-8");
+		$this->setContentTypeHeader("text/html");
 		echo "Not authorized. This is a private site with access restricted to its members.";
 	}
 	
@@ -205,13 +205,33 @@ class UploadedFileFlowController extends WebFlowController {
 	}
 	
 	/**
-	 * generates the time to use by Expires header
+	 * sets the Expires header
 	 *
 	 * @param int $expires time in seconds
-	 * @return string the date string
 	 */
-	protected function generateExpiresTime($expires) {
-		return gmdate("D, d M Y H:i:s", time() + $expires) . " GMT";
+	protected function setExpiresHeader($expires) {
+		$expires = (int) $expires;
+		
+		if ($expires) {
+			if ($expires > 0) {
+				$date = gmdate("D, d M Y H:i:s", time() + $expires) . " GMT";
+				header("Expires: " . $date);
+			} else {
+				header("Cache-Control: no-cache, must-revalidate");
+				header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+			}
+		}
+	}
+	
+	/**
+	 * sets the Content-type header
+	 *
+	 * @param string $mime
+	 */
+	protected function setContentTypeHeader($mime) {
+		if ($mime) {
+			header("Content-type: $mime; charset=utf-8");
+		}
 	}
 	
 	/**
@@ -223,19 +243,8 @@ class UploadedFileFlowController extends WebFlowController {
 	 */
 	protected function serveFile($path, $mime = null, $expires = null) {
 		if (file_exists($path)) {
-  			if ($mime) {
-				header("Content-Type: ".$mime);
-  			}
-  			if ($expires) {
-  				$expires = (int) $expires;
-  				if ($expires < 0) {
-  					// time in past!
-  					header("Cache-Control: no-cache, must-revalidate");
-					header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
-  				} else {
-  					header("Expires: " . $this->generateExpiresTime($expires));
-  				}
-  			}
+  			$this->setContentTypeHeader($mime);
+  			$this->setExpiresHeader($expires);
 			$this->readfile($path);
 		} else {
 			$this->serveFile(WIKIDOT_ROOT."/files/file_not_exists.html", "text/html");
@@ -297,7 +306,14 @@ class UploadedFileFlowController extends WebFlowController {
 		}
 	}
 	
-	protected function serveCode($site, $fileName) {
+	/**
+	 * Serves a code extracted from the page
+	 *
+	 * @param DB_Site $site
+	 * @param string $fileName code/pagename/number
+	 * @param int $expires timeout in seconds
+	 */
+	protected function serveCode($site, $fileName, $expires = 0) {
 		$m = array();
 		
 		if (preg_match(";^code/([^/]+)(?:/([0-9]+))?$;", $fileName, $m)) {
@@ -309,9 +325,8 @@ class UploadedFileFlowController extends WebFlowController {
 			
 			$ext = new CodeblockExtractor($site, $pageName, $number);
 			
-			header("Content-type: " . $ext->getMimeType());
-			header("Expires: " . $this->generateExpiresTime(3600));
-			
+			$this->setExpiresHeader($expires);
+			$this->setContentTypeHeader($ext->getMimeType());
 			echo $ext->getContents();
 			
 		} else {
@@ -351,7 +366,7 @@ class UploadedFileFlowController extends WebFlowController {
 			if ($this->publicArea($site, $file)) {
 					
 				if ($this->isCodeRequest($file)) {
-					$this->serveCode($site, $file);
+					$this->serveCode($site, $file, 3600);
 				} else {
 					$this->serveFileWithMime($path, 3600);
 				}
@@ -384,7 +399,7 @@ class UploadedFileFlowController extends WebFlowController {
 				if ($this->userAllowed($user, $site, $file)) {
 					
 					if ($this->isCodeRequest($file)) {
-						$this->serveCode($site, $file);
+						$this->serveCode($site, $file, -3600);
 					} else {
 						$this->serveFileWithMime($path, -3600);
 					}
