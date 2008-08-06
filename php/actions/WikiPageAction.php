@@ -25,6 +25,8 @@
 
 class WikiPageAction extends SmartyAction {
 	
+	protected static $AUTOINCREMENT_PAGE = 'autoincrementpage';
+	
 	public function perform($runData){}
 	
 	public function savePageEvent($runData){
@@ -73,10 +75,16 @@ class WikiPageAction extends SmartyAction {
 			throw new ProcessException(_("The changes comment is longer than 200 characters. Please keep this description short and informative. And no longer than this limit please..."), "comment_too_long");	
 		}
 
+		$autoincrement = false;
+		
 		$nowDate = new ODate();
 		if($pageId === null || $pageId===''){
-			
-			DB_PageEditLockPeer::instance()->deleteOutdatedByPageName($site->getSiteId(), $unixName);
+			if(preg_match(';^([a-z0-9]+:)?'.self::$AUTOINCREMENT_PAGE.'$;', $unixName)){
+				$autoincrement = true;
+			}
+			if(!$autoincrement){
+				DB_PageEditLockPeer::instance()->deleteOutdatedByPageName($site->getSiteId(), $unixName);
+			}
 			// a page should be created!
 			
 			// extract category name
@@ -113,67 +121,82 @@ class WikiPageAction extends SmartyAction {
 
 			// check the locks!
 			// check if the lock still exists.
-			
-			$c = new Criteria();
-			$c->add("lock_id", $lockId);
-			$c->add("secret", $lockSecret);
-			
-			$lock = DB_PageEditLockPeer::instance()->selectOne($c);
-			if($lock == null){
-				$page = DB_PagePeer::instance()->selectByName($site->getSiteId(), $unixName);
-				if($page != null){
-					// page exists!!! error!
-					$runData->ajaxResponseAdd("noLockError", "other_locks");
-					$runData->ajaxResponseAdd("pageExists", true);
-					$runData->ajaxResponseAdd("locked", true); //well, it is somehow locked...
-					$runData->setModuleTemplate("edit/NewPageExistsWinModule");
-					$runData->contextAdd("nonrecoverable", true);
-					$runData->ajaxResponseAdd("nonrecoverable", true);
-					$db->commit();
-					return;	
-				}
+			if(!$autoincrement){
+				$c = new Criteria();
+				$c->add("lock_id", $lockId);
+				$c->add("secret", $lockSecret);
 				
-				// check if we can TRANSPARENTLY recreate the lock IF there is no
-				// conflicting lock and the revision_id has not changed.
-				$lock = new DB_PageEditLock();
-			
-				$lock->setPageUnixName($unixName);
-				$lock->setSiteId($site->getSiteId());
-				$lock->setUserId($runData->getUserId());
-				$lock->setUserString($runData->getSession()->getIpAddress());
-				
-				$lock->setDateStarted(new ODate());
-				$lock->setDateLastAccessed(new ODate());
-				$lock->setMode("page");
-				
-				$conflictLocks = $lock->getConflicts();
-				if($conflictLocks == null){
-					// safely recreate lock
-					$secret = md5(time().rand(1000,9999));
-					$lock->setSecret($secret);
-					$lock->setSessionId($runData->getSession()->getSessionId());
-					$lock->save();	
-					$lockId = $lock->getLockId();
+				$lock = DB_PageEditLockPeer::instance()->selectOne($c);
+				if($lock == null){
+					$page = DB_PagePeer::instance()->selectByName($site->getSiteId(), $unixName);
+					if($page != null){
+						// page exists!!! error!
+						$runData->ajaxResponseAdd("noLockError", "other_locks");
+						$runData->ajaxResponseAdd("pageExists", true);
+						$runData->ajaxResponseAdd("locked", true); //well, it is somehow locked...
+						$runData->setModuleTemplate("edit/NewPageExistsWinModule");
+						$runData->contextAdd("nonrecoverable", true);
+						$runData->ajaxResponseAdd("nonrecoverable", true);
+						$db->commit();
+						return;	
+					}
 					
-					// send back new lock information
-					$runData->ajaxResponseAdd("lockRecreated", true);
-					$runData->ajaxResponseAdd("lockId", $lockId);
-					$runData->ajaxResponseAdd("lockSecret", $secret);
-					$runData->ajaxResponseAdd('timeLeft', 60*15);
-				}else {
-					$runData->ajaxResponseAdd("noLockError", "other_locks");
-					$runData->setModuleTemplate("edit/LockInterceptedWinModule");
-					$runData->contextAdd("locks", $conflictLocks);
-					$db->commit();
-					return;	
-				}
+					// check if we can TRANSPARENTLY recreate the lock IF there is no
+					// conflicting lock and the revision_id has not changed.
+					$lock = new DB_PageEditLock();
+				
+					$lock->setPageUnixName($unixName);
+					$lock->setSiteId($site->getSiteId());
+					$lock->setUserId($runData->getUserId());
+					$lock->setUserString($runData->getSession()->getIpAddress());
 					
-			} else {
-				$lock->setDateLastAccessed(new ODate());
-				$lock->save();
-				$runData->ajaxResponseAdd('timeLeft', 60*15);	
+					$lock->setDateStarted(new ODate());
+					$lock->setDateLastAccessed(new ODate());
+					$lock->setMode("page");
+					
+					$conflictLocks = $lock->getConflicts();
+					if($conflictLocks == null){
+						// safely recreate lock
+						$secret = md5(time().rand(1000,9999));
+						$lock->setSecret($secret);
+						$lock->setSessionId($runData->getSession()->getSessionId());
+						$lock->save();	
+						$lockId = $lock->getLockId();
+						
+						// send back new lock information
+						$runData->ajaxResponseAdd("lockRecreated", true);
+						$runData->ajaxResponseAdd("lockId", $lockId);
+						$runData->ajaxResponseAdd("lockSecret", $secret);
+						$runData->ajaxResponseAdd('timeLeft', 60*15);
+					}else {
+						$runData->ajaxResponseAdd("noLockError", "other_locks");
+						$runData->setModuleTemplate("edit/LockInterceptedWinModule");
+						$runData->contextAdd("locks", $conflictLocks);
+						$db->commit();
+						return;	
+					}
+						
+				} else {
+					$lock->setDateLastAccessed(new ODate());
+					$lock->save();
+					$runData->ajaxResponseAdd('timeLeft', 60*15);	
+				}
 			}
 
+			/* Change unixName to integer. */
+			if($autoincrement){
+				/* Check max number taken. */
+				$db = Database::connection();
+				$q = "select max(substring(unix_name from '[0-9]+')::integer) + 1 as max from page where category_id={$category->getCategoryId()} AND unix_name ~ '^([a-z0-9]+:)?[0-9]+$'";
+				$r = $db->query($q);
+				$row = $r->nextRow();
+				$unixName = $row['max'];
+				if($category->getName() != '_default'){
+					$unixName = $category->getName() . ':' . $unixName;
+				}
+				$runData->ajaxResponseAdd('pageUnixName', $unixName);
+			}
+			
 			$page = new DB_Page();	
 			$page->obtainPK();
 			
@@ -249,11 +272,11 @@ class WikiPageAction extends SmartyAction {
 			$outdater->pageEvent("new_page", $page);
 			
 			// index page
-			
-			$c = new Criteria();
-			$c->add("lock_id", $lockId);
-			DB_PageEditLockPeer::instance()->delete($c);
-			
+			if(!$autoincrement){
+				$c = new Criteria();
+				$c->add("lock_id", $lockId);
+				DB_PageEditLockPeer::instance()->delete($c);
+			}
 			EventLogger::instance()->logNewPage($page);
 			
 		} else {
@@ -513,7 +536,7 @@ class WikiPageAction extends SmartyAction {
 		}
 
 		// remove lock too?
-		if(!$pl->getParameterValue("and_continue")){
+		if(!$pl->getParameterValue("and_continue") && !$autoincrement){
 			$c = new Criteria();
 			$c->add("lock_id", $lockId);
 			DB_PageEditLockPeer::instance()->delete($c);

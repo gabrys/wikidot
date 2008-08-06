@@ -29,6 +29,8 @@
  */
 class DB_Page extends DB_PageBase {
 
+	protected static $_titleTemplate = array();
+	
     public function getSource() {
         return $this->getCurrentRevision()->getSourceText();
     }
@@ -176,6 +178,49 @@ class DB_Page extends DB_PageBase {
     		$t[] = $ta->getTag();
     	}
     	return $t;
+    }
+    
+    public function getTitle(){
+    	//print_r(count(self::$_titleTemplate));
+    	
+    	$categoryId = $this->getCategoryId();
+    	if($categoryId){    		
+    		if(!array_key_exists($categoryId, self::$_titleTemplate)) {			
+    			/* Check for template. */
+    			$c = new Criteria();
+    			$templateUnixName = '_titletemplate';
+    			if($this->getCategoryName() != '_default'){
+    				$templateUnixName = $this->getCategoryName() . ':' . $templateUnixName;
+    			}
+    			//echo $templateUnixName;
+    			$c->add('unix_name', $templateUnixName);
+    			$c->add('site_id', $this->getSiteId());
+    			$templatePage = DB_PagePeer::instance()->selectOne($c);
+    			if($templatePage) {
+    				$templateSource = $templatePage->getSource();
+    				if(strlen($templateSource) > 0 && strlen($templateSource) < 200 && !strpos($templateSource, "\n")){
+    					self::$_titleTemplate[$categoryId] = $templateSource;
+	    			}else {
+	    				self::$_titleTemplate[$categoryId] = false;
+	    			}
+	    		}else {
+	    			self::$_titleTemplate[$categoryId] = false;
+	    		}
+    		}
+    		$titleTemplate = self::$_titleTemplate[$categoryId];
+    		if($titleTemplate) {
+    			/* Process the template. */
+    			$b = $titleTemplate;
+    			$b = str_replace('%%page_unix_name%%', preg_replace(';^[a-z0-9]+:;', '', $this->getUnixName()), $b);
+    			$b = str_replace('%%title%%', parent::getTitle(), $b);
+    			return $b;
+    		}
+    	}
+    	return parent::getTitle();
+    }
+    
+    public function getTitleRaw() {
+    	return parent::getTitle();
     }
 
 }

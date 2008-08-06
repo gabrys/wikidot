@@ -25,6 +25,8 @@
 
 class PageEditModule extends SmartyModule {
 	
+	protected static $AUTOINCREMENT_PAGE = 'autoincrementpage';
+	
 	public function build($runData){
 		
 		$pl = $runData->getParameterList();
@@ -101,37 +103,44 @@ class PageEditModule extends SmartyModule {
 			
 			// now check for permissions!!!
 			WDPermissionManager::instance()->hasPagePermission('create', $user, $category);
-
-			$lock = new DB_PageEditLock();
-			$lock->setPageUnixName($unixName);
-			$lock->setSiteId($site->getSiteId());
-			$lock->setUserId($runData->getUserId());
-			$lock->setUserString($runData->getSession()->getIpAddress());
-			
-			$lock->setDateStarted(new ODate());
-			$lock->setDateLastAccessed(new ODate());
-			$lock->setMode("page");
-			
-			if($pl->getParameterValue("force_lock") != null){
-				$lock->deleteConflicts();
-			}else{	
-				// check for conflicts
-				$conflicts = $lock->getConflicts();
-				if($conflicts != null){
-					$runData->ajaxResponseAdd("locked", true); 
-					$runData->setModuleTemplate("edit/NewPageLockedWinModule");	
-					$runData->contextAdd("locks", $conflicts);
-					return;
-				}
+			$autoincrement = false;
+			if(preg_match(';^([a-z0-9]+:)?'.self::$AUTOINCREMENT_PAGE.'$;', $unixName)){
+				$autoincrement = true;
 			}
-
-			$secret = md5(time().rand(1000,9999));
-			$lock->setSecret($secret);
-			$lock->setSessionId($runData->getSession()->getSessionId());
-			$lock->save();
-			$runData->ajaxResponseAdd('lock_id', $lock->getLockId());
-			$runData->ajaxResponseAdd('lock_secret', $secret);
+			if(!$autoincrement){
+				$lock = new DB_PageEditLock();
+				$lock->setPageUnixName($unixName);
+				$lock->setSiteId($site->getSiteId());
+				$lock->setUserId($runData->getUserId());
+				$lock->setUserString($runData->getSession()->getIpAddress());
+				
+				$lock->setDateStarted(new ODate());
+				$lock->setDateLastAccessed(new ODate());
+				$lock->setMode("page");
+				
+				if($pl->getParameterValue("force_lock") != null){
+					$lock->deleteConflicts();
+				}else{	
+					// check for conflicts
+					$conflicts = $lock->getConflicts();
+					if($conflicts != null){
+						$runData->ajaxResponseAdd("locked", true); 
+						$runData->setModuleTemplate("edit/NewPageLockedWinModule");	
+						$runData->contextAdd("locks", $conflicts);
+						return;
+					}
+				}
 			
+				$secret = md5(time().rand(1000,9999));
+				$lock->setSecret($secret);
+				$lock->setSessionId($runData->getSession()->getSessionId());
+				$lock->save();
+				$runData->ajaxResponseAdd('lock_id', $lock->getLockId());
+				$runData->ajaxResponseAdd('lock_secret', $secret);
+			} else {
+				$runData->contextAdd('disableLocks', true);
+				$runData->ajaxResponseAdd('disableLocks', true);
+			}
 			$runData->contextAdd("title", $suggestedTitle);
 			
 			
@@ -291,7 +300,7 @@ class PageEditModule extends SmartyModule {
 			
 			$runData->contextAdd("source", trim(implode("\n", $s)));
 		}
-		$runData->contextAdd("title", $page->getTitle());	
+		$runData->contextAdd("title", $page->getTitleRaw());	
 		$runData->contextAdd("pageId", $page->getPageId());	
 		
 		$runData->contextAdd("mode", $mode);

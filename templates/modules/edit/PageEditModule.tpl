@@ -66,7 +66,7 @@
 						</div>
 					</td>
 					<td style="border: none; padding: 0 5px;">
-						<div id="lock-info">
+						<div id="lock-info" {if $disableLocks}style="display: none"{/if}>
 							{t 1="900" escape=no}You have acquired an exclusive 15-minute page lock which means nobody else can edit the page simultaneously to
 								avoid conflicts.
 								<br/>

@@ -25,7 +25,11 @@ WIKIDOT.modules.PageEditModule.listeners = {
 
 		var r = YAHOO.util.Event.removeListener(window, "beforeunload", WIKIDOT.modules.PageEditModule.listeners.leaveConfirm);
 		YAHOO.util.Event.removeListener(window, "unload", WIKIDOT.modules.PageEditModule.listeners.leavePage);
-
+		
+		if(WIKIREQUEST.info.requestPageName.match(/^([a-z0-9]+:)?autoincrementpage$/)){
+			window.location.href='/'+WIKIREQUEST.info.requestPageName;
+			return;
+		}
 		var parms = new Object();
 		parms['lock_id'] = WIKIDOT.page.vars.editlock.id;
 		parms['lock_secret'] = WIKIDOT.page.vars.editlock.secret;
@@ -304,8 +308,11 @@ WIKIDOT.modules.PageEditModule.callbacks = {
 		
 		setTimeout('OZONE.dialog.factory.boxcontainer().hide({smooth: true})',400);
 		setTimeout('var t2 = new OZONE.dialogs.SuccessBox(); t2.timeout=10000; t2.content="Page saved!";t2.show()', 600);
-		
-		setTimeout('window.location.href="/'+WIKIREQUEST.info.requestPageName+'"',1500);
+		var newUnixName = WIKIREQUEST.info.requestPageName;
+		if(r.pageUnixName){
+			newUnixName = r.pageUnixName;
+		}
+		setTimeout('window.location.href="/'+newUnixName+'"',1500);
 		
 		YAHOO.util.Event.removeListener(window, "beforeunload", WIKIDOT.modules.PageEditModule.listeners.leaveConfirm);
 		YAHOO.util.Event.removeListener(window, "unload", WIKIDOT.modules.PageEditModule.listeners.leavePage);
@@ -544,15 +551,18 @@ WIKIDOT.modules.PageEditModule.utils = {
 	},
 	
 	timerStart: function(){
+		if(WIKIREQUEST.info.requestPageName.match(/^([a-z0-9]+:)?autoincrementpage$/)){return;}
 		WIKIDOT.modules.PageEditModule.vars.timerId = setInterval('WIKIDOT.modules.PageEditModule.utils.timerTick()', 1000);
 	},
 	timerStop: function(){
+		if(WIKIREQUEST.info.requestPageName.match(/^([a-z0-9]+:)?autoincrementpage$/)){return;}
 		clearInterval(WIKIDOT.modules.PageEditModule.vars.timerId);
 	},
 	/**
 	 * Send a request to a server to update lock.
 	 */
 	updateLock: function(){
+		if(WIKIREQUEST.info.requestPageName.match(/^([a-z0-9]+:)?autoincrementpage$/)){return;}
 		var secSinceLastInput = Math.round(((new Date()).getTime() - WIKIDOT.modules.PageEditModule.vars.lastInput)*0.001);
 		var params = new Object();
 		params['action'] = 'WikiPageAction';
