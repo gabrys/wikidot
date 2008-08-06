@@ -103,6 +103,7 @@ class ThemePreviewerModule extends SmartyModule {
 		/* Get base theme. */
 		$c = new Criteria();
 		$c->add('name', 'Base');
+		$c->add('custom', false);
 		$baseTheme = DB_ThemePeer::instance()->selectOne($c);
 		$t->setExtendsThemeId($baseTheme->getThemeId());
 		$t->setThemeId($baseTheme->getThemeId()); // needed sometime
