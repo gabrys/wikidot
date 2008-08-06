@@ -26,7 +26,7 @@
 class Text_Wiki_Parse_Iftags extends Text_Wiki_Parse {
 
 
-	public $regex = ';\[\[iftags(\s[^\]]*)?\]\]((?:(?R)|.)*?)\[\[/iftags\]\](\s);msi';
+	public $regex = ';\[\[iftags(\s[^\]]*)?\]\]((?:(?R)|.)*?)\[\[/iftags\]\];msi';
 
 	
     /**
@@ -55,14 +55,56 @@ class Text_Wiki_Parse_Iftags extends Text_Wiki_Parse {
     	if(!$page) {
     		return;
     	}
-    	$tags0 = preg_split(';[, ]+;', trim($matches[1]));
+    	
     	$tag0 = $tags0[0];	
     	$tags = $page->getTagsAsArray();
-    	if(in_array($tag0, $tags)){
-    		return $matches[2];
-    	} else {
+    	
+    	$tags0 = preg_split(';[, ]+;', trim($matches[1]));
+    	
+    	$allTags = array();
+    	$noTags = array();
+    	$anyTags = array();
+    	
+    	foreach($tags0 as $t){
+    		if (substr($t, 0, 1) == '+') {
+               $allTags[] = substr($t, 1);
+            } elseif (substr($t, 0, 1) == '-') {
+               $noTags[] = substr($t, 1);
+            } else {
+            	$anyTags[] = $t;
+            }
+    	}
+    	
+    	if(count($allTags) > 0){
+    		foreach($allTags as $t){
+    			/* If any of the required tags is not present, return ''. */
+    			if(!in_array($t, $tags)){
+    				return '';
+    			}
+    		}
+    	}
+   		if(count($noTags) > 0){
+    		foreach($noTags as $t){
+    			/* If any of the forbidden tags is present, return ''. */
+    			if(in_array($t, $tags)){
+    				return '';
+    			}
+    		}
+    	}
+    	
+    	if(count($anyTags) > 0){
+    		foreach($anyTags as $t){
+    			/* If any of the "any" tags is present, return the content. */
+    			if(in_array($t, $tags)){
+    				return $matches[2];
+    			}
+    		}
+    		/* If not, return ''. */
     		return '';
     	}
+    	
+    	/* If we are here, the content should be returned. */
+    	return $matches[2];
     }
 
 }
