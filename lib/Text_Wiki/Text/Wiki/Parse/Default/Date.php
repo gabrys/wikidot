@@ -50,9 +50,8 @@ class Text_Wiki_Parse_Date extends Text_Wiki_Parse {
     	$options['timestamp'] = $matches[1];
     	
     	$attr = $this->getAttrs(trim($matches[2]));
-    	
-    	foreach($attr as $a){
-    		$options[$a] = $attr[$a];
+    	foreach($attr as $key => $a){
+    		$options[$key] = $attr[$key];
     	}
     	
     	$token = $this->wiki->addToken(

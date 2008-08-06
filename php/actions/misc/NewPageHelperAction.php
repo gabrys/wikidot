@@ -35,6 +35,7 @@ class NewPageHelperAction extends SmartyAction {
 		$pageName = trim($pl->getParameterValue("pageName"));
 		$categoryName = trim($pl->getParameterValue("categoryName"));
 		$format =  trim($pl->getParameterValue("format"));
+		$autoincrement = $pl->getParameterValue('autoincrement');
 		
 		$templateId = $pl->getParameterValue("template");
 		
@@ -42,14 +43,14 @@ class NewPageHelperAction extends SmartyAction {
 		
 		if(strlen($pageName) === 0){
 			$runData->ajaxResponseAdd("status", "no_name");
-			$runData->ajaxResponseAdd("message", "You should provide a page name");
+			$runData->ajaxResponseAdd("message", "You should provide a page name.");
 			return;	
 		}
 
 		// check if use a title too
-		if(WDStringUtils::toUnixName($pageName) != $pageName){
+		//if(WDStringUtils::toUnixName($pageName) != $pageName){
 			$pageTitle = $pageName;	
-		}
+		//}
 		
 		if($format){
 			$m = false;
@@ -60,7 +61,11 @@ class NewPageHelperAction extends SmartyAction {
 			}
 		}
 		
-		$unixName = WDStringUtils::toUnixName($categoryName.':'.$pageName);
+		if($autoincrement){
+			$unixName = $categoryName . ':autoincrementpage';
+		} else {
+			$unixName = WDStringUtils::toUnixName($categoryName.':'.$pageName);
+		}
 		
 		$page = DB_PagePeer::instance()->selectByName($site->getSiteId(), $unixName);
 		if($page != null){

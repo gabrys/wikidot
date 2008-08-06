@@ -101,6 +101,7 @@ class WikiTransformation {
 
 	    $template = preg_replace(';%%content({[0-9]+})?%%;', '%%%\\0%%%', $template);
 	    $template = preg_replace(';(?<!%)%%[a-z0-9\(\)_]+%%(?!%);i', '%%%\\0%%%', $template);
+	    $template = preg_replace(';(?<!%)%%date(\|.*?)?%%(?!%);i', '%%%\\0%%%', $template);
 	    $template = preg_replace(";%\xFA%(content({[0-9]+}))?%\xFA%;", "%%\\1%%", $template);
 	    
 		/* Check if has a ===== delimiter. */
@@ -195,7 +196,7 @@ class WikiTransformation {
 	
 	private function _formatDate($m) {
         if (isset($m[2])) {
-            $format = $m[2];
+            $format = preg_replace(';^\|;', '', $m[2]);
         } else {
             $format = '%e %b %Y, %H:%M %Z|agohover';
         }

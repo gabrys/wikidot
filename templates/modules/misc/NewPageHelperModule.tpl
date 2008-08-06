@@ -18,6 +18,9 @@
 		{if $format}
 			<input type="hidden" name="format" value="{$format|escape}"/>
 		{/if}
+		{if $autoincrement}
+			<input type="hidden" name="autoincrement" value="true"/>
+		{/if}
 		
 	</form>
 </div>

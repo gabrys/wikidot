@@ -761,7 +761,7 @@ class Outdater {
     		} else {
     			$categoryName = "_default";
     		}
-    		if(preg_match(';_template$;', $page)) {
+    		if(preg_match(';_(title)?template$;', $page)) {
     		    $site = $GLOBALS['site'];
     		    $category = DB_CategoryPeer::instance()->selectByName($categoryName, $site->getSiteId(), false);
     		    $this->recompileCategory($category);
