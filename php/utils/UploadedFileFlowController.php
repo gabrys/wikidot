@@ -18,14 +18,261 @@
  * 
  * @category Wikidot
  * @package Wikidot
- * @version $Id: UploadedFileFlowController.php,v 1.2 2008/06/24 12:25:48 quake Exp $
+ * @version $Id: UploadedFileFlowController.php,v 1.5 2008/08/01 14:00:27 quake Exp $
  * @copyright Copyright (c) 2008, Wikidot Inc.
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
 
-class UploadedFileFlowController extends PrivateFileFlowController {
+class UploadedFileFlowController extends WebFlowController {
+
+	protected function isUploadDomain($siteHost) {
+		
+		if (preg_match("/^[^.]*\." . GlobalProperties::$URL_UPLOAD_DOMAIN_PREG . "$/", $siteHost)) {
+			return true;
+		}
+		
+		return false;
+		
+	}
 	
-	protected function serveFileWithMime($path) {
+	protected function siteNotExists() {
+		$this->serveFile(WIKIDOT_ROOT."/files/site_not_exists.html", "text/html");
+	}
+	
+	protected function fileNotExists() {
+		$this->serveFile(WIKIDOT_ROOT."/files/file_not_exists.html", "text/html");
+	}
+	
+	protected function forbidden() {
+		header("HTTP/1.0 401 Unauthorized");
+		header("Content-type: text/html; charset=utf-8");
+		echo "Not authorized. This is a private site with access restricted to its members.";
+	}
+	
+	/**
+	 * Redirects browser to certain URL build from site name, domain and file name
+	 *
+	 * @param DB_Site $site site to get name from
+	 * @param string $domain domain to use
+	 * @param string $file file to redirect to
+	 * @param string $key optional key to set
+	 */
+	protected function redirect($site, $domain, $file, $key = null) {
+		
+		$proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
+		$host = $site->getUnixName() . "." . $domain;
+		
+		$url = "${proto}://${host}/local--${file}";
+		
+		if ($key) {
+			$url .= "?ukey=" . urlencode($key);
+		}
+		
+		header('HTTP/1.1 301 Moved Permanently');
+		header("Location: $url");
+		
+	}
+	
+	/**
+	 * Gets a site from given hostname. Works for sites inside URL_DOMAIN, URL_UPLOAD_DOMAIN and custom domains
+	 *
+	 * @param string $siteHost
+	 * @return DB_Site
+	 */
+	protected function getSite($siteHost) {
+		
+		$memcache = Ozone::$memcache;
+		
+		$regexp = "/^([a-zA-Z0-9\-]+)\.(" . GlobalProperties::$URL_DOMAIN_PREG . "|" . GlobalProperties::$URL_UPLOAD_DOMAIN_PREG . ")$/";
+		if (preg_match($regexp, $siteHost, $matches) == 1) {
+			// select site based on the unix name
+			
+			$siteUnixName = $matches[1];
+			$mcKey = 'site..'.$siteUnixName;
+			$site = $memcache->get($mcKey); 
+			if($site == false){
+				$c = new Criteria();
+				$c->add("unix_name", $siteUnixName);
+				$c->add("site.deleted", false);
+				$site = DB_SitePeer::instance()->selectOne($c);
+				if($site) {
+					$memcache->set($mcKey, $site, 0, 3600);
+				}	
+			}
+		} else {
+			// select site based on the custom domain
+			
+			$mcKey = 'site_cd..'.$siteHost;
+			$site = $memcache->get($mcKey);
+			if ($site == false) {	
+				$c = new Criteria();
+				$c->add("custom_domain", $siteHost);
+				$c->add("site.deleted", false);
+				$site = DB_SitePeer::instance()->selectOne($c);
+				if ($site) {
+					$memcache->set($mcKey, $site, 0, 3600);
+				}	
+			}
+			GlobalProperties::$SESSION_COOKIE_DOMAIN = '.'.$siteHost;		
+		}
+		
+		return $site;
+	}
+	
+	/**
+	 * checks whether file is from a public area (public wiki or non-restricted directory)
+	 *
+	 * @param DB_Site $site
+	 * @param string $file
+	 * @return boolean
+	 */
+	protected function publicArea($site, $file) {
+		if (! $site) {
+			return false;
+		}
+		
+		if (! $site->getPrivate()) { // site is public
+			return true;
+		}
+		
+		$dir = array_shift(explode("/", $file));
+		if ($dir != "resized-images" && $dir != "files" && $dir != "code") {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * checks if the user is a member of a site
+	 *
+	 * @param DB_OzoneUser $user
+	 * @param DB_Site $site
+	 * @return boolean
+	 */
+	protected function member($user, $site) {
+		if (! $site || ! $user) {
+			return false;
+		}
+		
+		$c = new Criteria();
+		$c->add("site_id", $site->getSiteId());
+		$c->add("user_id", $user->getUserId());
+		
+		if (DB_MemberPeer::instance()->selectOne($c)) { // user is a member of the wiki
+			return true;
+		}
+		
+		return false;
+	}
+	
+	protected function userAllowed($user, $site, $file) {
+	
+		if ($this->publicArea($site, $file)) {
+			return true;
+		}
+		
+		if (! $user) {
+			return false;
+		}
+		
+		if ($user->getSuperAdmin() || $user->getSuperModerator() || $this->member($user, $site)) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	protected function fileMime($path, $allowHtml = false) {
+		
+		if (file_exists($path)) {
+			$mime =  FileMime::mime($path);
+		} else {
+			$mime = false;
+		}
+  			
+		if (! $mime || $mime == "application/msword") {
+			$mime = "application/octet-stream";
+		}
+		
+		if (! $allowHtml) {
+			if ($mime == "text/html" || $mime == "application/xhtml+xml") {
+				$mime = "text/plain";
+			}
+		}
+		
+		return $mime;
+	}
+	
+	/**
+	 * generates the time to use by Expires header
+	 *
+	 * @param int $expires time in seconds
+	 * @return string the date string
+	 */
+	protected function generateExpiresTime($expires) {
+		return gmdate("D, d M Y H:i:s", time() + $expires) . " GMT";
+	}
+	
+	/**
+	 * serves the file using file path, mime type and expire offset
+	 *
+	 * @param string $path the file to serve
+	 * @param string $mime the mime to set
+	 * @param int $expires time in seconds to expire
+	 */
+	protected function serveFile($path, $mime = null, $expires = null) {
+		if (file_exists($path)) {
+  			if ($mime) {
+				header("Content-Type: ".$mime);
+  			}
+  			if ($expires) {
+  				$expires = (int) $expires;
+  				if ($expires < 0) {
+  					// time in past!
+  					header("Cache-Control: no-cache, must-revalidate");
+					header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+  				} else {
+  					header("Expires: " . $this->generateExpiresTime($expires));
+  				}
+  			}
+			$this->readfile($path);
+		} else {
+			$this->serveFile(WIKIDOT_ROOT."/files/file_not_exists.html", "text/html");
+		}
+	}
+	
+	/**
+	 * sends the file to the browser using PHP's readfile or X-Sendfile header
+	 *
+	 * @param unknown_type $path
+	 */
+	protected function readfile($path) {
+		if (GlobalProperties::$XSENDFILE_USE) {
+			header(GlobalProperties::$XSENDFILE_HEADER . ": $path");
+		} else {
+			readfile($path);
+		}
+	}
+	
+	/**
+	 * builds the path to local file
+	 *
+	 * @param DB_Site $site
+	 * @param string $file
+	 * @return string
+	 */
+	protected function buildPath($site, $file) {
+		return $site->getLocalFilesPath().'/'.$file;
+	}
+	
+	/**
+	 * serves a file of given path with autodetected MIME type and given expires (if any)
+	 *
+	 * @param string $path
+	 * @param int $expires time in seconds
+	 */
+	protected function serveFileWithMime($path, $expires = null) {
 		
 		/* guess/set the mime type for the file */
 		if ($dir == "theme" || preg_match("/\.css$/", $path)) {
@@ -38,7 +285,7 @@ class UploadedFileFlowController extends PrivateFileFlowController {
 			$mime = $this->fileMime($path, true);
 		}
 		
-		$this->serveFile($path, $mime);
+		$this->serveFile($path, $mime, $expires);
 	}
 	
 	// detects from "file" if this is code request
@@ -59,8 +306,12 @@ class UploadedFileFlowController extends PrivateFileFlowController {
 			if (isset($m[2])) {
 				$number = (int) $m[2];	
 			}
+			
 			$ext = new CodeblockExtractor($site, $pageName, $number);
+			
 			header("Content-type: " . $ext->getMimeType());
+			header("Expires: " . $this->generateExpiresTime(3600));
+			
 			echo $ext->getContents();
 			
 		} else {
@@ -84,7 +335,7 @@ class UploadedFileFlowController extends PrivateFileFlowController {
 			return;
 		}
 		
-		$file = $_SERVER['QUERY_STRING'];
+		$file = urldecode($_SERVER['QUERY_STRING']);
 		$file = preg_replace("/\\?.*\$/", "", $file);
 		$file = preg_replace("|^/*|", "", $file);
 		
@@ -102,7 +353,7 @@ class UploadedFileFlowController extends PrivateFileFlowController {
 				if ($this->isCodeRequest($file)) {
 					$this->serveCode($site, $file);
 				} else {
-					$this->serveFileWithMime($path);
+					$this->serveFileWithMime($path, 3600);
 				}
 				
 				return;
@@ -135,7 +386,7 @@ class UploadedFileFlowController extends PrivateFileFlowController {
 					if ($this->isCodeRequest($file)) {
 						$this->serveCode($site, $file);
 					} else {
-						$this->serveFileWithMime($path);
+						$this->serveFileWithMime($path, -3600);
 					}
 					return;
 				}

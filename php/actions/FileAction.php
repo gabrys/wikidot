@@ -194,14 +194,9 @@ class FileAction extends SmartyAction {
 
 			}
 			
-			// determine mime type using PECL Fileinfo
-			$finfo = finfo_open(null, WIKIDOT_ROOT.'/lib/magic/magic');
-			$fdesc =  finfo_file($finfo, $file['tmp_name']);
-			finfo_close($finfo);	
-			
-			$finfo = finfo_open(FILEINFO_MIME, WIKIDOT_ROOT.'/lib/magic/magic');
-			$fmime =  finfo_file($finfo, $file['tmp_name']);
-			finfo_close($finfo);
+			// determine mime type using file cmd
+			$fdesc =  FileMime::description($file['tmp_name']);
+			$fmime =  FileMime::mime($file['tmp_name']);
 
 			$uploadDir = $site->getLocalFilesPath()."/files/".$page->getUnixName();
 			mkdirfull($uploadDir);

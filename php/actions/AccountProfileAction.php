@@ -60,9 +60,7 @@ class AccountProfileAction extends SmartyAction {
             return;
         }
 
-        $finfo = finfo_open(FILEINFO_MIME, WIKIDOT_ROOT . '/lib/magic/magic');
-        $fmime = finfo_file($finfo, $file['tmp_name']);
-        finfo_close($finfo);
+        $fmime = FileMime::mime($file['tmp_name']);
         
         if ($fmime != "image/png" && $fmime != "image/jpeg" && $fmime != "image/gif") {
             $status = "wrong_mime";
@@ -161,9 +159,7 @@ class AccountProfileAction extends SmartyAction {
         
         file_put_contents($tmpname, $fileContent);
         
-        $finfo = finfo_open(FILEINFO_MIME, WIKIDOT_ROOT . '/lib/magic/magic');
-        $fmime = finfo_file($finfo, $tmpname);
-        finfo_close($finfo);
+        $fmime = FileMime::mime($tmpname);
 
         if ($fmime != "image/png" && $fmime != "image/jpeg" && $fmime != "image/gif") {
             $status = "wrong_mime";
