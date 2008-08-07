@@ -61,7 +61,7 @@ $patterns = array(
 	'snap2' => ';^<script\s+type="text/javascript"\s+src="http://shots\.snap\.com/snap_shots\.js\?[^"]+">\s*</script>$;si',
 	'everytrail' => ';^<iframe\s+src="http://www\.everytrail.com/[^"]+"[^>]+>\s*</iframe>$;si',
 	'motionbased' => ';^<iframe\s+src="http://trail\.motionbased\.com/[^"]+"[^>]*>\s*</iframe>$;si',
-	'widgetbox-panel' => ';^<script type="text/javascript" src="http://widgetserver\.com/syndication/[^"]+">\s*</script>(<noscript>([^<>]*|<a href="http://www\.widgetbox\.com/[^>"]*">[^<>]*</a>)*</noscript>)?$;si',
+	'widgetbox-panel' => ';^<script type="text/javascript" src="http://widgetserver\.com/syndication/[^"]+">\s*</script>(<noscript>([^<>]*|<a href="http://www\.widgetbox\.com/[^>"]*">[^<>]*</a>|<a href="http://www\.widgetbox\.com">[^<>]*</a>)*</noscript>)?$;si',
 	'polldaddy' => ';^<script\s*language="javascript"\s*src="http://www\.polldaddy\.com/p/[^"]+">\s*</script>\s*<noscript>\s*<a href ="http://www\.polldaddy\.com/[^"]+"\s*>[^<]*</a>\s*</noscript>$;si',
 	'anyiframe' => ';^<iframe(\s+[a-z0-9_]+\s*=\s*"[^"]*")+>\s*</iframe>$;si',
 	'mybloglog' => ';^<script\s+type=(\'|")text/javascript(\'|") src=(\'|")http://[a-z0-9]+\.mybloglog\.com/[^\'"]+(\'|")>\s*</script>$;si',
