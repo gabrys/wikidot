@@ -50,11 +50,6 @@
 		
 	</table>
 	
-	<table name="category_template">
-		<column name="category_template_id" type="serial" primaryKey="true"/>
-		<column name="source" type="text"/>
-	</table>
-	
 
 	<table name="page">
 		<column name="page_id" type="serial" primaryKey="true"/>
@@ -165,18 +160,6 @@
 		<column name="edited_user_string" type="varchar(80)"/> <!-- user info if user_id IS NULL -->
 	</table>
 	
-	<table name="comment_revision">
-		<column name="revision_id" type="serial" primaryKey="true"/>
-		<column name="comment_id" type="int"/>
-		 
-		<column name="user_id" type="int"/> <!-- user that created this revision -->
-		<column name="user_string" type="varchar(80)"/>
-		<column name="text" type="text"/>
-		<column name="title" type="varchar(256)"/>
-		<column name="date" type="timestamp"/>
-		
-		
-	</table>
 	<!-- FTS -->
 	<!-- put many fields to avoid joining -->
 	<table name="fts_entry">
