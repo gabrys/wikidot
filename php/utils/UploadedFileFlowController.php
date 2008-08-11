@@ -334,6 +334,23 @@ class UploadedFileFlowController extends WebFlowController {
 		}
 	}
 	
+	/**
+	 * validates the ucookie
+	 *
+	 * @param DB_UCookie $ucookie
+	 * @param DB_Site $site
+	 * @return bool is the ucookie valid
+	 */
+	protected function validateUCookie($ucookie, $site) {
+		if (! $ucookie || ! $ucookie->getOzoneSession() || ! $ucookie->getOzoneSession()->getOzoneUser() || ! $site) {
+			return false;
+		}
+		if ($ucookie->getSiteId() != $site->getSiteId()) {
+			return false;
+		}
+		return true;
+	}
+	
 	public function process() {
 
 		Ozone ::init();
@@ -389,7 +406,7 @@ class UploadedFileFlowController extends WebFlowController {
 				
 				$ucookie = DB_UcookiePeer::instance()->selectByPrimaryKey($_COOKIE["ucookie"]);
 				
-				if (! $ucookie || ! $ucookie->getOzoneSession() || ! $ucookie->getOzoneSession()->getOzoneUser()) {
+				if (! $this->validateUCookie($ucookie, $site)) {
 					$this->redirect($site, GlobalProperties::$URL_DOMAIN, $file);
 					return;
 				}
