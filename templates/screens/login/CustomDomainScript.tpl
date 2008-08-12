@@ -2,7 +2,6 @@
 
 {if $user}
 
-	url = document.location.toString();
-	document.location = '{$redir}&url=' + encodeURIComponent(url);
+	document.location = '{$redir}&url=' + encodeURIComponent(document.location.toString());
 
 {/if}
