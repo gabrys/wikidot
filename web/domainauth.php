@@ -17,20 +17,21 @@
  * http://www.wikidot.org/license
  * 
  * @category Wikidot
- * @package Wikidot
+ * @package Wikidot_Web
  * @version $Id$
  * @copyright Copyright (c) 2008, Wikidot Inc.
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
 
-class CustomDomainScriptModule extends SmartyModule {
-	
-	public function build($runData){
-		if(!$runData->getUser() && preg_match('/^([a-zA-Z0-9\-]+)\.' . GlobalProperties::$URL_DOMAIN .'$/',$_SERVER["HTTP_HOST"], $matches) !==1){
-			$runData->contextAdd("useCustomDomainScript", true);
-			$runData->contextAdd("useCustomDomainScriptSecure", $_SERVER['HTTPS']);
-			$runData->contextAdd("site", $runData->getTemp("site"));
-		}
-	}
-	
+require ('../php/setup.php');
+
+try {
+    
+    $controller = new CustomDomainLoginFlowController();
+    $out = $controller->process();
+    
+} catch (Exception $e) {
+    echo "A nasty error has occurred. If the problem repeats, please fill (if possible) a bug report.";
+    echo "<br/><br/>";
+    echo $e;
 }

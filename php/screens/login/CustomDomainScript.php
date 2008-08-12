@@ -28,29 +28,12 @@ class CustomDomainScript extends SmartyScreen {
 	public function build($runData){
 		
 		$user = $runData->getUser();
-		if($user){
-			
-			$runData->contextAdd('user', $user);
-			
-			// start a session for the custom domain
-			// and return the session_id to the browser
-			
-			$pl = $runData->getParameterList();
-			$domain = $pl->getParameterValue("domain");
-			$url = $pl->getParameterValue("url");
-			
-			$session = $runData->getSession();
-			
-			$runData->contextAdd('sessionId', $session->getSessionId());
-			$runData->contextAdd('cookieName', GlobalProperties::$SESSION_COOKIE_NAME);
-			
-			// now there is a small hack to prevent routing issues. ask MF about details
-			$session = $runData->getSession();
-			$ipString = $runData->createIpString();
-			
-			$runData->contextAdd('sessionIp', $session->getIpAddress());
-			$runData->contextAdd('currentIp', $ipString);
-
+		if ($user) {
+			$site_id = (int) $runData->getParameterList()->getParameterValue("site_id");
+			$skey = md5($site_id . CustomDomainLoginFlowController::$secretString . $runData->getSessionId());
+			$redir = "/domainauth.php?" . http_build_query(array("user_id" => $user->getUserId(), "skey" => $skey));
+			$runData->contextAdd("redir", $redir);
+			$runData->contextAdd("user", $user);
 		}
 			
 	}
