@@ -40,7 +40,6 @@ class ListPagesModule extends SmartyModule {
     private $_parameterUrlPrefix = null;
 
     public function render($runData) {
-        
         $site = $runData->getTemp("site");
         $pl = $runData->getParameterList();
         $this->_pl = $pl;
@@ -138,7 +137,6 @@ class ListPagesModule extends SmartyModule {
         $struct['vars'] = $this->_vars;
         
         $mc->set($key, $struct, 0, 864000);
-        
         return $out;
     
     }
@@ -167,7 +165,7 @@ class ListPagesModule extends SmartyModule {
         if (!$pageUnixName) {
             $pageUnixName = $pl->getParameterValue('page_unix_name'); // from preview
        	}
-        
+
         $categories = array();
         $categoryNames = array();
         if ($categoryName != '*') {
@@ -255,7 +253,7 @@ class ListPagesModule extends SmartyModule {
                     $tagsAny[] = $t;
                 }
             }
-            
+
             /*
              * One more condition: if $tagString is equal to "=" only (which means "similar pages by tags),
              * it is reasonable to drop current page from being displayed.
@@ -264,9 +262,6 @@ class ListPagesModule extends SmartyModule {
                 $skipCurrent = true;
             }
             
-            if($skipCurrent && $runData->getTemp('page') && $runData->getTemp('page')->getPageId()) {
-                $c->add('page_id', $runData->getTemp('page')->getPageId(), '!=');
-            }
             /* Create extra conditions to the SELECT */
             
             /* ANY */
@@ -303,6 +298,9 @@ class ListPagesModule extends SmartyModule {
 
         }
         
+        if($skipCurrent && $runData->getTemp('page') && $runData->getTemp('page')->getPageId()) {
+            $c->add('page_id', $runData->getTemp('page')->getPageId(), '!=');
+        }
         /* Handle date ranges. */
         
         $date = $this->_readParameter("date", true);
