@@ -100,8 +100,8 @@ $patterns = array(
 	'ohloh'				=> ';^\<script type\="text/javascript" src\="http\://www\.ohloh\.net/projects/[0-9]+/widgets/project_[^>"]+"\>\</script\>$;si',
 	'plugoo'			=> ';^\<object\s+type\="application/x-shockwave-flash"\s+id\="plugoo"\s+data\=\s*"http\://www\.plugoo\.com/plg\.swf\?go\=[a-z0-9]+"\s+width\="[0-9]+"\s+height\="[0-9]+"\>\s+\<param\s+name\="movie"\s+value\=\s*"http\://www\.plugoo\.com/plg\.swf\?go\=[A-Z0-9]+"\s+/\>\s+\<param\s+name\="allowScriptAccess"\s+value\="always"\s+/\>\s+\<param\s+name\="wmode"\s+value\="transparent"\s+/\>\s+\</object\>$;si',
 	'jskit.rating'		=> ';^(\<div\sclass\="js-kit-rating"(\s[a-z]+\="[^">]*")*\>\</div\>\s*)+' .
-							'\<script\ssrc\="http\://js-kit\.com/ratings\.js"\>\</script\>;si',
+							'\<script\ssrc\="http\://js-kit\.com/ratings\.js"\>\</script\>$;si',
 	'jskit.top'			=> ';^(\<div\sclass\="js-kit-top"(\s[a-z]+\="[^">]*")*\>\</div\>\s*)+' .
-							'\<script\ssrc\="http\://js-kit\.com/top\.js"\>\</script\>;si',
+							'\<script\ssrc\="http\://js-kit\.com/top\.js"\>\</script\>$;si',
 	'picasa2' => ';^<embed type="application/x\-shockwave\-flash" src="http://picasaweb\.google\.pl/s/c/bin/slideshow\.swf" width="[0-9]+" height="[0-9]+" flashvars="[^"<>]+" pluginspage="http://www\.macromedia\.com/go/getflashplayer"></embed>$;si',
 	);
