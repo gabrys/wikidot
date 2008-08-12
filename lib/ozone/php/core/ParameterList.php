@@ -64,6 +64,20 @@ class ParameterList {
 				$this->parameterTypes['template'] = "GET";
 			}
 			
+			/* Additionally parse the usual GET parameters. */
+			$uri = $_SERVER['REQUEST_URI'];
+			$uri = preg_replace(';^[^\?]*\?;', '', $uri);
+			$uriPairs = explode('&', $uri);
+			foreach($uriPairs as $uriPair){
+				$u = explode('=', $uriPair);
+				$key = $u[0];
+				$value = $u[1];
+				$this->parameterArray[$key] = urldecode($value);
+				$this->parameterTypes[$key] = "GET";
+				$this->parameterFrom[$key] = 0;
+				$this->allParameters['GET'][$key] = urldecode($value);
+			}
+			
 			// now populate other parameters...
 			$this->allParameters['GET'] = array();
 			for($i=1; $i<count($splited); $i+=2){
@@ -74,6 +88,7 @@ class ParameterList {
 				$this->parameterFrom[$key] = 0;
 				$this->allParameters['GET'][$key] = urldecode($value);
 			}
+			
 
 			// POST parameters are not affected by mod_rewrite
 			$this->allParameters['POST'] = array();
