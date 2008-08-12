@@ -115,6 +115,14 @@ class Text_Wiki_Render_Xhtml_Url extends Text_Wiki_Render {
             }
         }
 
+        /* Add to array of external links. */
+        $wiki = $this->wiki;
+		if($wiki->vars['externalLinks'] == null){
+			$wiki->vars['externalLinks'] = array();	
+		}
+		$wiki->vars['externalLinks'][$href]=$href;
+
+           
         return $output;
     }
 }

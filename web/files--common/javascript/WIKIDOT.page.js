@@ -129,9 +129,12 @@ WIKIDOT.page.listeners = {
 	},
 	
 	loginClick: function(e, resetRemember){
-		var p = new Object();
-		if(resetRemember){ p.reset = "yes"; }
-		OZONE.ajax.requestModule("login/LoginModule2", p, WIKIDOT.page.callbacks.loginClick);
+		var url = 'http://'+URL_HOST+'/login:login?origUrl=' + encodeURIComponent(window.location.href);
+		window.location.href = url;
+		return;
+		//var p = new Object();
+		//if(resetRemember){ p.reset = "yes"; }
+		//OZONE.ajax.requestModule("login/LoginModule2", p, WIKIDOT.page.callbacks.loginClick);
 		
 	},
 	
@@ -142,7 +145,10 @@ WIKIDOT.page.listeners = {
 	},
 	
 	createAccount: function(e){
-		OZONE.ajax.requestModule("createaccount/CreateAccountModule", null, WIKIDOT.page.callbacks.createAccount);
+		var url = 'http://'+URL_HOST+'/login:newaccount?origUrl=' + encodeURIComponent(window.location.href);
+		window.location.href = url;
+		return;
+		//OZONE.ajax.requestModule("createaccount/CreateAccountModule", null, WIKIDOT.page.callbacks.createAccount);
 	},
 	
 	toggleEditSections: function(e){
@@ -444,16 +450,9 @@ WIKIDOT.page.callbacks = {
 	},
 	logoutClick: function(r){
 		if(!WIKIDOT.utils.handleError(r)) {return;}
-		window.location.reload();
-	},
-	
-	loginClick: function(r){
-		if(!WIKIDOT.utils.handleError(r)) {return;}
-		WIKIDOT.vars.rsakey = r.key;
-		WIKIDOT.vars.loginSeed = r.seed;
-		var w = new OZONE.dialogs.Dialog();
-		w.content = r.body;
-		w.show();
+		//window.location.href = window.location.href;
+		history.go(0);
+		//window.location.reload();
 	},
 	
 	passwordRecovery: function(r){

@@ -17,27 +17,26 @@
  * http://www.wikidot.org/license
  * 
  * @category Wikidot
- * @package Wikidot_Web
+ * @package Wikidot
  * @version $Id$
  * @copyright Copyright (c) 2008, Wikidot Inc.
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
 
-require ('../php/setup.php');
+class CreateAccount3Module extends SmartyModule {
 
-// to avoid caching
-header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
-header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
-header("Content-Type: text/plain; charset=\"UTF-8\"");
+	public function build($runData){
+		$user = $runData->getUser();
+		if(!$user){
+			throw new ProcessException(_('No valid user found - account creation failed.'));
+		}
+		$runData->contextAdd("user", $user);
+		$pl = $runData->getParameterList();
+		
+		$originalUrl = $pl->getParameterValue('origUrl');
+		$runData->contextAdd('originalUrl', $originalUrl);
+		$runData->contextAdd('originalUrlStripped', preg_replace(';^https?://;', '', $originalUrl));
+		
+	}
 
-try {
-    $controller = new AjaxModuleWikiFlowController();
-    $controller->process();
-} catch (Exception $e) {
-    echo "A nasty error has occurred. If the problem repeats, please fill (if possible) a bug report.";
-    echo "<br/><br/>";
-    echo $e;
-    // hope the logger is initialized...
-    $logger = OzoneLogger::instance();
-    $logger->error("Exception caught:\n\n" . $e->__toString());
 }

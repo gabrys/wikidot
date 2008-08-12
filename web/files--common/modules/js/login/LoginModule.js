@@ -21,7 +21,7 @@ WIKIDOT.modules.LoginModule.listeners = {
 		if((welcome == null && p['name'] == '') || p['password'] == ''){
 			var message="Please fill the login form.";
 			$('loginerror').innerHTML = message;
-			$("login-head").style.display = "none";
+			//$("login-head").style.display = "none";
 			$('loginerror').style.display="block";
 			return false;
 		}
@@ -30,15 +30,15 @@ WIKIDOT.modules.LoginModule.listeners = {
 			
 		}
 		
-		var rsa = new RSAKey();
-		rsa.setPublic(WIKIDOT.vars.rsakey, "10001");
-		p['name'] = linebrk(hex2b64(rsa.encrypt(WIKIDOT.vars.loginSeed+p['name'])),64);
-		p['password'] = linebrk(hex2b64(rsa.encrypt(WIKIDOT.vars.loginSeed+p['password'])),64);
 		
-		p.action = "LoginAction";
+		p.action = "Login2Action";
 		p.event = "login";
 		OZONE.ajax.requestModule(null, p, WIKIDOT.modules.LoginModule.callbacks.loginClick);
-		
+	},
+	
+	switchUser: function(e){
+		setCookie('welcome', null, -100000, '/', '.'+URL_DOMAIN);
+		window.location.reload();
 	},
 	
 	cancel: function(e){
@@ -62,7 +62,6 @@ WIKIDOT.modules.LoginModule.listeners = {
 WIKIDOT.modules.LoginModule.callbacks = {
 	loginClick: function(r){
 		if(r.status == 'login_invalid'){
-			$("login-head").style.display = "none";
 			$("loginerror").innerHTML=r.message;
 			$("loginerror").style.display = "block";
 			return;
@@ -72,13 +71,16 @@ WIKIDOT.modules.LoginModule.callbacks = {
 		var w = new OZONE.dialogs.WaitBox();
 		w.content = "Logging in...";
 		w.show();
-		setTimeout('document.location.reload()', 1000);
-		
+		var originalUrl = r.originalUrl;
+		if(originalUrl){
+			window.location.href=originalUrl;
+		}else{
+			window.location.href='http://'+URL_HOST;
+		}
 	},
 	
 	cancel: function(r){
-		if(!WIKIDOT.utils.handleError(r)) {return;}
-		OZONE.dialog.cleanAll();
+		window.location.href='/';
 	}
 }
 
@@ -91,4 +93,36 @@ WIKIDOT.modules.LoginModule.init = function(){
 	}
 }
 
-WIKIDOT.modules.LoginModule.init();
+setTimeout(function(){WIKIDOT.modules.LoginModule.init();}, 100);
+
+function getQueryString(key, default_)
+{
+  if (default_==null) default_="";
+  key = key.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+  var regex = new RegExp("[\\?&]"+key+"=([^&#]*)");
+  var qs = regex.exec(window.location.href);
+  if(qs == null)
+    return default_;
+  else
+    return decodeURIComponent(qs[1]);
+} 
+
+
+function setCookie( name, value, expires, path, domain, secure) {
+	var today = new Date();
+	today.setTime( today.getTime() );
+	if ( expires ) {
+		expires = expires * 1000 * 60 * 60 * 24;
+	}
+	var expires_date = new Date( today.getTime() + (expires) );
+	
+	var ck = name+'='+escape( value ) +
+	
+	( ( expires ) ? ';expires='+expires_date.toGMTString() : '' ) + //expires.toGMTString()
+	( ( path ) ? ';path=' + path : '' ) +
+	( ( domain ) ? ';domain=' + domain : '' ) +
+	( ( secure ) ? ';secure' : '' );
+	//alert(ck);
+	document.cookie = ck;
+}
+

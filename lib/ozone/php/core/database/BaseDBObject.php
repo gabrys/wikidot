@@ -349,5 +349,9 @@ abstract class BaseDBObject {
 			unset($this->temporaryStorage[$key]);	
 		}
 	}
+	
+	public function getSourceRow(){
+		return $this->sourceRow;
+	}
 
 }

@@ -32,8 +32,17 @@ class LoginStatusModule extends Module{
 		$user = $runData->getUser();
 		
 		if($user == null){
+			$site = $runData->getTemp('site');
 			
-			$out = '<a href="javascript:;" onclick="WIKIDOT.page.listeners.createAccount(event)">'._('create account').'</a> '._('or').' <a href="javascript:;" onclick="WIKIDOT.page.listeners.loginClick(event)">'._('login').'</a>';
+			$originalUrl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+			$loginDomain = 'www';
+			if($site->getLanguage() != 'en'){
+				$loginDomain = $site->getLanguage();
+			}
+			$out = '<a href="http://'.$loginDomain.'.'.GlobalProperties::$URL_DOMAIN . '/login:newaccount?origUrl='.urlencode($originalUrl).'">'._('create account').'</a> '._('or') . ' ';
+			$out .= '<a href="http://'.$loginDomain.'.'.GlobalProperties::$URL_DOMAIN . '/login:login?origUrl='.urlencode($originalUrl).'">'._('login').'</a> ';
+			
+			//$out = '<a href="javascript:;" onclick="WIKIDOT.page.listeners.createAccount(event)">'._('create account').'</a> '._('or').' <a href="javascript:;" onclick="WIKIDOT.page.listeners.loginClick(event)">'._('login').'</a>';
 		} else {
 			
 			$lang = $user->getLanguage();

@@ -8,6 +8,10 @@ Please copy the key below to a proper form in your browser:
 
 verification code: {$evcode}
 
+OR click the following link:
+
+https://www.wikidot.com/login:newaccount2/rcode/{$sessionHash}
+
 Best regards - {$SERVICE_NAME}
 
 If you have NOT attempted to create an account at any of the {$SERVICE NAME}
