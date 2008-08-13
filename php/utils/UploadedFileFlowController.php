@@ -441,7 +441,7 @@ class UploadedFileFlowController extends WebFlowController {
 					return;
 				}
 				
-				$ucookie = DB_UcookiePeer::selectByPrimaryKey($_COOKIE["ucookie"]);
+				$ucookie = DB_UcookiePeer::instance()->selectByPrimaryKey($_COOKIE["ucookie"]);
 				
 				if (! $this->validateUCookie($ucookie, $site)) {
 					$this->redirect($site, GlobalProperties::$URL_DOMAIN, $file);
