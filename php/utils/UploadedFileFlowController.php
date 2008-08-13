@@ -166,7 +166,7 @@ class UploadedFileFlowController extends WebFlowController {
 		return false;
 	}
 	
-	protected function userAllowed($user, $site, $file = "auth/") {
+	public function userAllowed($user, $site, $file = "auth/") {
 	
 		if ($this->publicArea($site, $file)) {
 			return true;
