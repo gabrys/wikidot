@@ -31,8 +31,20 @@ class PrivateWikiScriptModule extends SmartyModule {
 		
 		$u = new UploadedFileFlowController();
 		
-		if ($u->userAllowed($user, $site) && ! isset($_COOKIE["ucookie"])) {
-			$runData->contextAdd("usePrivateWikiScript", true);
+		if ($u->userAllowed($user, $site)) {
+			
+			$redir = true;
+			
+			if (isset($_COOKIE["ucookie"])) {
+				
+				$ukey = $_COOKIE["ucookie"];
+				if ($u->validateUCookie(DB_UcookiePeer::instance()->selectByPrimaryKey($ukey), $site)) {
+					$redir = false;
+				}
+				
+			}
+			
+			$runData->contextAdd("usePrivateWikiScript", $redir);
 		}
 	}
 	

@@ -378,7 +378,7 @@ class UploadedFileFlowController extends WebFlowController {
 	 * @param DB_Site $site
 	 * @return bool is the ucookie valid
 	 */
-	protected function validateUCookie($ucookie, $site) {
+	public function validateUCookie($ucookie, $site) {
 		if (! $ucookie || ! $ucookie->getOzoneSession() || ! $ucookie->getOzoneSession()->getOzoneUser() || ! $site) {
 			return false;
 		}
