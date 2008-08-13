@@ -31,7 +31,7 @@ class PrivateWikiScriptModule extends SmartyModule {
 		
 		$u = new UploadedFileFlowController();
 		
-		if ($u->member($user, $site)) {
+		if ($u->userAllowed($user, $site)) {
 			$runData->contextAdd("usePrivateWikiScript", true);
 		}
 	}
