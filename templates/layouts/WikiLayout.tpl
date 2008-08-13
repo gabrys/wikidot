@@ -38,20 +38,20 @@
 		var URL_DOMAIN = '{$URL_DOMAIN}';
  	</script>
  	
- 	<meta http-equiv="content-type" content="text/html;charset=UTF-8"/>
-    <meta http-equiv="content-language" content="{$site->getLanguage()}"/>
- 	
- 	
- 	<script type="text/javascript" src="/common--javascript/WIKIDOT.js"></script>
- 	<script type="text/javascript" src="/common--javascript/WIKIDOT.page.js"></script>
- 	<script type="text/javascript" src="/common--javascript/WIKIDOT.editor.js"></script>
- 	
  	{if $useCustomDomainScript}
  		{module name="login/CustomDomainScriptModule"}
  	{/if}
  	{if $usePrivateWikiScript}
  		<script type="text/javascript" src="{$privateWikiScriptUrl}"></script>
  	{/if}
+ 	
+ 	<meta http-equiv="content-type" content="text/html;charset=UTF-8"/>
+    <meta http-equiv="content-language" content="{$site->getLanguage()}"/>
+ 	
+ 	<script type="text/javascript" src="/common--javascript/WIKIDOT.js"></script>
+ 	<script type="text/javascript" src="/common--javascript/WIKIDOT.page.js"></script>
+ 	<script type="text/javascript" src="/common--javascript/WIKIDOT.editor.js"></script>
+ 	
    	<style type="text/css" id="internal-style">
    		
    		{foreach from=$theme->getStyleUrls() item=file}

@@ -68,8 +68,8 @@ class UploadedFileFlowController extends WebFlowController {
 			$url .= "?ukey=" . urlencode($key);
 		}
 		
-		echo('HTTP/1.1 301 Moved Permanently');
-		echo("Location: $url");
+		header('HTTP/1.1 301 Moved Permanently');
+		header("Location: $url");
 		
 	}
 	
