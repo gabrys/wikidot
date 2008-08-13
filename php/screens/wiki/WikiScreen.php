@@ -63,7 +63,7 @@ class WikiScreen extends Screen {
 				$wikiPage = $site->getSettings()->getPrivateLandingPage();
 				$privateAccessGranted = false;
 			}	
-			if ($privateAccessGranted && ! isset($_COOKIE["ucookie"])) {
+			if ($privateAccessGranted) {
 				$runData->contextAdd("usePrivateWikiScript", true);
 			}
 		}

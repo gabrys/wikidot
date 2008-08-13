@@ -50,7 +50,7 @@
  		{module name="login/CustomDomainScriptModule"}
  	{/if}
  	{if $usePrivateWikiScript}
- 		<script type="text/javascript" src="/common--javascript/private-wiki.js"></script>
+ 		{module name="login/CustomDomainScriptModule"}
  	{/if}
    	<style type="text/css" id="internal-style">
    		
