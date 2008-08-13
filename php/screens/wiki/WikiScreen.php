@@ -63,6 +63,9 @@ class WikiScreen extends Screen {
 				$wikiPage = $site->getSettings()->getPrivateLandingPage();
 				$privateAccessGranted = false;
 			}	
+			if ($privateAccessGranted) {
+				$runData->contextAdd("usePrivateWikiScript", true);
+			}
 		}
 		
 		if($wikiPage==""){$wikiPage=$site->getDefaultPage();}
@@ -247,9 +250,6 @@ class WikiScreen extends Screen {
 		// check wether to include a special JS file for custom domains or a special JS file for private files
 		if (preg_match('/^([a-zA-Z0-9\-]+)\.' . GlobalProperties::$URL_DOMAIN_PREG . '$/',$_SERVER["HTTP_HOST"], $matches) !==1) {
 			$runData->contextAdd("useCustomDomainScript", true);
-		}
-		if ($site->getPrivate()) {
-			$runData->contextAdd("usePrivateWikiScript", true);
 		}
 		
 		$smarty = Ozone::getSmarty();
