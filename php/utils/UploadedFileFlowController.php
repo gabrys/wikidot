@@ -68,8 +68,8 @@ class UploadedFileFlowController extends WebFlowController {
 			$url .= "?ukey=" . urlencode($key);
 		}
 		
-		header('HTTP/1.1 301 Moved Permanently');
-		header("Location: $url");
+		echo('HTTP/1.1 301 Moved Permanently');
+		echo("Location: $url");
 		
 	}
 	
@@ -404,7 +404,8 @@ class UploadedFileFlowController extends WebFlowController {
 		}
 		
 		$file = urldecode($_SERVER['QUERY_STRING']);
-		$file = preg_replace("/\\?.*\$/", "", $file);
+		$file = preg_replace("/\\?[0-9]+\$/", "", $file);
+		$file = preg_replace("/\\?ukey=[^?]+\$/", "", $file);
 		$file = preg_replace("|^/*|", "", $file);
 		
 		if (! $file) {
@@ -431,9 +432,20 @@ class UploadedFileFlowController extends WebFlowController {
 				/* NON PUBLIC AREA -- CHECK PERMISSION! */
 	
 				if (preg_match("/\\?ukey=(.*)\$/", $_SERVER['QUERY_STRING'], $matches)) {
-					setcookie("ucookie", $matches[1], 0, "/", $siteHost);
-					$this->redirect($site, GlobalProperties::$URL_UPLOAD_DOMAIN, $file);
-					return;
+					if ($matches[1] == "CONFIRM") {
+						if (isset($_COOKIE["ucookie"])) {
+							$this->redirect($site, GlobalProperties::$URL_UPLOAD_DOMAIN, $file);
+							return;
+						} else {
+							// TODO: ControllerUtils
+							echo "Cookie Error: please accept cookies for this domain!";
+							return;
+						}
+					} else {
+						setcookie("ucookie", $matches[1], 0, "/", $siteHost);
+						$this->redirect($site, GlobalProperties::$URL_UPLOAD_DOMAIN, $file, "CONFIRM");
+						return;
+					}
 				}
 				if (! isset($_COOKIE["ucookie"])) {
 					$this->redirect($site, GlobalProperties::$URL_DOMAIN, $file);
