@@ -89,7 +89,7 @@ class UploadedFileFlowController extends WebFlowController {
 			
 			$siteUnixName = $matches[1];
 			$mcKey = 'site..'.$siteUnixName;
-			$site = $memcache->get($mcKey); 
+			$site = $memcache->get($mcKey);
 			if($site == false){
 				$c = new Criteria();
 				$c->add("unix_name", $siteUnixName);
@@ -363,9 +363,8 @@ class UploadedFileFlowController extends WebFlowController {
 		if (preg_match(";^auth/(.*)$;", $fileName, $m)) {
 			
 			$url = urldecode($m[1]);
-			//echo ('HTTP/1.1 301 Moved Permanently');
-			//echo ("Location: $url");
-			echo $url;
+			header('HTTP/1.1 301 Moved Permanently');
+			header("Location: $url");
 		} else {
 			$this->fileNotExists();
 		}
