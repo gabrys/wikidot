@@ -136,7 +136,7 @@ class UploadedFileFlowController extends WebFlowController {
 		}
 		
 		$dir = array_shift(explode("/", $file));
-		if ($dir != "resized-images" && $dir != "files" && $dir != "code") {
+		if ($dir != "resized-images" && $dir != "files" && $dir != "code" && $dir != "auth") {
 			return true;
 		}
 		
@@ -150,7 +150,7 @@ class UploadedFileFlowController extends WebFlowController {
 	 * @param DB_Site $site
 	 * @return boolean
 	 */
-	protected function member($user, $site) {
+	public function member($user, $site) {
 		if (! $site || ! $user) {
 			return false;
 		}
@@ -297,9 +297,28 @@ class UploadedFileFlowController extends WebFlowController {
 		$this->serveFile($path, $mime, $expires);
 	}
 	
-	// detects from "file" if this is code request
+	/**
+	 * detects from "file" if this is code request
+	 * 
+	 * @param string $file
+	 * @return bool
+	 */ 
 	protected function isCodeRequest($file) {
 		if (preg_match(";^code/;", $file)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	/**
+	 * detects from "file" if this is auth request
+	 *
+	 * @param string $file
+	 * @return bool
+	 */
+	protected function isAuthRequest($file) {
+		if (preg_match(";^auth/;", $file)) {
 			return true;
 		} else {
 			return false;
@@ -328,6 +347,24 @@ class UploadedFileFlowController extends WebFlowController {
 			$this->setExpiresHeader($expires);
 			$this->setContentTypeHeader($ext->getMimeType());
 			echo $ext->getContents();
+			
+		} else {
+			$this->fileNotExists();
+		}
+	}
+	
+	/**
+	 * Serves an auth response which is a redirect back to the supplied URL
+	 *
+	 * @param string $fileName auth/url
+	 */
+	protected function serveAuthResponse($fileName) {
+		
+		if (preg_match(";^auth/(.*)$;", $fileName, $m)) {
+			
+			$url = urldecode($m[1]);
+			header('HTTP/1.1 301 Moved Permanently');
+			header("Location: $url");
 			
 		} else {
 			$this->fileNotExists();
@@ -404,7 +441,7 @@ class UploadedFileFlowController extends WebFlowController {
 					return;
 				}
 				
-				$ucookie = DB_UcookiePeer::instance()->selectByPrimaryKey($_COOKIE["ucookie"]);
+				$ucookie = DB_UcookiePeer::selectByPrimaryKey($_COOKIE["ucookie"]);
 				
 				if (! $this->validateUCookie($ucookie, $site)) {
 					$this->redirect($site, GlobalProperties::$URL_DOMAIN, $file);
@@ -417,6 +454,8 @@ class UploadedFileFlowController extends WebFlowController {
 					
 					if ($this->isCodeRequest($file)) {
 						$this->serveCode($site, $file, -3600);
+					} elseif ($this->isAuthRequest($file)) {
+						$this->serveAuthResponse($file);
 					} else {
 						$this->serveFileWithMime($path, -3600);
 					}

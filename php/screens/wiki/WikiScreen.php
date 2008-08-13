@@ -244,10 +244,12 @@ class WikiScreen extends Screen {
 			}
 		}
 
-		// check if to include special JS file for custom domains:
-		if(preg_match('/^([a-zA-Z0-9\-]+)\.' . GlobalProperties::$URL_DOMAIN_PREG . '$/',$_SERVER["HTTP_HOST"], $matches) !==1){
+		// check wether to include a special JS file for custom domains or a special JS file for private files
+		if (preg_match('/^([a-zA-Z0-9\-]+)\.' . GlobalProperties::$URL_DOMAIN_PREG . '$/',$_SERVER["HTTP_HOST"], $matches) !==1) {
 			$runData->contextAdd("useCustomDomainScript", true);
-			$runData->contextAdd("useCustomDomainScriptSecure", $_SERVER['HTTPS']);
+		}
+		if ($site->getPrivate()) {
+			$runData->contextAdd("usePrivateWikiScript", true);
 		}
 		
 		$smarty = Ozone::getSmarty();

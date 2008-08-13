@@ -49,6 +49,9 @@
  	{if $useCustomDomainScript}
  		{module name="login/CustomDomainScriptModule"}
  	{/if}
+ 	{if $usePrivateWikiScript}
+ 		{module name="login/PrivateWikiScriptModule"}
+ 	{/if}
    	<style type="text/css" id="internal-style">
    		
    		{foreach from=$theme->getStyleUrls() item=file}
