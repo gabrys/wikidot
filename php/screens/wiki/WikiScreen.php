@@ -64,7 +64,12 @@ class WikiScreen extends Screen {
 				$privateAccessGranted = false;
 			}	
 			if ($privateAccessGranted) {
+				$pwdomain = $site->getUnixName() . "." . GlobalProperties::$URL_UPLOAD_DOMAIN;
+				$pwproto = ($_SERVER["HTTPS"]) ? "https" : "http";
+				$pwurl = "$pwproto://$pwdomain/default--flow/login__PrivateWikiScript?site_id=" . (int) $site->getSiteId();
+				
 				$runData->contextAdd("usePrivateWikiScript", true);
+				$runData->contextAdd("privateWikiScriptUrl", $pwurl);
 			}
 		}
 		

@@ -23,29 +23,47 @@
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
 
-class PrivateWikiScriptModule extends SmartyModule {
+class PrivateWikiScript extends SmartyScreen {
 	
 	public function build($runData){
+		
 		$user = $runData->getUser();
-		$site = $runData->getTemp("site");
+		$site_id = (int) $runData->getParameterList()->getParameterValue("site_id");
+		$site = DB_SitePeer::instance()->selectByPrimaryKey($site_id);
 		
 		$u = new UploadedFileFlowController();
 		
 		if ($u->userAllowed($user, $site)) {
 			
-			$redir = true;
+			// user has permission to this site
+			// check if the cookie is valid
 			
+			$ukey = null;
 			if (isset($_COOKIE["ucookie"])) {
-				
 				$ukey = $_COOKIE["ucookie"];
-				if ($u->validateUCookie(DB_UcookiePeer::instance()->selectByPrimaryKey($ukey), $site)) {
-					$redir = false;
-				}
+			}
+			$ucookie = DB_UcookiePeer::instance()->selectByPrimaryKey($ukey);
+			
+			if (! $ukey || ! $u->validateUCookie($ucookie, $site)) {
+
+				// user is allowed and has an invalid cookie (or none), generate new!
 				
+				$ucookie = new DB_Ucookie();
+				$ucookie->generate($site, $runData->getSession());
+				$ucookie->save();
+				
+				$ukey = $ucookie->getUcookieId();
+			
+				$domain = $site->getUnixName() . "." . GlobalProperties::$URL_UPLOAD_DOMAIN;
+				$proto = ($_SERVER["HTTPS"]) ? "https" : "http";
+				$url = "$proto://$domain/local--auth";
+				
+				$runData->contextAdd("redir", $url);
+				$runData->contextAdd("usePrivateWikiScript", true);
 			}
 			
-			$runData->contextAdd("usePrivateWikiScript", $redir);
 		}
+			
 	}
 	
 }

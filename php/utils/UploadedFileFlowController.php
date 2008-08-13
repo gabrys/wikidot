@@ -363,9 +363,9 @@ class UploadedFileFlowController extends WebFlowController {
 		if (preg_match(";^auth/(.*)$;", $fileName, $m)) {
 			
 			$url = urldecode($m[1]);
-			header('HTTP/1.1 301 Moved Permanently');
-			header("Location: $url");
-			
+			//echo ('HTTP/1.1 301 Moved Permanently');
+			//echo ("Location: $url");
+			echo $url;
 		} else {
 			$this->fileNotExists();
 		}
@@ -483,7 +483,6 @@ class UploadedFileFlowController extends WebFlowController {
 					$ucookie->save();
 					
 					$ukey = $ucookie->getUcookieId();
-					setcookie("ucookie", $ukey, 0, "/", $siteHost);
 					$this->redirect($site, GlobalProperties::$URL_UPLOAD_DOMAIN, $file, $ukey);
 					
 					return;
