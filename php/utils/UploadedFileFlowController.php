@@ -482,7 +482,10 @@ class UploadedFileFlowController extends WebFlowController {
 					$ucookie->generate($site, $runData->getSession());
 					$ucookie->save();
 					
-					$this->redirect($site, GlobalProperties::$URL_UPLOAD_DOMAIN, $file, $ucookie->getUcookieId());
+					$ukey = $ucookie->getUcookieId();
+					setcookie("ucookie", $ukey, 0, "/", $siteHost);
+					$this->redirect($site, GlobalProperties::$URL_UPLOAD_DOMAIN, $file, $ukey);
+					
 					return;
 					
 				}
