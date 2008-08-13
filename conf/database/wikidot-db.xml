@@ -48,6 +48,9 @@
 		
 		<column name="category_template_id" type="int"/>
 		
+		<column name="enable_pingback_out" type="boolean" default="true"/>
+		<column name="enable_pingback_in" type="boolean" default="false"/>
+		
 	</table>
 	
 
@@ -160,6 +163,18 @@
 		<column name="edited_user_string" type="varchar(80)"/> <!-- user info if user_id IS NULL -->
 	</table>
 	
+	<table name="comment_revision">
+		<column name="revision_id" type="serial" primaryKey="true"/>
+		<column name="comment_id" type="int"/>
+		 
+		<column name="user_id" type="int"/> <!-- user that created this revision -->
+		<column name="user_string" type="varchar(80)"/>
+		<column name="text" type="text"/>
+		<column name="title" type="varchar(256)"/>
+		<column name="date" type="timestamp"/>
+		
+		
+	</table>
 	<!-- FTS -->
 	<!-- put many fields to avoid joining -->
 	<table name="fts_entry">
@@ -237,6 +252,17 @@
 		<column name="including_page_id" type="int"/>
 		<column name="included_page_id" type="int" /> <!-- null if page not exists -->
 		<column name="included_page_name" type="varchar(128)" /> 
+	</table>
+	
+	<table name="page_external_link">
+		<column name="link_id" type="serial" primaryKey="true"/>
+		<column name="site_id" type="int"/>
+		<column name="page_id" type="int"/>
+		<column name="to_url" type="varchar(512)" /> <!-- null if page not exists -->
+		<column name="pinged" type="boolean" default="false"/>
+		<!-- status of the ping action -->
+		<column name="ping_status" type="varchar(256)"/>
+		<column name="date" type="timestamp"/>
 	</table>
 	
 	
