@@ -31,10 +31,15 @@ class CustomDomainScriptController extends UploadedFileFlowController {
 		$runData = new RunData();
 		
 		$siteHost = $_SERVER['HTTP_HOST'];
-		$site = $this->getSite($siteHost);
+		$site_id = $_GET["site_id"];
 		
-		// zmienić to!!!
-		if ($site->getCustomDomain() != $siteHost) {
+		$site = DB_SitePeer::instance()->selectByPrimaryKey($site_id);
+		
+		if (! $site) {
+			echo "error";
+		}
+		
+		if ($siteHost == GlobalProperties::$URL_HOST) {
 			$runData->handleSessionStart();
 			if ($runData->getUser()) {
 				$proto = ($_SERVER["HTTPS"]) ? "https" : "http";
@@ -46,7 +51,7 @@ class CustomDomainScriptController extends UploadedFileFlowController {
 			}
 		} else {
 			$skey = md5($site_id . CustomDomainLoginFlowController::$secretString . $runData->getSessionId());
-			echo "<script>parent.location = '/domainauth.php?skey=$skey&url=' + encodeURIComponent(parent.location.toString()); </script>";
+			echo "<script type=\"text/javascript\"> parent.location = '/domainauth.php?skey=$skey&url=' + encodeURIComponent(parent.location.toString()); </script>";
 		}
 	}
 	
