@@ -36,6 +36,16 @@ class CreateAccountModule extends SmartyModule {
 	
 	public function build($runData){
 
+		$site = $runData->getTemp('site');
+		// check the connection type
+		if(!$_SERVER['HTTPS'] && $site->getSettings()->getSslMode()){
+			// not enabled, redirect to http:
+			$site = $runData->getTemp("site");
+			header("HTTP/1.1 301 Moved Permanently");
+			header("Location: ".'https://'.$site->getDomain().$_SERVER['REQUEST_URI']);
+			exit();		
+		}
+		
 		$code =  $runData->sessionGet('captchaCode');
 		
 		if($code === null){

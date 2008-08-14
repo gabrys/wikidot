@@ -12,8 +12,6 @@
 						<input class="text" type="text" maxlength="50" size="25" name="name"/>
 						<div class="sub">
 							{t 1=$SERVICE_NAME}That is your new name at %1.{/t}
-							<br/>
-							{t}We strongly recommend using your real-life First and Last Name here.{/t}
 						</div>
 					</td>
 				</tr>
@@ -89,18 +87,7 @@
 				</tr>
 			</table>
 		
-		<div class="note">
-			<ul>
-				<li>
-					{t}Your account data will be sent using a secure method.{/t}
-				</li>
-				<li>
-					{t}Please give the email address you have access to. Email + password will be used later to log in.{/t}
-				</li>
-			</ul>
-		</div>
-		
-		DEBUG: evcode: {$evcode}
+		{*DEBUG: evcode: {$evcode}*}
 
 	<div class="buttons">
 		<input type="button" class="button" onclick="WIKIDOT.modules.CreateAccountModule.listeners.cancel(event)" value="{t}cancel{/t}"/>

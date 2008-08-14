@@ -63,14 +63,14 @@ class WikiScreen extends Screen {
 				$wikiPage = $site->getSettings()->getPrivateLandingPage();
 				$privateAccessGranted = false;
 			}	
-			if ($privateAccessGranted) {
-				$pwdomain = $site->getUnixName() . "." . GlobalProperties::$URL_UPLOAD_DOMAIN;
-				$pwproto = ($_SERVER["HTTPS"]) ? "https" : "http";
-				$pwurl = "$pwproto://$pwdomain/filesauth.php";
-				
-				$runData->contextAdd("usePrivateWikiScript", true);
-				$runData->contextAdd("privateWikiScriptUrl", $pwurl);
-			}
+//			if ($privateAccessGranted) {
+//				$pwdomain = $site->getUnixName() . "." . GlobalProperties::$URL_UPLOAD_DOMAIN;
+//				$pwproto = ($_SERVER["HTTPS"]) ? "https" : "http";
+//				$pwurl = "$pwproto://$pwdomain/filesauth.php";
+//				
+//				$runData->contextAdd("usePrivateWikiScript", true);
+//				$runData->contextAdd("privateWikiScriptUrl", $pwurl);
+//			}
 		}
 		
 		if($wikiPage==""){$wikiPage=$site->getDefaultPage();}
@@ -253,9 +253,9 @@ class WikiScreen extends Screen {
 		}
 
 		// check wether to include a special JS file for custom domains or a special JS file for private files
-		if (preg_match('/^([a-zA-Z0-9\-]+)\.' . GlobalProperties::$URL_DOMAIN_PREG . '$/',$_SERVER["HTTP_HOST"], $matches) !==1) {
-			$runData->contextAdd("useCustomDomainScript", true);
-		}
+		//if (preg_match('/^([a-zA-Z0-9\-]+)\.' . GlobalProperties::$URL_DOMAIN_PREG . '$/',$_SERVER["HTTP_HOST"], $matches) !==1) {
+		//	$runData->contextAdd("useCustomDomainScript", true);
+		//}
 		
 		$smarty = Ozone::getSmarty();
 		

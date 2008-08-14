@@ -2,6 +2,17 @@
 class LoginModule extends SmartyModule {
 	
 	public function build($runData){
+		
+		$site = $runData->getTemp('site');
+		// check the connection type
+		if(!$_SERVER['HTTPS'] && $site->getSettings()->getSslMode()){
+			// not enabled, redirect to http:
+			$site = $runData->getTemp("site");
+			header("HTTP/1.1 301 Moved Permanently");
+			header("Location: ".'https://'.$site->getDomain().$_SERVER['REQUEST_URI']);
+			exit();		
+		}
+		
 		// check if not already logged in...
 		
 		

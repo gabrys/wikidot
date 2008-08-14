@@ -14,8 +14,8 @@ WIKIDOT.modules.CreateAccountModule = {};
 WIKIDOT.modules.CreateAccountModule.vars = {};
 
 WIKIDOT.modules.CreateAccountModule.listeners = {
-	cancelClick: function(e){
-		OZONE.dialog.cleanAll();
+	cancel: function(e){
+		window.location.href = 'http://'+window.location.hostname;
 	},
 	
 	nextClick: function(e){
@@ -52,7 +52,7 @@ WIKIDOT.modules.CreateAccountModule.callbacks = {
 			$("ca-reg0-errors").style.display = "block";
 			return;
 		}
-		window.location.href='/login:newaccount2';
+		window.location.href='/auth:newaccount2';
 	}	
 
 }
@@ -73,6 +73,13 @@ WIKIDOT.modules.CreateAccountModule.init = function(){
 		}
 		document.forms.caform['tos'].checked=true;
 	}
+	OZONE.dom.onDomReady(function(){		
+		// change links to http://...
+		var els = document.getElementsByTagName('a');
+		for(var i=0; i<els.length;i++){
+			els[i].href = els[i].href.replace(/^https/, 'http');
+		}
+	}, "dummy-ondomready-block");
 }
 
 WIKIDOT.modules.CreateAccountModule.init();

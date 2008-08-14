@@ -38,12 +38,10 @@
 		var URL_DOMAIN = '{$URL_DOMAIN}';
  	</script>
  	
- 	{if $useCustomDomainScript}
- 		{module name="login/CustomDomainScriptModule"}
- 	{/if}
- 	{if $usePrivateWikiScript}
- 		<script type="text/javascript" src="{$privateWikiScriptUrl}"></script>
- 	{/if}
+
+ 	{module name="login/CustomDomainScriptModule"}
+	{module name="login/FileAuthScriptModule"}
+
  	
  	<meta http-equiv="content-type" content="text/html;charset=UTF-8"/>
     <meta http-equiv="content-language" content="{$site->getLanguage()}"/>

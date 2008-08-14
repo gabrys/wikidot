@@ -23,34 +23,18 @@
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
 
-class PrivateWikiScriptController extends UploadedFileFlowController {
+class FileAuthScriptModule extends SmartyModule {
 	
-	public function process() {
-		
-		// to avoid caching
-		header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
-		header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
-		Ozone::init();
-		
-		$site = $this->getSite($_SERVER['HTTP_HOST']);
-		
-		// check if ucookie exists and is valid
-		$ukey = null;
-		if (isset($_COOKIE["ucookie"])) {
-			$ukey = $_COOKIE["ucookie"];
+	public function build($runData){
+		$site = $runData->getTemp('site');
+		if($runData->getUser() && $site->getPrivate()){
+			$pwdomain = $site->getUnixName() . "." . GlobalProperties::$URL_UPLOAD_DOMAIN;
+			$pwproto = ($_SERVER["HTTPS"]) ? "https" : "http";
+			$pwurl = "$pwproto://$pwdomain/filesauth.php";
+			
+			$runData->contextAdd("usePrivateWikiScript", true);
+			$runData->contextAdd("privateWikiScriptUrl", $pwurl);
 		}
-		
-		$ucookie = DB_UcookiePeer::instance()->selectByPrimaryKey($ukey);
-		
-		if (! $ukey || ! $this->validateUCookie($ucookie, $site)) {
-			
-			// ucookie is not there, let's redirect to start the fun
-			
-			$this->setContentTypeHeader("text/javascript");
-			echo "document.location = '/local--auth/' + encodeURIComponent(document.location.toString());";
-			
-		}
-			
 	}
 	
 }

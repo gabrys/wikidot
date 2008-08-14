@@ -10,7 +10,7 @@
 		}, 2000);
 	} else {
 		setTimeout(function(){
-			var url = '/login:newaccount3';
+			var url = '/auth:newaccount3';
 			if(originalUrl){
 				url = url + '?origUrl=' + encodeURIComponent(originalUrl);
 			}

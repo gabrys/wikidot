@@ -100,6 +100,10 @@ class CustomDomainLoginFlowController extends WebFlowController {
 	
 	public function process() {
 
+		// to avoid caching
+		header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
+		header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
+
 		Ozone ::init();
 		
 		$runData = new RunData();
@@ -132,7 +136,7 @@ class CustomDomainLoginFlowController extends WebFlowController {
 			$session = $sessionPeer->selectOne($c);
 			
 			if ($session) {
-				setcookie("WIKIDOT_SESSION_ID", $session->getSessionId());
+				setcookie(GlobalProperties::$SESSION_COOKIE_NAME, $session->getSessionId(), null, '/');
 				$this->redirectConfirm($url);
 			} else {
 				$this->redirect($url);

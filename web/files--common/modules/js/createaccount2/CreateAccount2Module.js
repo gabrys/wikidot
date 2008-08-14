@@ -12,8 +12,8 @@
 WIKIDOT.modules.CreateAccount2Module = {};
 
 WIKIDOT.modules.CreateAccount2Module.listeners = {
-	cancelClick: function(e){
-		window.location.href="/";
+	cancel: function(e){
+		window.location.href='http://'+window.location.hostname;
 	},
 	
 	backClick: function(e){
@@ -45,7 +45,7 @@ WIKIDOT.modules.CreateAccount2Module.callbacks = {
 			}, 2000);
 		} else {
 			setTimeout(function(){
-				var url = '/login:newaccount3';
+				var url = '/auth:newaccount3';
 				if(originalUrl){
 					url = url + '?origUrl=' + encodeURIComponent(originalUrl);
 				}
@@ -61,5 +61,11 @@ WIKIDOT.modules.CreateAccount2Module.callbacks = {
 	}
 
 }
-
+OZONE.dom.onDomReady(function(){		
+		// change links to http://...
+		var els = document.getElementsByTagName('a');
+		for(var i=0; i<els.length;i++){
+			els[i].href = els[i].href.replace(/^https/, 'http');
+		}
+	}, "dummy-ondomready-block");
 //YAHOO.util.Event.addListener("next-click", "click", WIKIDOT.modules.AcceptTOSModule.listeners.nextClick);

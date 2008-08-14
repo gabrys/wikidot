@@ -41,7 +41,7 @@
 	</p>
 	<hr/>
 	<p>
-		<a href="/login:newaccount">{t}No account yet? Get one!{/t}</a>
+		<a href="/auth:newaccount">{t}No account yet? Get one!{/t}</a>
 	</p>
 	<div class="buttons" >
 		<input type="button" onclick="WIKIDOT.modules.LoginModule.listeners.cancel(event)" value="{t}cancel{/t}"/>

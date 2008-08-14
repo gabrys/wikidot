@@ -74,7 +74,7 @@ class CreateAccount2Module extends SmartyModule {
 		
 		$evcode = $runData->sessionGet('evcode');
 		if(!$evcode){
-			throw new ProcessException(_('Not within registration chain. <a href="/login:newaccount">Click this</a> to start a new account.'));
+			throw new ProcessException(_('Not within registration chain. <a href="/auth:newaccount">Click this</a> to start a new account.'));
 		}
 		$runData->contextAdd('evcode', $runData->sessionGet('evcode'));
 		$runData->sessionAdd("rstep", 2);

@@ -33,14 +33,18 @@ class LoginStatusModule extends Module{
 		
 		if($user == null){
 			$site = $runData->getTemp('site');
-			
 			$originalUrl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+			if(preg_match(';\?origUrl=.*$;', $originalUrl)){
+				$o = array();
+				parse_str(preg_replace(';^.*?\?;', '', $_SERVER['REQUEST_URI']), $o);
+				$originalUrl = $o['origUrl'];
+			}
 			$loginDomain = 'www';
 			if($site->getLanguage() != 'en'){
 				$loginDomain = $site->getLanguage();
 			}
-			$out = '<a href="http://'.$loginDomain.'.'.GlobalProperties::$URL_DOMAIN . '/login:newaccount?origUrl='.urlencode($originalUrl).'">'._('create account').'</a> '._('or') . ' ';
-			$out .= '<a href="http://'.$loginDomain.'.'.GlobalProperties::$URL_DOMAIN . '/login:login?origUrl='.urlencode($originalUrl).'">'._('login').'</a> ';
+			$out = '<a href="http://'.$loginDomain.'.'.GlobalProperties::$URL_DOMAIN . '/auth:newaccount?origUrl='.urlencode($originalUrl).'">'._('create account').'</a> '._('or') . ' ';
+			$out .= '<a href="http://'.$loginDomain.'.'.GlobalProperties::$URL_DOMAIN . '/auth:login?origUrl='.urlencode($originalUrl).'">'._('login').'</a> ';
 			
 			//$out = '<a href="javascript:;" onclick="WIKIDOT.page.listeners.createAccount(event)">'._('create account').'</a> '._('or').' <a href="javascript:;" onclick="WIKIDOT.page.listeners.loginClick(event)">'._('login').'</a>';
 		} else {
