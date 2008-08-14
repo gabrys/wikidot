@@ -46,7 +46,7 @@ class CustomDomainScriptController extends UploadedFileFlowController {
 			}
 		} else {
 			$skey = md5($site_id . CustomDomainLoginFlowController::$secretString . $runData->getSessionId());
-			echo "<script>parent.parent.location = '/domainauth.php?skey=$skey&url=' + encodeURIComponent(parent.parent.location.toString()); </script>";
+			echo "<script>parent.location = '/domainauth.php?skey=$skey&url=' + encodeURIComponent(parent.location.toString()); </script>";
 		}
 	}
 	
