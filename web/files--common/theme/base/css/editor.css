@@ -74,11 +74,11 @@
 	display: none;
 }
 
-#wd-editor-toolbar-panel a {
+.wd-editor-toolbar-panel a {
 	background-image: url(../images/editor/icons1.png);
 }
 
-#wd-editor-toolbar-panel a:hover {
+.wd-editor-toolbar-panel a:hover {
 	background-image: url(../images/editor/icons3.png);
 }
 
