@@ -17,24 +17,37 @@
  * http://www.wikidot.org/license
  * 
  * @category Wikidot
- * @package Wikidot_Web
+ * @package Wikidot
  * @version $Id$
  * @copyright Copyright (c) 2008, Wikidot Inc.
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
 
-require ('../php/setup.php');
-// to avoid caching
-header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
-header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
-
-try {
-    
-    $controller = new CustomDomainLoginFlowController();
-    $out = $controller->process();
-    
-} catch (Exception $e) {
-    echo "A nasty error has occurred. If the problem repeats, please fill (if possible) a bug report.";
-    echo "<br/><br/>";
-    echo $e;
+class CustomDomainScriptController extends UploadedFileFlowController {
+	
+	public function process() {
+		
+		Ozone::init();
+		$runData = new RunData();
+		
+		$siteHost = $_SERVER['HTTP_HOST'];
+		$site = $this->getSite($siteHost);
+		
+		// zmienić to!!!
+		if ($site->getCustomDomain() != $siteHost) {
+			$runData->handleSessionStart();
+			if ($runData->getUser()) {
+				$proto = ($_SERVER["HTTPS"]) ? "https" : "http";
+				$domain = $site->getCustomDomain();
+				$url = "$proto://$domain/domainauth.js.php";
+				
+				header('HTTP/1.1 301 Moved Permanently');
+				header("Location: $url");
+			}
+		} else {
+			$skey = md5($site_id . CustomDomainLoginFlowController::$secretString . $runData->getSessionId());
+			echo "<script>parent.parent.location = '/domainauth.php?skey=$skey&url=' + encodeURIComponent(parent.parent.location.toString()); </script>";
+		}
+	}
+	
 }
