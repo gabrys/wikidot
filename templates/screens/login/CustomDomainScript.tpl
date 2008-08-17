@@ -18,6 +18,6 @@
 	{literal}
 		}
 	}
-	{literal}
+	{/literal}
 	
 {/if}
