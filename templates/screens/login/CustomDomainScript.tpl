@@ -14,7 +14,7 @@
 	if (navigator.appName.indexOf('Internet Explorer') != -1) {
 		if (parseFloat(navigator.appVersion.split('MSIE')[1] >= 7.0)) {
 	{/literal}
-			document.location = '{$redir}&url=' + encodeURIComponent(document.location.toString());
+			document.location = '{$redirIE}&url=' + encodeURIComponent(document.location.toString());
 	{literal}
 		}
 	}
