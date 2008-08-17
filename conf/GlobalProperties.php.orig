@@ -52,6 +52,7 @@ class GlobalProperties {
 	public static $SESSION_COOKIE_NAME = "WIKIDOT_SESSION_ID";
 	public static $SESSION_COOKIE_SECURE = false; // by default
 	public static $SESSION_COOKIE_DOMAIN = null;
+	public static $SESSION_COOKIE_NAME_IE = null;
 	
 	/**
 	 * X-Sendfile settings
@@ -160,8 +161,11 @@ class GlobalProperties {
 			self::$URL_UPLOAD_DOMAIN = 'wdupload.' . self::$URL_DOMAIN;
 		}
 		self::$URL_UPLOAD_DOMAIN_PREG = preg_quote(self::$URL_UPLOAD_DOMAIN);
-		if(! self::$SESSION_COOKIE_DOMAIN) {
+		if (! self::$SESSION_COOKIE_DOMAIN) {
 			self::$SESSION_COOKIE_DOMAIN = '.'.self::$URL_DOMAIN;
+		}
+		if (! self::$SESSION_COOKIE_NAME_IE) {
+			self::$SESSION_COOKIE_NAME_IE = self::$SESSION_COOKIE_NAME . "_IE";
 		}
 	}
 }

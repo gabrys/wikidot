@@ -1,3 +1,3 @@
 {if $useCustomDomainScript}
-	<iframe src="http{if $useCustomDomainScriptSecure}s{/if}://{$URL_HOST}/domainauth.js.php?site_id={$site->getSiteId()}"></iframe>
+	<script type="text/javascript" src="http{if $useCustomDomainScriptSecure}s{/if}://{$URL_HOST}/default__flow/login__CustomDomainScript?site_id={$site->getSiteId()}"></script>
 {/if}

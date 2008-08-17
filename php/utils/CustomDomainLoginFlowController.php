@@ -117,19 +117,29 @@ class CustomDomainLoginFlowController extends WebFlowController {
 		$url = $_GET["url"];
 		$siteId = (int) $site->getSiteId();
 		$confirm = isset($_GET["confirm"]);
+		$setie = isset($_GET["setiecookie"]);
 		
-		if (! $confirm) {
+		if ($setie) {
+			
+			$runData->handleSessionStart();
+			if ($runData->getUser()) {
+				setcookie(GlobalProperties::$SESSION_COOKIE_NAME_IE, $runData->getSessionId(), null, '/');
+			} else {
+				setcookie(GlobalProperties::$SESSION_COOKIE_NAME_IE, "ANONYMOUS", null, '/');
+			}
+			$this->redirect($url);
+			
+		} elseif (! $confirm) {
 			
 			// checking
 			$user_id = (int) $_GET["user_id"];
 			$skey = $_GET["skey"];
 			$secret = pg_escape_string(self::$secretString);
 			
-			$sessionPeer = new DB_OzoneSessionPeer();
 			$c = new Criteria();
 			$c->add("user_id", $user_id);
 			$c->add("MD5($siteId || '$secret' || session_id)", $skey);
-			$session = $sessionPeer->selectOne($c);
+			$session = DB_OzoneSessionPeer::instance()->selectOne($c);
 			
 			if ($session) {
 				setcookie(GlobalProperties::$SESSION_COOKIE_NAME, $session->getSessionId(), null, '/');
