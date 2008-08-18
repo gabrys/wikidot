@@ -23,14 +23,10 @@
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
 
-class CustomDomainLoginFlowController extends WebFlowController {
+class CustomDomainLoginFlowController extends UploadedFileFlowController {
 
 	public static $secretString = "--DziendobrynazywamsieczesioiopowiemWamWierszyka--";
 	protected $controllerUrl = "/domainauth.php";
-	
-	protected function siteNotExists() {
-		$this->serveFile(WIKIDOT_ROOT."/files/site_not_exists.html", "text/html");
-	}
 	
 	/**
 	 * Redirects browser to certain URL build from URL and params
@@ -106,20 +102,17 @@ class CustomDomainLoginFlowController extends WebFlowController {
 		$runData->init();
 		Ozone::setRunData($runData);
 		
-		$siteHost = $_SERVER['HTTP_HOST'];
-		$site = $this->getSite($siteHost);
-		
-		if (! $site) {
-			$this->siteNotExists();
-			return;
-		}
-		
 		$url = $_GET["url"];
 		$siteId = (int) $site->getSiteId();
 		$confirm = isset($_GET["confirm"]);
 		$setie = isset($_GET["setiecookie"]);
+		$siteHost = $_SERVER['HTTP_HOST'];
 		
 		if ($setie) {
+			
+			if ($siteHost != GlobalProperties::$URL_DOMAIN) {
+				$this->siteNotExists();
+			}
 			
 			$runData->handleSessionStart();
 			if ($runData->getUser()) {
@@ -129,36 +122,46 @@ class CustomDomainLoginFlowController extends WebFlowController {
 			}
 			$this->redirect($url);
 			
-		} elseif (! $confirm) {
-			
-			// checking
-			$user_id = (int) $_GET["user_id"];
-			$skey = $_GET["skey"];
-			$secret = pg_escape_string(self::$secretString);
-			
-			$c = new Criteria();
-			$c->add("user_id", $user_id);
-			$c->add("MD5($siteId || '$secret' || session_id)", $skey);
-			$session = DB_OzoneSessionPeer::instance()->selectOne($c);
-			
-			if ($session) {
-				setcookie(GlobalProperties::$SESSION_COOKIE_NAME, $session->getSessionId(), null, '/');
-				$this->redirectConfirm($url);
-			} else {
-				$this->redirect($url);
-			}
-			
 		} else {
-			
-			// checking if cookie exists
-			
-			$runData->handleSessionStart();
-			
-			if ($runData->getUser()) {
-				$this->redirect($url);
-			} else {
-				$this->cookieError($url);
+			$site = $this->getSite($siteHost);
+		
+			if (! $site) {
+				$this->siteNotExists();
+				return;
 			}
+		
+			if (! $confirm) {
+				
+				// checking
+				$user_id = (int) $_GET["user_id"];
+				$skey = $_GET["skey"];
+				$secret = pg_escape_string(self::$secretString);
+				
+				$c = new Criteria();
+				$c->add("user_id", $user_id);
+				$c->add("MD5($siteId || '$secret' || session_id)", $skey);
+				$session = DB_OzoneSessionPeer::instance()->selectOne($c);
+				
+				if ($session) {
+					setcookie(GlobalProperties::$SESSION_COOKIE_NAME, $session->getSessionId(), null, '/');
+					$this->redirectConfirm($url);
+				} else {
+					$this->redirect($url);
+				}
+				
+			} else {
+				
+				// checking if cookie exists
+				
+				$runData->handleSessionStart();
+				
+				if ($runData->getUser()) {
+					$this->redirect($url);
+				} else {
+					$this->cookieError($url);
+				}
+			}
+			
 		}
 		
 	}
