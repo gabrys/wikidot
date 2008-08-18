@@ -450,9 +450,7 @@ WIKIDOT.page.callbacks = {
 	},
 	logoutClick: function(r){
 		if(!WIKIDOT.utils.handleError(r)) {return;}
-		//window.location.href = window.location.href;
-		history.go(0);
-		//window.location.reload();
+		window.location.reload();
 	},
 	
 	passwordRecovery: function(r){
