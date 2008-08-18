@@ -317,6 +317,7 @@ class CreateAccount2Action extends SmartyAction {
 		$runData->resetSession();
 		$runData->getSession()->setUserId($nuser->getUserId());
 		setcookie("welcome", $nuser->getUserId(), time() + 10000000, "/", GlobalProperties::$SESSION_COOKIE_DOMAIN);
+		setcookie(GlobalProperties::$SESSION_COOKIE_NAME_IE, $runData->getSessionId(), null, "/");
 		
 	}
 	
