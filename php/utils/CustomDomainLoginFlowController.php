@@ -103,7 +103,6 @@ class CustomDomainLoginFlowController extends UploadedFileFlowController {
 		Ozone::setRunData($runData);
 		
 		$url = $_GET["url"];
-		$siteId = (int) $site->getSiteId();
 		$confirm = isset($_GET["confirm"]);
 		$setie = isset($_GET["setiecookie"]);
 		$siteHost = $_SERVER['HTTP_HOST'];
@@ -129,6 +128,8 @@ class CustomDomainLoginFlowController extends UploadedFileFlowController {
 				$this->siteNotExists();
 				return;
 			}
+			
+			$siteId = (int) $site->getSiteId();
 		
 			if (! $confirm) {
 				
