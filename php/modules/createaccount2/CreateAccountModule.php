@@ -38,7 +38,7 @@ class CreateAccountModule extends SmartyModule {
 
 		$site = $runData->getTemp('site');
 		// check the connection type
-		if(!$_SERVER['HTTPS'] && $site->getSettings()->getSslMode()){
+		if(!$_SERVER['HTTPS'] && $site->getSettings()->getSslMode() && !$runData->getParameterList()->getParameterValue('disableSSL')){
 			// not enabled, redirect to http:
 			$site = $runData->getTemp("site");
 			header("HTTP/1.1 301 Moved Permanently");
