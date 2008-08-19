@@ -96,7 +96,10 @@ CREATE TABLE category (
     per_page_discussion boolean,
     per_page_discussion_default boolean DEFAULT true,
     rating character varying(10),
-    category_template_id integer
+    category_template_id integer,
+    theme_external_url character varying(512),
+    enable_pingback_out boolean DEFAULT true,
+    enable_pingback_in boolean DEFAULT false
 );
 
 
@@ -808,6 +811,23 @@ CREATE TABLE page_edit_lock (
 ALTER TABLE public.page_edit_lock OWNER TO wd;
 
 --
+-- Name: page_external_link; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
+--
+
+CREATE TABLE page_external_link (
+    link_id integer NOT NULL,
+    site_id integer,
+    page_id integer,
+    to_url character varying(512),
+    pinged boolean DEFAULT false,
+    ping_status character varying(256),
+    date timestamp without time zone
+);
+
+
+ALTER TABLE public.page_external_link OWNER TO wd;
+
+--
 -- Name: page_inclusion; Type: TABLE; Schema: public; Owner: wd; Tablespace: 
 --
 
@@ -1425,7 +1445,7 @@ ALTER SEQUENCE category_category_id_seq OWNED BY category.category_id;
 -- Name: category_category_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
 --
 
-SELECT pg_catalog.setval('category_category_id_seq', 20, true);
+SELECT pg_catalog.setval('category_category_id_seq', 21, true);
 
 
 --
@@ -1844,7 +1864,7 @@ ALTER SEQUENCE fts_entry_fts_id_seq OWNED BY fts_entry.fts_id;
 -- Name: fts_entry_fts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
 --
 
-SELECT pg_catalog.setval('fts_entry_fts_id_seq', 52, true);
+SELECT pg_catalog.setval('fts_entry_fts_id_seq', 63, true);
 
 
 --
@@ -2403,6 +2423,34 @@ SELECT pg_catalog.setval('page_edit_lock_lock_id_seq', 76, true);
 
 
 --
+-- Name: page_external_link_link_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
+--
+
+CREATE SEQUENCE page_external_link_link_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.page_external_link_link_id_seq OWNER TO wd;
+
+--
+-- Name: page_external_link_link_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wd
+--
+
+ALTER SEQUENCE page_external_link_link_id_seq OWNED BY page_external_link.link_id;
+
+
+--
+-- Name: page_external_link_link_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
+--
+
+SELECT pg_catalog.setval('page_external_link_link_id_seq', 1, false);
+
+
+--
 -- Name: page_inclusion_inclusion_id_seq; Type: SEQUENCE; Schema: public; Owner: wd
 --
 
@@ -2481,7 +2529,7 @@ ALTER SEQUENCE page_metadata_metadata_id_seq OWNED BY page_metadata.metadata_id;
 -- Name: page_metadata_metadata_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
 --
 
-SELECT pg_catalog.setval('page_metadata_metadata_id_seq', 52, true);
+SELECT pg_catalog.setval('page_metadata_metadata_id_seq', 56, true);
 
 
 --
@@ -2508,7 +2556,7 @@ ALTER SEQUENCE page_page_id_seq OWNED BY page.page_id;
 -- Name: page_page_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
 --
 
-SELECT pg_catalog.setval('page_page_id_seq', 48, true);
+SELECT pg_catalog.setval('page_page_id_seq', 52, true);
 
 
 --
@@ -2563,7 +2611,7 @@ ALTER SEQUENCE page_revision_revision_id_seq OWNED BY page_revision.revision_id;
 -- Name: page_revision_revision_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
 --
 
-SELECT pg_catalog.setval('page_revision_revision_id_seq', 59, true);
+SELECT pg_catalog.setval('page_revision_revision_id_seq', 63, true);
 
 
 --
@@ -2590,7 +2638,7 @@ ALTER SEQUENCE page_source_source_id_seq OWNED BY page_source.source_id;
 -- Name: page_source_source_id_seq; Type: SEQUENCE SET; Schema: public; Owner: wd
 --
 
-SELECT pg_catalog.setval('page_source_source_id_seq', 58, true);
+SELECT pg_catalog.setval('page_source_source_id_seq', 62, true);
 
 
 --
@@ -3290,6 +3338,13 @@ ALTER TABLE page_edit_lock ALTER COLUMN lock_id SET DEFAULT nextval('page_edit_l
 
 
 --
+-- Name: link_id; Type: DEFAULT; Schema: public; Owner: wd
+--
+
+ALTER TABLE page_external_link ALTER COLUMN link_id SET DEFAULT nextval('page_external_link_link_id_seq'::regclass);
+
+
+--
 -- Name: inclusion_id; Type: DEFAULT; Schema: public; Owner: wd
 --
 
@@ -3464,26 +3519,27 @@ COPY anonymous_abuse_flag (flag_id, user_id, address, proxy, site_id, site_valid
 -- Data for Name: category; Type: TABLE DATA; Schema: public; Owner: wd
 --
 
-COPY category (category_id, site_id, name, theme_default, theme_id, permissions_default, permissions, license_default, license_id, license_other, nav_default, top_bar_page_name, side_bar_page_name, template_id, per_page_discussion, per_page_discussion_default, rating, category_template_id) FROM stdin;
-6	2	nav	t	20	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
-7	3	_default	t	20	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	f	1	\N	f	nav:top	nav:side	\N	\N	t	\N	\N
-9	3	admin	f	21	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
-11	3	nav	t	20	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
-14	2	search	t	20	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
-15	1	nav	t	20	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
-2	2	_default	t	20	f	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	f	1	\N	f	nav:top	nav:side	\N	f	t	\N	\N
-13	2	admin	f	21	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
-17	2	forum	t	20	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
-12	2	system	t	20	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
-1	1	_default	t	20	f	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	f	1	\N	f	nav:top	nav:side	\N	f	t	\N	\N
-4	1	account	f	21	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
-3	1	admin	f	21	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
-16	1	search	t	20	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
-5	1	user	f	21	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
-8	3	profile	f	20	f	e:o;c:;m:;d:;a:;r:;z:;o:o	t	1	\N	f	nav:top	nav:profile-side	\N	\N	t	\N	\N
-18	2	profile	t	20	t	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
-19	1	system-all	t	20	t	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
-20	1	system	t	20	t	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N
+COPY category (category_id, site_id, name, theme_default, theme_id, permissions_default, permissions, license_default, license_id, license_other, nav_default, top_bar_page_name, side_bar_page_name, template_id, per_page_discussion, per_page_discussion_default, rating, category_template_id, theme_external_url, enable_pingback_out, enable_pingback_in) FROM stdin;
+6	2	nav	t	20	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N	\N	t	f
+7	3	_default	t	20	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	f	1	\N	f	nav:top	nav:side	\N	\N	t	\N	\N	\N	t	f
+9	3	admin	f	21	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N	\N	t	f
+11	3	nav	t	20	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N	\N	t	f
+14	2	search	t	20	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N	\N	t	f
+15	1	nav	t	20	t	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N	\N	t	f
+2	2	_default	t	20	f	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	f	1	\N	f	nav:top	nav:side	\N	f	t	\N	\N	\N	t	f
+13	2	admin	f	21	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N	\N	t	f
+17	2	forum	t	20	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N	\N	t	f
+12	2	system	t	20	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N	\N	t	f
+1	1	_default	t	20	f	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	f	1	\N	f	nav:top	nav:side	\N	f	t	\N	\N	\N	t	f
+4	1	account	f	21	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N	\N	t	f
+3	1	admin	f	21	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N	\N	t	f
+16	1	search	t	20	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N	\N	t	f
+5	1	user	f	21	f	v:arm;e:;c:;m:;d:;a:;r:;z:;o:	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N	\N	t	f
+8	3	profile	f	20	f	e:o;c:;m:;d:;a:;r:;z:;o:o	t	1	\N	f	nav:top	nav:profile-side	\N	\N	t	\N	\N	\N	t	f
+18	2	profile	t	20	t	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N	\N	t	f
+19	1	system-all	t	20	t	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N	\N	t	f
+20	1	system	t	20	t	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	t	1	\N	t	nav:top	nav:side	\N	\N	t	\N	\N	\N	t	f
+21	1	auth	t	20	f	e:m;c:m;m:m;d:;a:m;r:m;z:;o:arm	f	1	\N	f	nav:top	nav:side	\N	f	t	\N	\N	\N	t	f
 \.
 
 
@@ -3625,21 +3681,32 @@ COPY fts_entry (fts_id, page_id, title, unix_name, thread_id, site_id, text, vec
 33	33	Template	profile:template	\N	2	\n\nProfile has not been created (yet).\n	'yet':9 'creat':8 'profil':2C,4 'templat':1C,3C
 34	5	Side	nav:side	\N	2	\n\n\nWelcome page\n\n\nWhat is a Wiki Site?\nHow to edit pages?\n\n\nHow to join this site?\nSite members\n\n\nRecent changes\nList all pages\nPage Tags\n\n\nSite Manager\n\nPage tags\n\n\nAdd a new page\n\n\nedit this panel\n	'add':33 'nav':2C 'new':35 'tag':28,32 'edit':13,37 'join':17 'list':24 'page':5,14,26,27,31,36 'side':1C,3C 'site':10,19,20,29 'wiki':9 'chang':23 'manag':30 'panel':39 'member':21 'recent':22 'welcom':4
 37	36	Congratulations, welcome to your new wiki!	start	\N	2	\n\nIf this is your first site\nThen there are some things you need to know:\n\nYou can configure all security and other settings online, using the Site Manager. When you invite other people to help build this site they don't have access to the Site Manager unless you make them administrators like yourself. Check out the Permissions section.\nYour Wikidot site has two menus, one at the side called 'nav:side', and one at the top called 'nav:top'. These are Wikidot pages, and you can edit them like any page.\nTo edit a page, go to the page and click the Edit button at the bottom. You can change everything in the main area of your page. The Wikidot system is easy to learn and powerful.\nYou can attach images and other files to any page, then display them and link to them in the page.\nEvery Wikidot page has a history of edits, and you can undo anything. So feel secure, and experiment.\nTo start a forum on your site, see the Site Manager » Forum.\nThe license for this Wikidot site has been set to Creative Commons Attribution-Share Alike 3.0 License. If you want to change this, use the Site Manager.\nIf you want to learn more, make sure you visit the Documentation section at www.wikidot.org\n\nMore information about the Wikidot project can be found at www.wikidot.org.\n	'go':104 '3.0':203 'nav':78,86 'new':5C 'one':73,81 'see':181 'set':30,195 'top':84,87 'two':71 'use':32,211 '�':185 'alik':202 'area':123 'call':77,85 'easi':131 'edit':95,101,111,163 'feel':170 'file':142 'help':42 'imag':139 'know':22 'like':60,97 'link':150 'main':122 'make':57,221 'need':20 'page':91,99,103,107,126,145,155,158 'side':76,79 'site':13,34,45,53,69,180,183,192,213 'sure':222 'undo':167 'want':207,217 'wiki':6C 'anyth':168 'build':43 'chang':118,209 'check':62 'click':109 'everi':156 'first':12 'forum':177,186 'found':238 'invit':38 'learn':133,219 'manag':35,54,184,214 'menus':72 'onlin':31 'peopl':40 'power':135 'secur':27,171 'share':201 'start':7C,175 'thing':18 'visit':224 'access':50 'attach':138 'bottom':115 'button':112 'common':198 'experi':173 'inform':231 'licens':188,204 'system':129 'unless':55 'welcom':2C 'creativ':197 'display':147 'everyth':119 'histori':161 'permiss':65 'project':235 'section':66,227 'wikidot':68,90,128,157,191,234 'attribut':200 'configur':25 'document':226 'administr':59 'congratul':1C 'www.wikidot.org':229,240 'attribution-shar':199
+45	13	How To Edit Pages - Quickstart	how-to-edit-pages	\N	2	\n\nIf you are allowed to edit pages in this Site, simply click on edit button at the bottom of the page. This will open an editor with a toolbar pallette with options.\nTo create a link to a new page, use syntax: [[[new page name]]] or [[[new page name | text to display]]]. Follow the link (which should have a different color if page does not exist) and create a new page and edit it!\nAlthough creating and editing pages is easy, there are a lot more options that allows creating powerful sites. Please visit Documentation pages (at wikidot.org) to learn more.\n	'lot':95 'new':49,53,57,80 'use':51 'easi':91 'edit':3C,9C,16,24,83,88 'link':46,65 'name':55,59 'open':34 'page':4C,10C,17,31,50,54,58,73,81,89,106 'site':20,102 'text':60 'allow':14,99 'click':22 'color':71 'creat':44,78,86,100 'exist':76 'learn':110 'pleas':103 'power':101 'visit':104 'bottom':28 'button':25 'differ':70 'editor':36 'follow':63 'option':42,97 'simpli':21 'syntax':52 'display':62 'pallett':40 'toolbar':39 'although':85 'document':105 'quickstart':5C 'wikidot.org':108 'how-to-edit-pag':6C
 39	37	List of all wikis	system-all:all-sites	\N	1	\n\nBelow is the list of public visible Wikis hosted at this service:\n\n	'host':19 'list':1C,14 'site':10C 'wiki':4C,18 'public':16 'servic':22 'system':6C 'visibl':17 'all-sit':8C 'system-al':5C
 40	38	List wikis by tags	system-all:sites-by-tags	\N	1	\n\n\n\n	'tag':4C,11C 'list':1C 'site':9C 'wiki':2C 'system':6C 'system-al':5C 'sites-by-tag':8C
-41	39	Search	system-all:search	\N	1	\n\n\nSearch all Wikis\nPerform a search through all public and visible wikis.\n\n\n\nSearch users\nTo look for someone, please enter:\n\nemail address of a person you are looking for (this will look for exact match)\nany part of the screen name or realname (lists all Users matching the query)\n\n\n\n	'list':49 'look':21,33,37 'name':46 'part':42 'user':19,51 'wiki':8,17 'email':26 'enter':25 'exact':39 'match':40,52 'pleas':24 'queri':54 'person':30 'public':14 'screen':45 'search':1C,5C,6,11,18 'someon':23 'system':3C 'visibl':16 'address':27 'perform':9 'realnam':48 'system-al':2C
 42	40	Activity across all wikis	system-all:activity	\N	1	\n\n\n\n\nRecent edits (all wikis)\n\n\n\nTop Sites\n\n\nTop Forums\n\n\nNew users\n\n\nSome statistics\n\n\n\n\n	'new':17 'top':13,15 'edit':10 'site':14 'user':18 'wiki':4C,12 'activ':1C,8C 'forum':16 'across':2C 'recent':9 'system':6C 'statist':20 'system-al':5C
-43	23	Welcome to your new Wikidot installation!	start	\N	1	\n\nCongratulations, you have successfully installed Wikidot software on your computer!\nWhat to do next\nCustomize this wiki\nWikidot consists of several wiki sites, not just one. Right now you are on the main wiki. Customize it!\n\nYou can configure all security and other settings online, using the Site Manager. When you invite other people to help build this site they don't have access to the Site Manager unless you make them administrators like yourself. Check out the Permissions section.\nYour Wikidot site has two menus, one at the side called 'nav:side', and one at the top called 'nav:top'. These are Wikidot pages, and you can edit them like any page.\nTo edit a page, go to the page and click the Edit button at the bottom. You can change everything in the main area of your page. The Wikidot system is easy to learn and powerful.\nYou can attach images and other files to any page, then display them and link to them in the page.\nEvery Wikidot page has a history of edits, and you can undo anything. So feel secure, and experiment.\nTo start a forum on your site, see the Site Manager » Forum.\nThe license for this Wikidot site has been set to Creative Commons Attribution-Share Alike 3.0 License. If you want to change this, use the Site Manager.\nIf you want to learn more, make sure you visit the Documentation section at www.wikidot.org\n\nCustomize default template\nDefault initial template for other wikis is located at template-en. If someone creates a new wiki, this one is cloned to the new address. A good thing to do is to go to template-en and customize it.\nCreate more templates\nSimply create wikis with unix names starting with "template-" (e.g. "template-pl", "template-blog") and your users will be able to choose which wiki they want to start with.\nVisit Wikidot.org\nGo to www.wikidot.org — home of the Wikidot software — for extra documentation, howtos, tips and support.\n\nMore information about the Wikidot project can be found at www.wikidot.org.\nSearch all wikis\n\n\nSearch users\n\n	'en':265,291 'go':125,287,331 'pl':310 '3.0':224 'abl':319 'e.g':307 'nav':99,107 'new':4C,270,278 'one':33,94,102,273 'see':202 'set':51,216 'tip':345 'top':105,108 'two':92 'use':53,232 '—':334,340 '�':206 'alik':223 'area':144 'blog':313 'call':98,106 'easi':152 'edit':116,122,132,184 'feel':191 'file':163 'good':281 'help':63 'home':335 'imag':160 'like':81,118 'link':171 'main':40,143 'make':78,242 'name':303 'next':21 'page':112,120,124,128,147,166,176,179 'side':97,100 'site':30,55,66,74,90,201,204,213,234 'sure':243 'undo':188 'unix':302 'user':316,363 'want':228,238,325 'wiki':24,29,41,259,271,300,323,361 'anyth':189 'build':64 'chang':139,230 'check':83 'choos':321 'click':130 'clone':275 'creat':268,295,299 'everi':177 'extra':342 'forum':198,207 'found':356 'howto':344 'initi':255 'invit':59 'learn':154,240 'locat':261 'manag':56,75,205,235 'menus':93 'onlin':52 'peopl':61 'power':156 'right':34 'secur':48,192 'sever':28 'share':222 'start':7C,196,304,327 'thing':282 'visit':245,329 'access':71 'attach':159 'bottom':136 'button':133 'common':219 'comput':17 'custom':22,42,251,293 'experi':194 'inform':349 'instal':6C,12 'licens':209,225 'search':359,362 'simpli':298 'someon':267 'system':150 'unless':76 'welcom':1C 'address':279 'consist':26 'creativ':218 'default':252,254 'display':168 'everyth':140 'histori':182 'permiss':86 'project':353 'section':87,248 'softwar':14,339 'success':11 'support':347 'templat':253,256,264,290,297,306,309,312 'wikidot':5C,13,25,89,111,149,178,212,338,352 'attribut':221 'configur':46 'document':247,343 'administr':80 'congratul':8 'template-en':263,289 'template-pl':308 'wikidot.org':330 'template-blog':311 'www.wikidot.org':250,333,358 'attribution-shar':220
-44	41	What Is A Wiki	what-is-a-wiki	\N	1	\n\nAccording to Wikipedia, the world largest wiki site:\n\nA Wiki ([ˈwiː.kiː] &lt;wee-kee&gt; or [ˈwɪ.kiː] &lt;wick-ey&gt;) is a type of website that allows users to add, remove, or otherwise edit and change most content very quickly and easily.\n\nAnd that is it! As a part of a farm of wikis this site is a great tool that you can use to publish content, upload files, communicate and collaborate.\n	'ey':30 'add':40 'kee':24 'use':74 'wee':23 'edit':44 'farm':62 'file':79 'part':59 'site':17,66 'tool':70 'type':33 'user':38 'wick':29 'wiki':4C,9C,16,19,64 'allow':37 'chang':46 'great':69 'ki�':21,27 'quick':50 'remov':41 'world':14 'accord':10 'easili':52 'upload':78 'websit':35 'wee-ke':22 'content':48,77 'largest':15 'publish':76 'wick-ey':28 '�w�':26 'collabor':82 'communic':80 'otherwis':43 '�wi�':20 'wikipedia':12 'what-is-a-wiki':5C
-45	13	How To Edit Pages - Quickstart	how-to-edit-pages	\N	2	\n\nIf you are allowed to edit pages in this Site, simply click on edit button at the bottom of the page. This will open an editor with a toolbar pallette with options.\nTo create a link to a new page, use syntax: [[[new page name]]] or [[[new page name | text to display]]]. Follow the link (which should have a different color if page does not exist) and create a new page and edit it!\nAlthough creating and editing pages is easy, there are a lot more options that allows creating powerful sites. Please visit Documentation pages (at wikidot.org) to learn more.\n	'lot':95 'new':49,53,57,80 'use':51 'easi':91 'edit':3C,9C,16,24,83,88 'link':46,65 'name':55,59 'open':34 'page':4C,10C,17,31,50,54,58,73,81,89,106 'site':20,102 'text':60 'allow':14,99 'click':22 'color':71 'creat':44,78,86,100 'exist':76 'learn':110 'pleas':103 'power':101 'visit':104 'bottom':28 'button':25 'differ':70 'editor':36 'follow':63 'option':42,97 'simpli':21 'syntax':52 'display':62 'pallett':40 'toolbar':39 'although':85 'document':105 'quickstart':5C 'wikidot.org':108 'how-to-edit-pag':6C
-46	42	How To Edit Pages	how-to-edit-pages	\N	1	\n\nIf you are allowed to edit pages in this Site, simply click on edit button at the bottom of the page. This will open an editor with a toolbar pallette with options.\nTo create a link to a new page, use syntax: [[[new page name]]] or [[[new page name | text to display]]]. Follow the link (which should have a different color if page does not exist) and create a new page and edit it!\nAlthough creating and editing pages is easy, there are a lot more options that allows creating powerful sites. Please visit Documentation pages (at wikidot.org) to learn more.\n	'lot':94 'new':48,52,56,79 'use':50 'easi':90 'edit':3C,8C,15,23,82,87 'link':45,64 'name':54,58 'open':33 'page':4C,9C,16,30,49,53,57,72,80,88,105 'site':19,101 'text':59 'allow':13,98 'click':21 'color':70 'creat':43,77,85,99 'exist':75 'learn':109 'pleas':102 'power':100 'visit':103 'bottom':27 'button':24 'differ':69 'editor':35 'follow':62 'option':41,96 'simpli':20 'syntax':51 'display':61 'pallett':39 'toolbar':38 'although':84 'document':104 'wikidot.org':107 'how-to-edit-pag':5C
-47	43	Wiki Members	system:members	\N	1	\n\nMembers:\n\n\nModerators\n\n\nAdmins\n\n	'wiki':1C 'admin':7 'moder':6 'member':2C,4C,5 'system':3C
-48	44	How to join this wiki?	system:join	\N	1	\n\n\nPlease change this page according to your policy (configure first using Site Manager) and remove this note.\n\nWho can join?\nYou can write here who can become a member of this site.\nJoin!\nSo you want to become a member of this site? Tell us why and apply now!\n\n\nOr, if you already know a "secret password", go for it!\n\n	'go':65 'us':52 'use':18 'join':3C,7C,27,40 'know':61 'note':24 'page':11 'site':19,39,50 'tell':51 'want':43 'wiki':5C 'appli':55 'becom':34,45 'chang':9 'first':17 'manag':20 'pleas':8 'remov':22 'write':30 'accord':12 'member':36,47 'polici':15 'secret':63 'system':6C 'alreadi':60 'configur':16 'password':64
-49	45	Recent changes	system:recent-changes	\N	1	\n\n\n	'chang':2C,6C 'recent':1C,5C 'system':3C 'recent-chang':4C
-50	46	List all pages	system:list-all-pages	\N	1	\n\n\n	'list':1C,6C 'page':3C,8C 'system':4C 'list-all-pag':5C
+53	1	Manage	admin:manage	\N	1	\n\n\n	'admin':2C 'manag':1C,3C
+54	2	You	account:you	\N	1	\n\n\n	'account':1C
+55	3	Get a new wiki	new-site	\N	1	\n\nUse this simple form to create a new wiki.\nTo admins: you can customize this page by simply clicking "edit" at the bottom of the page.\n\n	'get':1C 'new':3C,6C,15 'use':8 'edit':27 'form':11 'page':23,33 'site':7C 'wiki':4C,16 'admin':18 'click':26 'creat':13 'simpl':10 'bottom':30 'custom':21 'simpli':25 'new-sit':5C
+56	4	Info	user:info	\N	1	\n\n\n	'info':1C,3C 'user':2C
+57	24	Search All Wikis	search:all	\N	1	\n\n\n	'wiki':3C 'search':1C,4C
+58	25	Search This Wiki	search:site	\N	1	\n\n\n	'site':5C 'wiki':3C 'search':1C,4C
+59	26	Search Users	search:users	\N	1	\n\nTo look for someone, please enter:\n\nemail address of a person you are looking for (this will look for exact match)\nany part of the screen name or realname (lists all Users matching the query)\n\n\n	'list':34 'look':6,18,22 'name':31 'part':27 'user':2C,4C,36 'email':11 'enter':10 'exact':24 'match':25,37 'pleas':9 'queri':39 'person':15 'screen':30 'search':1C,3C 'someon':8 'address':12 'realnam':33
 38	22	Side	nav:side	\N	1	\n\n\nWelcome page\n\n\nWhat is a Wiki?\nHow to edit pages?\nGet a new wiki!\n\nAll wikis\n\nRecent activity\nAll wikis\nWikis by tags\nSearch\n\nThis wiki\n\nHow to join this site?\nSite members\n\n\nRecent changes\nList all pages\nPage Tags\n\n\nSite Manager\n\nPage tags\n\n\nAdd a new page\n\n\nedit this panel\n	'add':48 'get':14 'nav':2C 'new':16,50 'tag':26,43,47 'edit':12,52 'join':32 'list':39 'page':5,13,41,42,46,51 'side':1C,3C 'site':34,35,44 'wiki':9,17,19,23,24,29 'activ':21 'chang':38 'manag':45 'panel':54 'member':36 'recent':20,37 'search':27 'welcom':4
-51	47	Page Tags List	system:page-tags-list	\N	1	\n\n\n	'tag':2C,7C 'list':3C,8C 'page':1C,6C 'system':4C 'page-tags-list':5C
+41	39	Search	system-all:search	\N	1	\n\n\nSearch all Wikis\nPerform a search through all public and visible wikis.\n\n\n\nSearch users\nTo look for someone, please enter:\n\nemail address of a person you are looking for (this will look for exact match)\nany part of the screen name or realname (lists all Users matching the query)\n\n\n\n	'list':49 'look':21,33,37 'name':46 'part':42 'user':19,51 'wiki':8,17 'email':26 'enter':25 'exact':39 'match':40,52 'pleas':24 'queri':54 'person':30 'public':14 'screen':45 'search':1C,5C,6,11,18 'someon':23 'system':3C 'visibl':16 'address':27 'perform':9 'realnam':48 'system-al':2C
+47	43	Wiki Members	system:members	\N	1	\n\nMembers:\n\n\nModerators\n\n\nAdmins\n\n	'wiki':1C 'admin':7 'moder':6 'member':2C,4C,5 'system':3C
+49	45	Recent changes	system:recent-changes	\N	1	\n\n\n	'chang':2C,6C 'recent':1C,5C 'system':3C 'recent-chang':4C
 52	48	Page Tags	system:page-tags	\N	1	\n\n\n\n\n	'tag':2C,6C 'page':1C,5C 'system':3C 'page-tag':4C
+43	23	Welcome to your new Wikidot installation!	start	\N	1	\n\nCongratulations, you have successfully installed Wikidot software on your computer!\nWhat to do next\nCustomize this wiki\nWikidot consists of several wiki sites, not just one. Right now you are on the main wiki. Customize it!\n\nYou can configure all security and other settings online, using the Site Manager. When you invite other people to help build this site they don't have access to the Site Manager unless you make them administrators like yourself. Check out the Permissions section.\nYour Wikidot site has two menus, one at the side called 'nav:side', and one at the top called 'nav:top'. These are Wikidot pages, and you can edit them like any page.\nTo edit a page, go to the page and click the Edit button at the bottom. You can change everything in the main area of your page. The Wikidot system is easy to learn and powerful.\nYou can attach images and other files to any page, then display them and link to them in the page.\nEvery Wikidot page has a history of edits, and you can undo anything. So feel secure, and experiment.\nTo start a forum on your site, see the Site Manager » Forum.\nThe license for this Wikidot site has been set to Creative Commons Attribution-Share Alike 3.0 License. If you want to change this, use the Site Manager.\nIf you want to learn more, make sure you visit the Documentation section at www.wikidot.org\n\nCustomize default template\nDefault initial template for other wikis is located at template-en. If someone creates a new wiki, this one is cloned to the new address. A good thing to do is to go to template-en and customize it.\nCreate more templates\nSimply create wikis with unix names starting with "template-" (e.g. "template-pl", "template-blog") and your users will be able to choose which wiki they want to start with.\nVisit Wikidot.org\nGo to www.wikidot.org — home of the Wikidot software — for extra documentation, howtos, tips and support.\n\nMore information about the Wikidot project can be found at www.wikidot.org.\nSearch all wikis\n\n\nSearch users\n\n	'en':264,290 'go':125,286,330 'pl':309 '3.0':223 'abl':318 'e.g':306 'nav':99,107 'new':4C,269,277 'one':33,94,102,272 'see':202 'set':51,215 'tip':342 'top':105,108 'two':92 'use':53,231 'alik':222 'area':144 'blog':312 'call':98,106 'easi':152 'edit':116,122,132,184 'feel':191 'file':163 'good':280 'help':63 'home':333 'imag':160 'like':81,118 'link':171 'main':40,143 'make':78,241 'name':302 'next':21 'page':112,120,124,128,147,166,176,179 'side':97,100 'site':30,55,66,74,90,201,204,212,233 'sure':242 'undo':188 'unix':301 'user':315,360 'want':227,237,324 'wiki':24,29,41,258,270,299,322,358 'anyth':189 'build':64 'chang':139,229 'check':83 'choos':320 'click':130 'clone':274 'creat':267,294,298 'everi':177 'extra':339 'forum':198,206 'found':353 'howto':341 'initi':254 'invit':59 'learn':154,239 'locat':260 'manag':56,75,205,234 'menus':93 'onlin':52 'peopl':61 'power':156 'right':34 'secur':48,192 'sever':28 'share':221 'start':7C,196,303,326 'thing':281 'visit':244,328 'access':71 'attach':159 'bottom':136 'button':133 'common':218 'comput':17 'custom':22,42,250,292 'experi':194 'inform':346 'instal':6C,12 'licens':208,224 'search':356,359 'simpli':297 'someon':266 'system':150 'unless':76 'welcom':1C 'address':278 'consist':26 'creativ':217 'default':251,253 'display':168 'everyth':140 'histori':182 'permiss':86 'project':350 'section':87,247 'softwar':14,337 'success':11 'support':344 'templat':252,255,263,289,296,305,308,311 'wikidot':5C,13,25,89,111,149,178,211,336,349 'attribut':220 'configur':46 'document':246,340 'administr':80 'congratul':8 'template-en':262,288 'template-pl':307 'wikidot.org':329 'template-blog':310 'www.wikidot.org':249,332,355 'attribution-shar':219
+44	41	What Is A Wiki	what-is-a-wiki	\N	1	\n\nAccording to Wikipedia, the world largest wiki site:\n\nA Wiki ([ˈwiː.kiː] &lt;wee-kee&gt; or [ˈwɪ.kiː] &lt;wick-ey&gt;) is a type of website that allows users to add, remove, or otherwise edit and change most content very quickly and easily.\n\nAnd that is it! As a part of a farm of wikis this site is a great tool that you can use to publish content, upload files, communicate and collaborate.\n	'ey':30 'add':40 'kee':24 'use':74 'wee':23 'edit':44 'farm':62 'file':79 'kiː':21,27 'part':59 'site':17,66 'tool':70 'type':33 'user':38 'wick':29 'wiki':4C,9C,16,19,64 'allow':37 'chang':46 'great':69 'quick':50 'remov':41 'world':14 'ˈwɪ':26 'accord':10 'easili':52 'upload':78 'websit':35 'wee-ke':22 'ˈwiː':20 'content':48,77 'largest':15 'publish':76 'wick-ey':28 'collabor':82 'communic':80 'otherwis':43 'wikipedia':12 'what-is-a-wiki':5C
+48	44	How to join this wiki?	system:join	\N	1	\n\n\nPlease change this page according to your policy (configure first using Site Manager) and remove this note.\n\nWho can join?\nYou can write here who can become a member of this site.\nJoin!\nSo you want to become a member of this site? Tell us why and apply now!\n\n\nOr, if you already know a "secret password", go for it!\n\n	'go':65 'us':52 'use':18 'join':3C,7C,27,40 'know':61 'note':24 'page':11 'site':19,39,50 'tell':51 'want':43 'wiki':5C 'appli':55 'becom':34,45 'chang':9 'first':17 'manag':20 'pleas':8 'remov':22 'write':30 'accord':12 'member':36,47 'polici':15 'secret':63 'system':6C 'alreadi':60 'configur':16 'password':64
+46	42	How To Edit Pages	how-to-edit-pages	\N	1	\n\nIf you are allowed to edit pages in this Site, simply click on edit button at the bottom of the page. This will open an editor with a toolbar pallette with options.\nTo create a link to a new page, use syntax: [[[new page name]]] or [[[new page name | text to display]]]. Follow the link (which should have a different color if page does not exist) and create a new page and edit it!\nAlthough creating and editing pages is easy, there are a lot more options that allows creating powerful sites. Please visit Documentation pages (at wikidot.org) to learn more.\n	'lot':94 'new':48,52,56,79 'use':50 'easi':90 'edit':3C,8C,15,23,82,87 'link':45,64 'name':54,58 'open':33 'page':4C,9C,16,30,49,53,57,72,80,88,105 'site':19,101 'text':59 'allow':13,98 'click':21 'color':70 'creat':43,77,85,99 'exist':75 'learn':109 'pleas':102 'power':100 'visit':103 'bottom':27 'button':24 'differ':69 'editor':35 'follow':62 'option':41,96 'simpli':20 'syntax':51 'display':61 'pallett':39 'toolbar':38 'although':84 'document':104 'wikidot.org':107 'how-to-edit-pag':5C
+50	46	List all pages	system:list-all-pages	\N	1	\n\n\n	'list':1C,6C 'page':3C,8C 'system':4C 'list-all-pag':5C
+51	47	Page Tags List	system:page-tags-list	\N	1	\n\n\n	'tag':2C,7C 'list':3C,8C 'page':1C,6C 'system':4C 'page-tags-list':5C
+60	49	Log in	auth:login	\N	1	\n\n\n	'log':1C 'auth':2C 'login':3C
+61	50	Create account - step 1	auth:newaccount	\N	1	\n\n\n	'1':4C 'auth':5C 'step':3C 'creat':1C 'account':2C 'newaccount':6C
+62	51	Create account - step 2	auth:newaccount2	\N	1	\n\n\n	'2':4C 'auth':5C 'step':3C 'creat':1C 'account':2C 'newaccount2':6C
+63	52	Create account - step 3	auth:newaccount3	\N	1	\n\n\n	'3':4C 'auth':5C 'step':3C 'creat':1C 'account':2C 'newaccount3':6C
 \.
 
 
@@ -3688,91 +3755,6 @@ COPY license (license_id, name, description, sort) FROM stdin;
 --
 
 COPY log_event (event_id, date, user_id, ip, proxy, type, site_id, page_id, revision_id, thread_id, post_id, user_agent, text) FROM stdin;
-1	2008-01-18 01:34:52	\N	127.0.0.1	\N	FAILED_LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Failed login for username "asd"
-2	2008-01-18 01:46:00	\N	127.0.0.1	\N	FAILED_LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Failed login for username "sadasd"
-3	2008-01-18 01:46:47	1	127.0.0.1	\N	LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	User "Admin" (admin@wikidot) logged in.
-4	2008-01-18 01:48:27	1	127.0.0.1	\N	LOGOUT	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	User "Admin" (admin@wikidot) logged out.
-5	2008-01-18 01:48:38	\N	127.0.0.1	\N	FAILED_LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Failed login for username "asd"
-6	2008-01-18 01:48:46	\N	127.0.0.1	\N	FAILED_LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Failed login for username "admin@wikidot"
-7	2008-01-18 01:48:50	1	127.0.0.1	\N	LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	User "Admin" (admin@wikidot) logged in.
-8	2008-01-21 00:16:09	\N	127.0.0.1	\N	FAILED_LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Failed login for username "undefined"
-9	2008-01-21 00:19:00	\N	127.0.0.1	\N	FAILED_LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Failed login for username "undefined"
-10	2008-01-21 00:19:02	\N	127.0.0.1	\N	FAILED_LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Failed login for username "undefined"
-11	2008-01-21 00:19:05	\N	127.0.0.1	\N	FAILED_LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Failed login for username "undefined"
-12	2008-01-21 00:20:47	1	127.0.0.1	\N	LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	User "Admin" (admin@wikidot) logged in.
-13	2008-01-24 12:16:07	1	127.0.0.1	\N	LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	User "Admin" (admin@wikidot) logged in.
-14	2008-01-24 12:16:35	1	127.0.0.1	\N	PAGE_NEW	1	1	1	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "admin:manage" has been saved on site "Wikidot - Community Edition".
-15	2008-01-24 12:22:02	1	127.0.0.1	\N	PAGE_NEW	1	2	2	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "account:you" has been saved on site "Wikidot - Community Edition".
-16	2008-01-24 12:27:11	1	127.0.0.1	\N	PAGE_NEW	1	3	3	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "new-site" has been saved on site "Wikidot - Community Edition".
-17	2008-01-24 12:32:21	1	127.0.0.1	\N	PAGE_NEW	1	4	4	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "user:info" has been saved on site "Wikidot - Community Edition".
-18	2008-01-25 00:35:23	1	127.0.0.1	\N	PAGE_NEW	2	5	5	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "nav:side" has been saved on site "Template site (en)".
-19	2008-01-25 00:45:30	1	127.0.0.1	\N	PAGE_NEW	2	6	6	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "what-is-a-wiki-site" has been saved on site "Template site (en)".
-20	2008-01-25 01:05:59	1	127.0.0.1	\N	PAGE_NEW	3	7	7	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "profile:admin" has been saved on site "User profiles".
-21	2008-01-25 01:06:39	1	127.0.0.1	\N	PAGE_NEW	3	8	8	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "admin:manage" has been saved on site "User profiles".
-22	2008-01-25 01:08:10	1	127.0.0.1	\N	PAGE_NEW	1	9	9	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "nav:profile-side" has been saved on site "Wikidot - Community Edition".
-23	2008-01-25 01:09:41	1	127.0.0.1	\N	PAGE_NEW	3	10	10	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "nav:profile-side" has been saved on site "User profiles".
-24	2008-01-25 01:13:41	1	127.0.0.1	\N	PAGE_NEW	3	11	11	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "nav:side" has been saved on site "User profiles".
-25	2008-01-25 01:14:31	1	127.0.0.1	\N	PAGE_EDIT	3	11	12	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Page "nav:side" has been (edited and) saved on site "User profiles".
-26	2008-01-25 01:15:35	1	127.0.0.1	\N	PAGE_NEW	3	12	13	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "start" has been saved on site "User profiles".
-27	2008-01-25 03:19:18	1	127.0.0.1	\N	LOGOUT	3	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	User "Admin" (admin@wikidot) logged out.
-28	2008-01-25 03:43:38	1	127.0.0.1	\N	LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	User "Admin" (admin@wikidot) logged in.
-29	2008-01-25 03:43:43	1	127.0.0.1	\N	ABUSE_PAGE_FLAG	3	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Path "/profile:admin" has been flagged by user "Admin" on site "User profiles".
-30	2008-01-25 03:43:44	1	127.0.0.1	\N	ABUSE_PAGE_UNFLAG	3	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Path "/profile:admin" has been unflagged by user "Admin" on site "User profiles".
-31	2008-01-25 18:43:03	1	127.0.0.1	\N	LOGOUT	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	User "Admin" (admin@wikidot) logged out.
-32	2008-01-25 18:46:27	\N	127.0.0.1	\N	FAILED_LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Failed login for username "asdasd"
-33	2008-01-25 18:49:13	\N	127.0.0.1	\N	FAILED_LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Failed login for username "sad"
-34	2008-01-29 00:09:14	1	127.0.0.1	\N	LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	User "Admin" (admin@wikidot) logged in.
-35	2008-01-29 00:10:02	1	127.0.0.1	\N	PAGE_NEW	2	13	14	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "how-to-edit-pages" has been saved on site "Template site (en)".
-36	2008-01-29 00:56:59	1	127.0.0.1	\N	PAGE_NEW	2	14	15	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "system:join" has been saved on site "Template site (en)".
-37	2008-01-29 00:57:39	1	127.0.0.1	\N	PAGE_NEW	2	15	16	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "admin:manage" has been saved on site "Template site (en)".
-38	2008-01-29 00:58:44	1	127.0.0.1	\N	PAGE_NEW	2	16	17	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "system:page-tags-list" has been saved on site "Template site (en)".
-39	2008-01-29 00:59:15	1	127.0.0.1	\N	PAGE_NEW	2	17	18	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "system:recent-changes" has been saved on site "Template site (en)".
-40	2008-01-29 00:59:41	1	127.0.0.1	\N	PAGE_NEW	2	18	19	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "system:members" has been saved on site "Template site (en)".
-41	2008-01-29 01:01:49	1	127.0.0.1	\N	PAGE_NEW	2	19	20	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "search:site" has been saved on site "Template site (en)".
-42	2008-01-29 01:03:43	1	127.0.0.1	\N	PAGE_NEW	2	20	21	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "system:page-tags" has been saved on site "Template site (en)".
-43	2008-01-29 01:04:53	1	127.0.0.1	\N	PAGE_NEW	2	21	22	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "system:list-all-pages" has been saved on site "Template site (en)".
-44	2008-01-29 01:05:47	1	127.0.0.1	\N	PAGE_NEW	1	22	23	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "nav:side" has been saved on site "Wikidot - Community Edition".
-45	2008-01-29 01:07:41	1	127.0.0.1	\N	PAGE_NEW	1	23	24	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "start" has been saved on site "Wikidot - Community Edition".
-46	2008-01-29 01:09:17	1	127.0.0.1	\N	PAGE_NEW	1	24	25	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "search:all" has been saved on site "Wikidot - Community Edition".
-47	2008-01-29 01:34:41	1	127.0.0.1	\N	PAGE_NEW	1	25	26	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "search:site" has been saved on site "Wikidot - Community Edition".
-48	2008-01-29 01:34:57	1	127.0.0.1	\N	PAGE_EDIT	1	25	27	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Page "search:site" has been (edited and) saved on site "Wikidot - Community Edition".
-49	2008-01-29 01:35:41	1	127.0.0.1	\N	PAGE_EDIT	1	23	28	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Page "start" has been (edited and) saved on site "Wikidot - Community Edition".
-50	2008-01-29 01:36:56	1	127.0.0.1	\N	PAGE_NEW	1	26	29	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "search:users" has been saved on site "Wikidot - Community Edition".
-51	2008-01-29 01:37:12	1	127.0.0.1	\N	PAGE_EDIT	1	26	30	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Page "search:users" has been (edited and) saved on site "Wikidot - Community Edition".
-52	2008-01-29 01:40:24	1	127.0.0.1	\N	PAGE_NEW	2	27	31	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "forum:start" has been saved on site "Template site (en)".
-53	2008-01-29 01:40:59	1	127.0.0.1	\N	PAGE_NEW	2	28	32	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "forum:category" has been saved on site "Template site (en)".
-54	2008-01-29 01:41:32	1	127.0.0.1	\N	PAGE_NEW	2	29	33	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "forum:thread" has been saved on site "Template site (en)".
-55	2008-01-29 01:42:10	1	127.0.0.1	\N	PAGE_NEW	2	30	34	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "forum:new-thread" has been saved on site "Template site (en)".
-56	2008-01-29 01:42:42	1	127.0.0.1	\N	PAGE_NEW	2	31	35	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "forum:recent-posts" has been saved on site "Template site (en)".
-57	2008-01-29 23:29:52	1	127.0.0.1	\N	PAGE_NEW	2	32	36	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "nav:top" has been saved on site "Template site (en)".
-58	2008-01-29 23:30:18	1	127.0.0.1	\N	PAGE_NEW	2	33	37	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "profile:template" has been saved on site "Template site (en)".
-59	2008-01-30 08:33:13	1	127.0.0.1	\N	LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	User "Admin" (admin@wikidot) logged in.
-60	2008-01-30 08:39:25	1	127.0.0.1	\N	PAGE_NEW	2	34	38	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "start" has been saved on site "Template site (en)".
-61	2008-01-30 08:40:31	1	127.0.0.1	\N	PAGE_NEW	2	35	39	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "start" has been saved on site "Template site (en)".
-62	2008-01-30 08:43:22	1	127.0.0.1	\N	PAGE_NEW	2	36	40	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "start" has been saved on site "Template site (en)".
-63	2008-01-30 08:53:14	1	127.0.0.1	\N	PAGE_EDIT	1	22	41	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Page "nav:side" has been (edited and) saved on site "Wikidot - Community Edition".
-64	2008-01-30 08:54:57	1	127.0.0.1	\N	PAGE_NEW	1	37	42	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "system-all:all-sites" has been saved on site "Wikidot - Community Edition".
-65	2008-01-30 08:55:33	1	127.0.0.1	\N	PAGE_NEW	1	38	43	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "system-all:sites-by-tags" has been saved on site "Wikidot - Community Edition".
-66	2008-01-30 09:00:00	1	127.0.0.1	\N	PAGE_EDIT	1	38	44	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Page "system-all:sites-by-tags" has been (edited and) saved on site "Wikidot - Community Edition".
-67	2008-01-30 09:01:51	1	127.0.0.1	\N	PAGE_EDIT	1	22	45	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Page "nav:side" has been (edited and) saved on site "Wikidot - Community Edition".
-68	2008-01-30 09:07:05	1	127.0.0.1	\N	PAGE_NEW	1	39	46	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "system-all:search" has been saved on site "Wikidot - Community Edition".
-69	2008-01-30 09:16:38	1	127.0.0.1	\N	PAGE_NEW	1	40	47	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "system-all:activity" has been saved on site "Wikidot - Community Edition".
-70	2008-01-30 09:17:41	1	127.0.0.1	\N	PAGE_EDIT	1	40	48	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Page "system-all:activity" has been (edited and) saved on site "Wikidot - Community Edition".
-71	2008-01-30 12:52:26	1	127.0.0.1	\N	PAGE_EDIT	1	23	49	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Page "start" has been (edited and) saved on site "Wikidot - Community Edition".
-72	2008-01-30 16:08:05	1	127.0.0.1	\N	PAGE_EDIT	1	23	50	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Page "start" has been (edited and) saved on site "Wikidot - Community Edition".
-73	2008-01-30 16:08:40	1	127.0.0.1	\N	LOGOUT	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	User "Admin" (admin@wikidot) logged out.
-74	2008-01-30 16:08:47	\N	127.0.0.1	\N	FAILED_LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Failed login for username "undefined"
-75	2008-01-30 16:08:49	1	127.0.0.1	\N	LOGIN	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	User "Admin" (admin@wikidot) logged in.
-76	2008-01-30 16:11:57	1	127.0.0.1	\N	PAGE_NEW	1	41	51	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "what-is-a-wiki" has been saved on site "Wikidot - Free Wiki Software".
-77	2008-01-30 16:12:40	1	127.0.0.1	\N	PAGE_EDIT	2	13	52	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	Page "how-to-edit-pages" has been (edited and) saved on site "Template site (en)".
-78	2008-01-30 16:12:49	1	127.0.0.1	\N	PAGE_NEW	1	42	53	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "how-to-edit-pages" has been saved on site "Wikidot - Free Wiki Software".
-79	2008-01-30 16:13:32	1	127.0.0.1	\N	PAGE_NEW	1	43	54	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "system:members" has been saved on site "Wikidot - Free Wiki Software".
-80	2008-01-30 16:14:13	1	127.0.0.1	\N	PAGE_NEW	1	44	55	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "system:join" has been saved on site "Wikidot - Free Wiki Software".
-81	2008-01-30 16:14:42	1	127.0.0.1	\N	PAGE_NEW	1	45	56	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "system:recent-changes" has been saved on site "Wikidot - Free Wiki Software".
-82	2008-01-30 16:15:23	1	127.0.0.1	\N	PAGE_NEW	1	46	57	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "system:list-all-pages" has been saved on site "Wikidot - Free Wiki Software".
-83	2008-01-30 16:15:56	1	127.0.0.1	\N	PAGE_NEW	1	47	58	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "system:page-tags-list" has been saved on site "Wikidot - Free Wiki Software".
-84	2008-01-30 16:16:22	1	127.0.0.1	\N	PAGE_NEW	1	48	59	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	New page "system:page-tags" has been saved on site "Wikidot - Free Wiki Software".
-85	2008-01-30 16:16:53	1	127.0.0.1	\N	LOGOUT	1	\N	\N	\N	\N	Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-GB; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11	User "Admin" (admin@wikidot) logged out.
 \.
 
 
@@ -3869,6 +3851,7 @@ COPY ozone_permission (permission_id, name, description) FROM stdin;
 --
 
 COPY ozone_session (session_id, started, last_accessed, ip_address, check_ip, infinite, user_id, serialized_datablock) FROM stdin;
+1219163171_23	2008-08-19 16:26:11	2008-08-19 16:26:11	172.18.0.198	f	f	\N	a:1:{s:16:"loginOriginalUrl";s:24:"http://www.wikidot1.dev/";}
 \.
 
 
@@ -3949,6 +3932,10 @@ COPY page (page_id, site_id, category_id, parent_page_id, revision_id, source_id
 46	1	20	\N	57	56	50	0	List all pages	system:list-all-pages	2008-01-30 16:15:22	2008-01-30 16:15:22	1	\N	\N	1	f	0
 47	1	20	\N	58	57	51	0	Page Tags List	system:page-tags-list	2008-01-30 16:15:56	2008-01-30 16:15:56	1	\N	\N	1	f	0
 48	1	20	\N	59	58	52	0	Page Tags	system:page-tags	2008-01-30 16:16:22	2008-01-30 16:16:22	1	\N	\N	1	f	0
+49	1	21	\N	60	59	53	0	Log in	auth:login	2008-08-19 16:25:58	2008-08-19 16:25:58	1	\N	\N	1	f	0
+50	1	21	\N	61	60	54	0	Create account - step 1	auth:newaccount	2008-08-19 16:25:58	2008-08-19 16:25:58	1	\N	\N	1	f	0
+51	1	21	\N	62	61	55	0	Create account - step 2	auth:newaccount2	2008-08-19 16:25:58	2008-08-19 16:25:58	1	\N	\N	1	f	0
+52	1	21	\N	63	62	56	0	Create account - step 3	auth:newaccount3	2008-08-19 16:25:58	2008-08-19 16:25:58	1	\N	\N	1	f	0
 \.
 
 
@@ -3965,10 +3952,6 @@ COPY page_abuse_flag (flag_id, user_id, site_id, path, site_valid, global_valid)
 --
 
 COPY page_compiled (page_id, text, date_compiled) FROM stdin;
-1	\n\nþmodule "managesite/ManageSiteModule"þ	2008-01-24 12:16:35
-2	\n\nþmodule "account/AccountModule"þ	2008-01-24 12:22:02
-3	\n\n<p>Use this simple form to create a new wiki.</p>\n<p>To admins: you can customize this page by simply clicking "edit" at the bottom of the page.</p>\nþmodule "newsite/NewSiteModule"þ	2008-01-24 12:27:11
-4	\n\nþmodule "userinfo/UserInfoModule"þ	2008-01-24 12:32:21
 6	\n\n<p>According to <a href="http://en.wikipedia.org/wiki/Wiki">Wikipedia</a>, the world largest wiki site:</p>\n<blockquote>\n<p>A <em>Wiki</em> ([ˈwiː.kiː] &lt;wee-kee&gt; or [ˈwɪ.kiː] &lt;wick-ey&gt;) is a type of website that allows users to add, remove, or otherwise edit and change most content very quickly and easily.</p>\n</blockquote>\n<p>And that is it! As a part of a farm of wikis this site is a great tool that you can use to publish content, upload files, communicate and collaborate.</p>\n	2008-01-25 00:45:30
 7	\n\n<p>Admin of this Wikidot installation.</p>\n	2008-01-25 01:05:59
 8	\n\nþmodule "managesite/ManageSiteModule"þ	2008-01-25 01:06:39
@@ -3983,9 +3966,6 @@ COPY page_compiled (page_id, text, date_compiled) FROM stdin;
 19	\n\nþmodule "search/SearchModule"þ	2008-01-29 01:01:49
 20	\n\n<div style="float:right; width: 50%;">þmodule "wiki/pagestagcloud/PagesTagCloudModule" limit%3D%22200%22+target%3D%22system%3Apage-tags%22 þ</div>\nþmodule "wiki/pagestagcloud/PagesListByTagModule"þ	2008-01-29 01:03:43
 21	\n\nþmodule "list/WikiPagesModule" preview%3D%22true%22 þ	2008-01-29 01:04:52
-24	\n\nþmodule "search/SearchAllModule"þ	2008-01-29 01:09:17
-25	\n\nþmodule "search/SearchModule"þ	2008-01-29 01:34:41
-26	\n\n<p>To look for someone, please enter:</p>\n<ul>\n<li>email address of a person you are looking for (this will look for exact match)</li>\n<li>any part of the screen name or realname (lists all Users matching the query)</li>\n</ul>\nþmodule "search/UserSearchModule"þ	2008-01-29 01:37:12
 27	\n\nþmodule "forum/ForumStartModule"þ	2008-01-29 01:40:24
 28	\n\nþmodule "forum/ForumViewCategoryModule"þ	2008-01-29 01:40:59
 29	\n\nþmodule "forum/ForumViewThreadModule"þ	2008-01-29 01:41:32
@@ -3995,21 +3975,32 @@ COPY page_compiled (page_id, text, date_compiled) FROM stdin;
 33	\n\n<p>Profile has not been created (yet).</p>\n	2008-01-29 23:30:18
 5	\n\n<ul>\n<li><a href="/start">Welcome page</a></li>\n</ul>\n<ul>\n<li><a href="/what-is-a-wiki-site">What is a Wiki Site?</a></li>\n<li><a href="/how-to-edit-pages">How to edit pages?</a></li>\n</ul>\n<ul>\n<li><a href="/system:join">How to join this site?</a></li>\n<li><a href="/system:members">Site members</a></li>\n</ul>\n<ul>\n<li><a href="/system:recent-changes">Recent changes</a></li>\n<li><a href="/system:list-all-pages">List all pages</a></li>\n<li><a href="/system:page-tags-list">Page Tags</a></li>\n</ul>\n<ul>\n<li><a href="/admin:manage">Site Manager</a></li>\n</ul>\n<h2 id="toc0"><span>Page tags</span></h2>\nþmodule "wiki/pagestagcloud/PagesTagCloudModule" minFontSize%3D%2280%25%22+maxFontSize%3D%22200%25%22++maxColor%3D%228%2C8%2C64%22+minColor%3D%22100%2C100%2C128%22+target%3D%22system%3Apage-tags%22+limit%3D%2230%22 þ\n<h2 id="toc1"><span>Add a new page</span></h2>\nþmodule "misc/NewPageHelperModule" size%3D%2215%22+button%3D%22new+page%22 þ\n<p style="text-align: center;"><span style="font-size:80%;"><a href="/nav:side">edit this panel</a></span></p>\n	2008-01-30 08:39:25
 36	\n\n<h2 id="toc0"><span>If this is your first site</span></h2>\n<p>Then there are some things you need to know:</p>\n<ul>\n<li>You can configure all security and other settings online, using the <a href="/admin:manage">Site Manager</a>. When you invite other people to help build this site they don't have access to the Site Manager unless you make them administrators like yourself. Check out the <em>Permissions</em> section.</li>\n<li>Your Wikidot site has two menus, <a href="/nav:side">one at the side</a> called '<tt>nav:side</tt>', and <a href="/nav:top">one at the top</a> called '<tt>nav:top</tt>'. These are Wikidot pages, and you can edit them like any page.</li>\n<li>To edit a page, go to the page and click the <strong>Edit</strong> button at the bottom. You can change everything in the main area of your page. The Wikidot system is <a href="http://www.wikidot.org/doc" onclick="window.open(this.href, '_blank'); return false;">easy to learn and powerful</a>.</li>\n<li>You can attach images and other files to any page, then display them and link to them in the page.</li>\n<li>Every Wikidot page has a history of edits, and you can undo anything. So feel secure, and experiment.</li>\n<li>To start a forum on your site, see the <a href="/admin:manage">Site Manager</a> » <em>Forum</em>.</li>\n<li>The license for this Wikidot site has been set to <a href="http://creativecommons.org/licenses/by-sa/3.0/" onclick="window.open(this.href, '_blank'); return false;">Creative Commons Attribution-Share Alike 3.0 License</a>. If you want to change this, use the Site Manager.</li>\n<li>If you want to learn more, make sure you visit the <a href="http://www.wikidot.org/doc" onclick="window.open(this.href, '_blank'); return false;">Documentation section at www.wikidot.org</a></li>\n</ul>\n<p>More information about the Wikidot project can be found at <a href="http://www.wikidot.org" onclick="window.open(this.href, '_blank'); return false;">www.wikidot.org</a>.</p>\n	2008-01-30 08:43:22
-37	\n\n<p>Below is the list of public visible Wikis hosted at this service:</p>\nþmodule "wiki/listallwikis/ListAllWikisModule"þ	2008-01-30 08:54:57
-38	\n\nþmodule "wiki/sitestagcloud/SitesTagCloudModule" limit%3D%22100%22+target%3D%22system-all%3Asites-by-tags%22 þþmodule "wiki/sitestagcloud/SitesListByTagModule"þ	2008-01-30 09:00:00
-39	\n\n<div style="text-align: center;">\n<h1 id="toc0"><span>Search all Wikis</span></h1>\n<p>Perform a search through all public and visible wikis.</p>\nþmodule "search/SearchAllModule"þ\n<hr />\n<h1 id="toc1"><span>Search users</span></h1>\n<p>To look for someone, please enter:</p>\n<ul>\n<li>email address of a person you are looking for (this will look for exact match)</li>\n<li>any part of the screen name or realname (lists all Users matching the query)</li>\n</ul>\nþmodule "search/UserSearchModule"þ</div>\n	2008-01-30 09:07:05
-40	\n\n<table>\n<tr>\n<td style="width: 45%; padding-right: 2%; border-right: 1px solid #999; vertical-align:top;">\n<h2 id="toc0"><span>Recent edits (all wikis)</span></h2>\nþmodule "wiki/sitesactivity/RecentWPageRevisionsModule"þ</td>\n<td style="width: 45%; padding-left: 2%; vertical-align:top;">\n<h2 id="toc1"><span>Top Sites</span></h2>\nþmodule "wiki/sitesactivity/MostActiveSitesModule"þ\n<h2 id="toc2"><span>Top Forums</span></h2>\nþmodule "wiki/sitesactivity/MostActiveForumsModule"þ\n<h2 id="toc3"><span>New users</span></h2>\nþmodule "wiki/sitesactivity/NewWUsersModule"þ\n<h2 id="toc4"><span>Some statistics</span></h2>\nþmodule "wiki/sitesactivity/SomeGlobalStatsModule"þ</td>\n</tr>\n</table>\n	2008-01-30 09:17:40
-23	\n\n<p>Congratulations, you have successfully installed Wikidot software on your computer!</p>\n<h1 id="toc0"><span>What to do next</span></h1>\n<h2 id="toc1"><span>Customize this wiki</span></h2>\n<p>Wikidot consists of several wiki sites, not just one. Right now you are on the main wiki. Customize it!</p>\n<ul>\n<li>You can configure all security and other settings online, using the <a href="/admin:manage">Site Manager</a>. When you invite other people to help build this site they don't have access to the Site Manager unless you make them administrators like yourself. Check out the <em>Permissions</em> section.</li>\n<li>Your Wikidot site has two menus, <a href="/nav:side">one at the side</a> called '<tt>nav:side</tt>', and <a class="newpage" href="/nav:top">one at the top</a> called '<tt>nav:top</tt>'. These are Wikidot pages, and you can edit them like any page.</li>\n<li>To edit a page, go to the page and click the <strong>Edit</strong> button at the bottom. You can change everything in the main area of your page. The Wikidot system is <a href="http://www.wikidot.org/doc" onclick="window.open(this.href, '_blank'); return false;">easy to learn and powerful</a>.</li>\n<li>You can attach images and other files to any page, then display them and link to them in the page.</li>\n<li>Every Wikidot page has a history of edits, and you can undo anything. So feel secure, and experiment.</li>\n<li>To start a forum on your site, see the <a href="/admin:manage">Site Manager</a> » <em>Forum</em>.</li>\n<li>The license for this Wikidot site has been set to <a href="http://creativecommons.org/licenses/by-sa/3.0/" onclick="window.open(this.href, '_blank'); return false;">Creative Commons Attribution-Share Alike 3.0 License</a>. If you want to change this, use the Site Manager.</li>\n<li>If you want to learn more, make sure you visit the <a href="http://www.wikidot.org/doc" onclick="window.open(this.href, '_blank'); return false;">Documentation section at www.wikidot.org</a></li>\n</ul>\n<h2 id="toc2"><span>Customize default template</span></h2>\n<p>Default initial template for other wikis is located at <a href="http://template-en.wikidotos.com/template-en">template-en</a>. If someone creates a new wiki, this one is cloned to the new address. A good thing to do is to go to <a href="http://template-en.wikidotos.com/template-en">template-en</a> and customize it.</p>\n<h2 id="toc3"><span>Create more templates</span></h2>\n<p>Simply create wikis with unix names starting with "template-" (e.g. "template-pl", "template-blog") and your users will be able to choose which wiki they want to start with.</p>\n<h2 id="toc4"><span>Visit Wikidot.org</span></h2>\n<p>Go to <strong><a href="http://www.wikidot.org">www.wikidot.org</a></strong> — home of the Wikidot software — for extra documentation, howtos, tips and support.</p>\n<hr />\n<p>More information about the Wikidot project can be found at <a href="http://www.wikidot.org" onclick="window.open(this.href, '_blank'); return false;">www.wikidot.org</a>.</p>\n<h1 id="toc5"><span>Search all wikis</span></h1>\nþmodule "search/SearchAllModule"þ\n<h1 id="toc6"><span>Search users</span></h1>\nþmodule "search/UserSearchModule"þ	2008-01-30 16:08:03
-41	\n\n<p>According to <a href="http://en.wikipedia.org/wiki/Wiki">Wikipedia</a>, the world largest wiki site:</p>\n<blockquote>\n<p>A <em>Wiki</em> ([ˈwiː.kiː] &lt;wee-kee&gt; or [ˈwɪ.kiː] &lt;wick-ey&gt;) is a type of website that allows users to add, remove, or otherwise edit and change most content very quickly and easily.</p>\n</blockquote>\n<p>And that is it! As a part of a farm of wikis this site is a great tool that you can use to publish content, upload files, communicate and collaborate.</p>\n	2008-01-30 16:11:57
 13	\n\n<p>If you are allowed to edit pages in this Site, simply click on <em>edit</em> button at the bottom of the page. This will open an editor with a toolbar pallette with options.</p>\n<p>To create a link to a new page, use syntax: <tt>[[[new page name]]]</tt> or <tt>[[[new page name | text to display]]]</tt>. Follow the link (which should have a different color if page does not exist) and create a new page and edit it!</p>\n<p>Although creating and editing pages is easy, there are a lot more options that allows creating powerful sites. Please visit <a href="http://www.wikidot.org/doc" onclick="window.open(this.href, '_blank'); return false;">Documentation pages</a> (at wikidot.org) to learn more.</p>\n	2008-01-30 16:12:40
-42	\n\n<p>If you are allowed to edit pages in this Site, simply click on <em>edit</em> button at the bottom of the page. This will open an editor with a toolbar pallette with options.</p>\n<p>To create a link to a new page, use syntax: <tt>[[[new page name]]]</tt> or <tt>[[[new page name | text to display]]]</tt>. Follow the link (which should have a different color if page does not exist) and create a new page and edit it!</p>\n<p>Although creating and editing pages is easy, there are a lot more options that allows creating powerful sites. Please visit <a href="http://www.wikidot.org/doc" onclick="window.open(this.href, '_blank'); return false;">Documentation pages</a> (at wikidot.org) to learn more.</p>\n	2008-01-30 16:12:49
-43	\n\n<h1 id="toc0"><span>Members:</span></h1>\nþmodule "membership/MembersListModule"þ\n<h1 id="toc1"><span>Moderators</span></h1>\nþmodule "membership/MembersListModule" group%3D%22moderators%22 þ\n<h1 id="toc2"><span>Admins</span></h1>\nþmodule "membership/MembersListModule" group%3D%22admins%22 þ	2008-01-30 16:13:32
-44	\n\n<div class="wiki-note">\n<p>Please change this page according to your policy (configure first using <a href="/admin:manage">Site Manager</a>) and remove this note.</p>\n</div>\n<h1 id="toc0"><span>Who can join?</span></h1>\n<p>You can write here who can become a member of this site.</p>\n<h1 id="toc1"><span>Join!</span></h1>\n<p>So you want to become a member of this site? Tell us why and apply now!</p>\nþmodule "membership/MembershipApplyModule"þ<br />\n<p>Or, if you already know a "secret password", go for it!</p>\nþmodule "membership/MembershipByPasswordModule"þ	2008-01-30 16:14:13
-45	\n\nþmodule "changes/SiteChangesModule"þ	2008-01-30 16:14:41
-46	\n\nþmodule "list/WikiPagesModule" preview%3D%22true%22 þ	2008-01-30 16:15:22
-47	\n\nþmodule "wiki/pagestagcloud/PagesTagCloudModule" limit%3D%22200%22+target%3D%22system%3Apage-tags%22 þ	2008-01-30 16:15:56
-22	\n\n<ul>\n<li><a href="/start">Welcome page</a></li>\n</ul>\n<ul>\n<li><a href="/what-is-a-wiki">What is a Wiki?</a></li>\n<li><a href="/how-to-edit-pages">How to edit pages?</a></li>\n<li><a href="/new-site">Get a new wiki!</a></li>\n</ul>\n<h1 id="toc0"><span>All wikis</span></h1>\n<ul>\n<li><a href="/system-all:activity">Recent activity</a></li>\n<li><a href="/system-all:all-sites">All wikis</a></li>\n<li><a href="/system-all:sites-by-tags">Wikis by tags</a></li>\n<li><a href="/system-all:search">Search</a></li>\n</ul>\n<h1 id="toc1"><span>This wiki</span></h1>\n<ul>\n<li><a href="/system:join">How to join this site?</a></li>\n<li><a href="/system:members">Site members</a></li>\n</ul>\n<ul>\n<li><a href="/system:recent-changes">Recent changes</a></li>\n<li><a href="/system:list-all-pages">List all pages</a></li>\n<li><a href="/system:page-tags-list">Page Tags</a></li>\n</ul>\n<ul>\n<li><a href="/admin:manage">Site Manager</a></li>\n</ul>\n<h2 id="toc2"><span>Page tags</span></h2>\nþmodule "wiki/pagestagcloud/PagesTagCloudModule" minFontSize%3D%2280%25%22+maxFontSize%3D%22200%25%22++maxColor%3D%228%2C8%2C64%22+minColor%3D%22100%2C100%2C128%22+target%3D%22system%3Apage-tags%22+limit%3D%2230%22 þ\n<h2 id="toc3"><span>Add a new page</span></h2>\nþmodule "misc/NewPageHelperModule" size%3D%2215%22+button%3D%22new+page%22 þ\n<p style="text-align: center;"><span style="font-size:80%;"><a href="/nav:side">edit this panel</a></span></p>\n	2008-01-30 16:15:56
-48	\n\n<div style="float:right; width: 50%;">þmodule "wiki/pagestagcloud/PagesTagCloudModule" limit%3D%22200%22+target%3D%22system%3Apage-tags%22 þ</div>\nþmodule "wiki/pagestagcloud/PagesListByTagModule"þ	2008-01-30 16:16:22
+45	\n\nþmodule "changes/SiteChangesModule"þ	2008-08-19 16:25:59
+1	\n\nþmodule "managesite/ManageSiteModule"þ	2008-08-19 16:25:58
+2	\n\nþmodule "account/AccountModule"þ	2008-08-19 16:25:58
+3	\n\n<p>Use this simple form to create a new wiki.</p>\n<p>To admins: you can customize this page by simply clicking "edit" at the bottom of the page.</p>\nþmodule "newsite/NewSiteModule"þ	2008-08-19 16:25:58
+4	\n\nþmodule "userinfo/UserInfoModule"þ	2008-08-19 16:25:58
+24	\n\nþmodule "search/SearchAllModule"þ	2008-08-19 16:25:58
+25	\n\nþmodule "search/SearchModule"þ	2008-08-19 16:25:58
+26	\n\n<p>To look for someone, please enter:</p>\n<ul>\n<li>email address of a person you are looking for (this will look for exact match)</li>\n<li>any part of the screen name or realname (lists all Users matching the query)</li>\n</ul>\nþmodule "search/UserSearchModule"þ	2008-08-19 16:25:58
+37	\n\n<p>Below is the list of public visible Wikis hosted at this service:</p>\nþmodule "wiki/listallwikis/ListAllWikisModule"þ	2008-08-19 16:25:58
+38	\n\nþmodule "wiki/sitestagcloud/SitesTagCloudModule" limit%3D%22100%22+target%3D%22system-all%3Asites-by-tags%22 þþmodule "wiki/sitestagcloud/SitesListByTagModule"þ	2008-08-19 16:25:58
+22	\n\n<ul>\n<li><a href="/start">Welcome page</a></li>\n</ul>\n<ul>\n<li><a href="/what-is-a-wiki">What is a Wiki?</a></li>\n<li><a href="/how-to-edit-pages">How to edit pages?</a></li>\n<li><a href="/new-site">Get a new wiki!</a></li>\n</ul>\n<h1 id="toc0"><span>All wikis</span></h1>\n<ul>\n<li><a href="/system-all:activity">Recent activity</a></li>\n<li><a href="/system-all:all-sites">All wikis</a></li>\n<li><a href="/system-all:sites-by-tags">Wikis by tags</a></li>\n<li><a href="/system-all:search">Search</a></li>\n</ul>\n<h1 id="toc1"><span>This wiki</span></h1>\n<ul>\n<li><a href="/system:join">How to join this site?</a></li>\n<li><a href="/system:members">Site members</a></li>\n</ul>\n<ul>\n<li><a href="/system:recent-changes">Recent changes</a></li>\n<li><a href="/system:list-all-pages">List all pages</a></li>\n<li><a href="/system:page-tags-list">Page Tags</a></li>\n</ul>\n<ul>\n<li><a href="/admin:manage">Site Manager</a></li>\n</ul>\n<h2 id="toc2"><span>Page tags</span></h2>\nþmodule "wiki/pagestagcloud/PagesTagCloudModule" minFontSize%3D%2280%25%22+maxFontSize%3D%22200%25%22++maxColor%3D%228%2C8%2C64%22+minColor%3D%22100%2C100%2C128%22+target%3D%22system%3Apage-tags%22+limit%3D%2230%22 þ\n<h2 id="toc3"><span>Add a new page</span></h2>\nþmodule "misc/NewPageHelperModule" size%3D%2215%22+button%3D%22new+page%22 þ\n<p style="text-align: center;"><span style="font-size:80%;"><a href="/nav:side">edit this panel</a></span></p>\n	2008-08-19 16:25:58
+39	\n\n<div style="text-align: center;">\n<h1 id="toc0"><span>Search all Wikis</span></h1>\n<p>Perform a search through all public and visible wikis.</p>\nþmodule "search/SearchAllModule"þ\n<hr />\n<h1 id="toc1"><span>Search users</span></h1>\n<p>To look for someone, please enter:</p>\n<ul>\n<li>email address of a person you are looking for (this will look for exact match)</li>\n<li>any part of the screen name or realname (lists all Users matching the query)</li>\n</ul>\nþmodule "search/UserSearchModule"þ</div>\n	2008-08-19 16:25:59
+40	\n\n<table>\n<tr>\n<td style="width: 45%; padding-right: 2%; border-right: 1px solid #999; vertical-align:top;">\n<h2 id="toc0"><span>Recent edits (all wikis)</span></h2>\nþmodule "wiki/sitesactivity/RecentWPageRevisionsModule"þ</td>\n<td style="width: 45%; padding-left: 2%; vertical-align:top;">\n<h2 id="toc1"><span>Top Sites</span></h2>\nþmodule "wiki/sitesactivity/MostActiveSitesModule"þ\n<h2 id="toc2"><span>Top Forums</span></h2>\nþmodule "wiki/sitesactivity/MostActiveForumsModule"þ\n<h2 id="toc3"><span>New users</span></h2>\nþmodule "wiki/sitesactivity/NewWUsersModule"þ\n<h2 id="toc4"><span>Some statistics</span></h2>\nþmodule "wiki/sitesactivity/SomeGlobalStatsModule"þ</td>\n</tr>\n</table>\n	2008-08-19 16:25:59
+23	\n\n<p>Congratulations, you have successfully installed Wikidot software on your computer!</p>\n<h1 id="toc0"><span>What to do next</span></h1>\n<h2 id="toc1"><span>Customize this wiki</span></h2>\n<p>Wikidot consists of several wiki sites, not just one. Right now you are on the main wiki. Customize it!</p>\n<ul>\n<li>You can configure all security and other settings online, using the <a href="/admin:manage">Site Manager</a>. When you invite other people to help build this site they don't have access to the Site Manager unless you make them administrators like yourself. Check out the <em>Permissions</em> section.</li>\n<li>Your Wikidot site has two menus, <a href="/nav:side">one at the side</a> called '<tt>nav:side</tt>', and <a class="newpage" href="/nav:top">one at the top</a> called '<tt>nav:top</tt>'. These are Wikidot pages, and you can edit them like any page.</li>\n<li>To edit a page, go to the page and click the <strong>Edit</strong> button at the bottom. You can change everything in the main area of your page. The Wikidot system is <a href="http://www.wikidot.org/doc" onclick="window.open(this.href, '_blank'); return false;">easy to learn and powerful</a>.</li>\n<li>You can attach images and other files to any page, then display them and link to them in the page.</li>\n<li>Every Wikidot page has a history of edits, and you can undo anything. So feel secure, and experiment.</li>\n<li>To start a forum on your site, see the <a href="/admin:manage">Site Manager</a> » <em>Forum</em>.</li>\n<li>The license for this Wikidot site has been set to <a href="http://creativecommons.org/licenses/by-sa/3.0/" onclick="window.open(this.href, '_blank'); return false;">Creative Commons Attribution-Share Alike 3.0 License</a>. If you want to change this, use the Site Manager.</li>\n<li>If you want to learn more, make sure you visit the <a href="http://www.wikidot.org/doc" onclick="window.open(this.href, '_blank'); return false;">Documentation section at www.wikidot.org</a></li>\n</ul>\n<h2 id="toc2"><span>Customize default template</span></h2>\n<p>Default initial template for other wikis is located at <a href="http://template-en.wikidot1.dev/template-en">template-en</a>. If someone creates a new wiki, this one is cloned to the new address. A good thing to do is to go to <a href="http://template-en.wikidot1.dev/template-en">template-en</a> and customize it.</p>\n<h2 id="toc3"><span>Create more templates</span></h2>\n<p>Simply create wikis with unix names starting with "template-" (e.g. "template-pl", "template-blog") and your users will be able to choose which wiki they want to start with.</p>\n<h2 id="toc4"><span>Visit Wikidot.org</span></h2>\n<p>Go to <strong><a href="http://www.wikidot.org">www.wikidot.org</a></strong> — home of the Wikidot software — for extra documentation, howtos, tips and support.</p>\n<hr />\n<p>More information about the Wikidot project can be found at <a href="http://www.wikidot.org" onclick="window.open(this.href, '_blank'); return false;">www.wikidot.org</a>.</p>\n<h1 id="toc5"><span>Search all wikis</span></h1>\nþmodule "search/SearchAllModule"þ\n<h1 id="toc6"><span>Search users</span></h1>\nþmodule "search/UserSearchModule"þ	2008-08-19 16:25:59
+41	\n\n<p>According to <a href="http://en.wikipedia.org/wiki/Wiki">Wikipedia</a>, the world largest wiki site:</p>\n<blockquote>\n<p>A <em>Wiki</em> ([ˈwiː.kiː] &lt;wee-kee&gt; or [ˈwɪ.kiː] &lt;wick-ey&gt;) is a type of website that allows users to add, remove, or otherwise edit and change most content very quickly and easily.</p>\n</blockquote>\n<p>And that is it! As a part of a farm of wikis this site is a great tool that you can use to publish content, upload files, communicate and collaborate.</p>\n	2008-08-19 16:25:59
+42	\n\n<p>If you are allowed to edit pages in this Site, simply click on <em>edit</em> button at the bottom of the page. This will open an editor with a toolbar pallette with options.</p>\n<p>To create a link to a new page, use syntax: <tt>[[[new page name]]]</tt> or <tt>[[[new page name | text to display]]]</tt>. Follow the link (which should have a different color if page does not exist) and create a new page and edit it!</p>\n<p>Although creating and editing pages is easy, there are a lot more options that allows creating powerful sites. Please visit <a href="http://www.wikidot.org/doc" onclick="window.open(this.href, '_blank'); return false;">Documentation pages</a> (at wikidot.org) to learn more.</p>\n	2008-08-19 16:25:59
+43	\n\n<h1 id="toc0"><span>Members:</span></h1>\nþmodule "membership/MembersListModule"þ\n<h1 id="toc1"><span>Moderators</span></h1>\nþmodule "membership/MembersListModule" group%3D%22moderators%22 þ\n<h1 id="toc2"><span>Admins</span></h1>\nþmodule "membership/MembersListModule" group%3D%22admins%22 þ	2008-08-19 16:25:59
+44	\n\n<div class="wiki-note">\n<p>Please change this page according to your policy (configure first using <a href="/admin:manage">Site Manager</a>) and remove this note.</p>\n</div>\n<h1 id="toc0"><span>Who can join?</span></h1>\n<p>You can write here who can become a member of this site.</p>\n<h1 id="toc1"><span>Join!</span></h1>\n<p>So you want to become a member of this site? Tell us why and apply now!</p>\nþmodule "membership/MembershipApplyModule"þ\n<p>Or, if you already know a "secret password", go for it!</p>\nþmodule "membership/MembershipByPasswordModule"þ	2008-08-19 16:25:59
+46	\n\nþmodule "list/WikiPagesModule" preview%3D%22true%22 þ	2008-08-19 16:25:59
+49	\n\nþmodule "login/LoginModule"þ	2008-08-19 16:25:59
+47	\n\nþmodule "wiki/pagestagcloud/PagesTagCloudModule" limit%3D%22200%22+target%3D%22system%3Apage-tags%22 þ	2008-08-19 16:25:59
+48	\n\n<div style="float:right; width: 50%;">þmodule "wiki/pagestagcloud/PagesTagCloudModule" limit%3D%22200%22+target%3D%22system%3Apage-tags%22 þ</div>\nþmodule "wiki/pagestagcloud/PagesListByTagModule"þ	2008-08-19 16:25:59
+50	\n\nþmodule "createaccount2/CreateAccountModule"þ	2008-08-19 16:25:59
+51	\n\nþmodule "createaccount2/CreateAccount2Module"þ	2008-08-19 16:25:59
+52	\n\nþmodule "createaccount2/CreateAccount3Module"þ	2008-08-19 16:25:59
 \.
 
 
@@ -4018,6 +4009,14 @@ COPY page_compiled (page_id, text, date_compiled) FROM stdin;
 --
 
 COPY page_edit_lock (lock_id, page_id, mode, section_id, range_start, range_end, page_unix_name, user_id, user_string, session_id, date_started, date_last_accessed, secret, site_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: page_external_link; Type: TABLE DATA; Schema: public; Owner: wd
+--
+
+COPY page_external_link (link_id, site_id, page_id, to_url, pinged, ping_status, date) FROM stdin;
 \.
 
 
@@ -4127,6 +4126,10 @@ COPY page_metadata (metadata_id, parent_page_id, title, unix_name, owner_user_id
 50	\N	List all pages	system:list-all-pages	1
 51	\N	Page Tags List	system:page-tags-list	1
 52	\N	Page Tags	system:page-tags	1
+53	\N	Log in	auth:login	1
+54	\N	Create account - step 1	auth:newaccount	1
+55	\N	Create account - step 2	auth:newaccount2	1
+56	\N	Create account - step 3	auth:newaccount3	1
 \.
 
 
@@ -4202,6 +4205,10 @@ COPY page_revision (revision_id, page_id, source_id, metadata_id, flags, flag_te
 57	46	56	50	\N	f	f	f	f	f	t	0	f	0	2008-01-30 16:15:22	1	\N		f	1
 58	47	57	51	\N	f	f	f	f	f	t	0	f	0	2008-01-30 16:15:56	1	\N		f	1
 59	48	58	52	\N	f	f	f	f	f	t	0	f	0	2008-01-30 16:16:22	1	\N		f	1
+60	49	59	53	\N	f	f	f	f	f	t	0	f	0	2008-08-19 16:25:58	1	\N	\N	f	1
+61	50	60	54	\N	f	f	f	f	f	t	0	f	0	2008-08-19 16:25:58	1	\N	\N	f	1
+62	51	61	55	\N	f	f	f	f	f	t	0	f	0	2008-08-19 16:25:58	1	\N	\N	f	1
+63	52	62	56	\N	f	f	f	f	f	t	0	f	0	2008-08-19 16:25:58	1	\N	\N	f	1
 \.
 
 
@@ -4265,6 +4272,10 @@ COPY page_source (source_id, text) FROM stdin;
 56	[[module Pages preview="true"]]
 57	[[module TagCloud limit="200" target="system:page-tags"]]\n\n[!--\n\nYou can edit parameters of the TagCloud module as described in http://www.wikidot.com/doc:tagcloud-module\nBut if you want to keep the tag functionality working - do not remove these modules.\n\n--]
 58	[[div style="float:right; width: 50%;"]]\n[[module TagCloud limit="200" target="system:page-tags"]]\n[[/div]]\n[[module PagesByTag]]\n\n[!--\n\nYou can edit parameters of the TagCloud module as described in http://www.wikidot.com/doc:tagcloud-module\nBut if you want to keep the tag functionality working - do not remove these modules.\n\n--]
+59	[[module LoginModule]]
+60	[[module CreateAccount]]
+61	[[module CreateAccount2]]
+62	[[module CreateAccount3]]
 \.
 
 
@@ -4446,7 +4457,7 @@ COPY ucookie (ucookie_id, site_id, session_id, date_granted) FROM stdin;
 --
 
 COPY unique_string_broker (last_index) FROM stdin;
-22
+23
 \.
 
 
@@ -4945,6 +4956,14 @@ ALTER TABLE ONLY page_compiled
 
 ALTER TABLE ONLY page_edit_lock
     ADD CONSTRAINT page_edit_lock_pkey PRIMARY KEY (lock_id);
+
+
+--
+-- Name: page_external_link_pkey; Type: CONSTRAINT; Schema: public; Owner: wd; Tablespace: 
+--
+
+ALTER TABLE ONLY page_external_link
+    ADD CONSTRAINT page_external_link_pkey PRIMARY KEY (link_id);
 
 
 --
@@ -5659,6 +5678,20 @@ CREATE INDEX page_revision__user_id__idx ON page_revision USING btree (user_id);
 
 
 --
+-- Name: page_tag__page_id__idx; Type: INDEX; Schema: public; Owner: wd; Tablespace: 
+--
+
+CREATE INDEX page_tag__page_id__idx ON page_tag USING btree (page_id);
+
+
+--
+-- Name: page_tag__site_id__idx; Type: INDEX; Schema: public; Owner: wd; Tablespace: 
+--
+
+CREATE INDEX page_tag__site_id__idx ON page_tag USING btree (site_id);
+
+
+--
 -- Name: private_message__from_user_id__idx; Type: INDEX; Schema: public; Owner: wd; Tablespace: 
 --
 
@@ -6125,6 +6158,20 @@ CREATE RULE get_pkey_on_insert AS ON INSERT TO petition_signature DO SELECT curr
 --
 
 CREATE RULE get_pkey_on_insert AS ON INSERT TO simpletodo_list DO SELECT currval('simpletodo_list_list_id_seq'::regclass) AS id;
+
+
+--
+-- Name: get_pkey_on_insert; Type: RULE; Schema: public; Owner: wd
+--
+
+CREATE RULE get_pkey_on_insert AS ON INSERT TO comment DO SELECT currval('comment_comment_id_seq'::regclass) AS id;
+
+
+--
+-- Name: get_pkey_on_insert; Type: RULE; Schema: public; Owner: wd
+--
+
+CREATE RULE get_pkey_on_insert AS ON INSERT TO comment_revision DO SELECT currval('comment_revision_revision_id_seq'::regclass) AS id;
 
 
 --
