@@ -150,6 +150,9 @@ class GlobalProperties {
 	public static $URL_UPLOAD_DOMAIN = null;
 	public static $URL_UPLOAD_DOMAIN_PREG;
 	
+	public static $SECRET = 'put some random string here';
+	public static $SECRET_DOMAIN_LOGIN;
+	
 	/**
 	 * set some default values 
 	 */
@@ -166,6 +169,9 @@ class GlobalProperties {
 		}
 		if (! self::$SESSION_COOKIE_NAME_IE) {
 			self::$SESSION_COOKIE_NAME_IE = self::$SESSION_COOKIE_NAME . "_IE";
+		}
+		if (! self::$SECRET_DOMAIN_LOGIN) {
+			self::$SECRET_DOMAIN_LOGIN = self::$SECRET . "_custom_domain";
 		}
 	}
 }
