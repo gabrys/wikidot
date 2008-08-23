@@ -454,6 +454,7 @@ class RunData {
 		$cookieKey = GlobalProperties::$SESSION_COOKIE_NAME;
 		$cookieSessionId = $this->cookies[$cookieKey];
 		
+		// TODO: we can optimise this a bit... like don't fetch the session the second time from db
 		$m = array();
 		if (preg_match(";^_domain_cookie_(.*)_(.*)$;", $cookieSessionId, $m)) {
 			$user_id = (int) $m[1];
