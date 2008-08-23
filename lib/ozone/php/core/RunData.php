@@ -422,6 +422,29 @@ class RunData {
 		$cookieKey = GlobalProperties::$SESSION_COOKIE_NAME;
 		setcookie($cookieKey, 'dummy', time() - 10000000, "/", GlobalProperties::$SESSION_COOKIE_DOMAIN);
 	}
+	
+	public function getSessionFromDomainHash($session_hash, $domain, $user_id) {
+		$domain = pg_escape_string(strtolower($domain));
+		$user_id = (int) $user_id;
+		$session_hash = pg_escape_string($session_hash);
+		$secret = pg_escape_string(GlobalProperties::$SECRET_DOMAIN_LOGIN);
+		
+		$c = new Criteria();
+		$c->add("user_id", $user_id);
+		$c->add("MD5('${domain}_${secret}_' || session_id)", $session_hash);
+		$session = DB_OzoneSessionPeer::instance()->selectOne($c);
+		
+		return $session;
+	}
+	
+	public function generateSessionDomainHash($domain) {
+		$domain = strtolower($domain);
+		$user_id = $this->getUserId();
+		$session_id = $this->getSessionId();
+		$secret = GlobalProperties::$SECRET_DOMAIN_LOGIN;
+		
+		return md5("${domain}_${secret}_${session_id}");
+	}
 
 	/**
 	 * Handle session at the beginning of the request procession.
@@ -430,6 +453,20 @@ class RunData {
 		// check if session cookie exists
 		$cookieKey = GlobalProperties::$SESSION_COOKIE_NAME;
 		$cookieSessionId = $this->cookies[$cookieKey];
+		
+		$m = array();
+		if (preg_match(";^_domain_cookie_(.*)_(.*)$;", $cookieSessionId, $m)) {
+			$user_id = (int) $m[1];
+			$session_hash = $m[2];
+			$domain = $_SERVER['HTTP_HOST'];
+			
+			$session_from_db = $this->getSessionFromDomainHash($session_hash, $domain, $user_id);
+			
+			if ($session_from_db) {
+				$cookieSessionId = $session_from_db->getSessionId();
+			}
+		}
+		
 		if ($cookieSessionId == false || $cookieSessionId == '' || !$cookieSessionId) {
 			// no session cookie, we do not force one (new cool policy).
 			return ;

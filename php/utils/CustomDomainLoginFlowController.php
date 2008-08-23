@@ -25,7 +25,6 @@
 
 class CustomDomainLoginFlowController extends UploadedFileFlowController {
 
-	public static $secretString = "--DziendobrynazywamsieczesioiopowiemWamWierszyka--";
 	protected $controllerUrl = "/domainauth.php";
 	
 	/**
@@ -133,18 +132,13 @@ class CustomDomainLoginFlowController extends UploadedFileFlowController {
 		
 			if (! $confirm) {
 				
-				// checking
-				$user_id = (int) $_GET["user_id"];
-				$skey = $_GET["skey"];
-				$secret = pg_escape_string(self::$secretString);
+				$user_id = $_GET["user_id"];
+				$skey =  $_GET["skey"];
 				
-				$c = new Criteria();
-				$c->add("user_id", $user_id);
-				$c->add("MD5($siteId || '$secret' || session_id)", $skey);
-				$session = DB_OzoneSessionPeer::instance()->selectOne($c);
+				$session = $runData->getSessionFromDomainHash($skey, $_SERVER['HTTP_HOST'], $user_id);
 				
 				if ($session) {
-					setcookie(GlobalProperties::$SESSION_COOKIE_NAME, $session->getSessionId(), null, '/');
+					setcookie(GlobalProperties::$SESSION_COOKIE_NAME, "_domain_cookie_${user_id}_${skey}", null, '/');
 					$this->redirectConfirm($url);
 				} else {
 					$this->redirect($url);
