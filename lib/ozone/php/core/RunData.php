@@ -63,6 +63,8 @@ class RunData {
 	private $formToolHttpProcessed = false;
 	
 	private $temp; // temporary variables
+	
+	private $_outCookies = array();
 
 	/**
 	 * Default constructor.
@@ -390,7 +392,7 @@ class RunData {
 			$sessionId = UniqueStrings :: timeBased();
 			$cookieKey = GlobalProperties::$SESSION_COOKIE_NAME;
 			$sessionSecure = GlobalProperties::$SESSION_COOKIE_SECURE;
-			$cookieResult = setcookie($cookieKey, $sessionId, time() + 10000000, "/", GlobalProperties::$SESSION_COOKIE_DOMAIN, $sessionSecure);
+			$cookieResult = $this->_setCookie($cookieKey, $sessionId, time() + 10000000, "/", GlobalProperties::$SESSION_COOKIE_DOMAIN, $sessionSecure);
 			$session = new DB_OzoneSession();
 	
 			// set IP
@@ -416,7 +418,7 @@ class RunData {
 	 * Stops handling session - removing the cookie etc.
 	 * 
 	 */
-	public function sessionStop(){
+	public function sessionStop($removeCookie = true){
 		$s = $this->getSession();
 		if ($s) {
 			$memcache = Ozone::$memcache;
@@ -427,8 +429,10 @@ class RunData {
 			$this->session = null;
 			
 		}
-		$cookieKey = GlobalProperties::$SESSION_COOKIE_NAME;
-		setcookie($cookieKey, 'dummy', time() - 10000000, "/", GlobalProperties::$SESSION_COOKIE_DOMAIN);
+		if($removeCookie){
+			$cookieKey = GlobalProperties::$SESSION_COOKIE_NAME;
+			$this->_setCookie($cookieKey, 'dummy', time() - 10000000, "/", GlobalProperties::$SESSION_COOKIE_DOMAIN);
+		}
 	}
 	
 	public function getSessionFromDomainHash($session_hash, $domain, $user_id) {
@@ -491,7 +495,7 @@ class RunData {
 		}
 		if(!$session){
 			// no session object, delete the cookie!
-			setcookie($cookieKey, $cookieSessionId, time() - 10000000, "/", GlobalProperties::$SESSION_COOKIE_DOMAIN);
+			$this->_setCookie($cookieKey, $cookieSessionId, time() - 10000000, "/", GlobalProperties::$SESSION_COOKIE_DOMAIN);
 			return;
 		}
 		
@@ -577,13 +581,15 @@ class RunData {
 				$mc->set($key, $session, 0, 600);
 			}
 		}
+		
+		$this->_setCookies();
 	}
 
 	/**
 	 * Resets all the session data - i.e. stops a session and starts a new one.
 	 */
 	public function resetSession() {
-		$this->sessionStop();
+		$this->sessionStop(false);
 		$this->sessionStart();
 
 	}
@@ -738,6 +744,21 @@ class RunData {
 		} else {
 			return null;	
 		}	
+	}
+	
+	protected function _setCookie($cookieName, $value = null, $time = null, $path = null, $domain = null){
+		$this->_outCookies[$cookieName] = array(
+		'value' => $value,
+		'time' => $time,
+		'path' => $path,
+		'domain' => $domain
+		);
+	}
+	
+	protected function _setCookies(){
+		foreach($this->_outCookies as $name => $cookie){
+			setcookie($name, $cookie['value'], $cookie['time'], $cookie['path'], $cookie['domain']);
+		}
 	}
 
 }
