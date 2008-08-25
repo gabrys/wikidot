@@ -119,6 +119,10 @@ class RunData {
 				}
 			}
 		}
+		
+		if (! preg_match(';\.' . GlobalProperties::$URL_DOMAIN_PREG . '$;', $_SERVER['HTTP_HOST'])) {
+			GlobalProperties::$SESSION_COOKIE_NAME .= "_" . substr(md5($_SERVER['HTTP_HOST']), 3, 8);
+		}
 
 		// initialize cookies... 
 		$this->cookies = $_COOKIE;

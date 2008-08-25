@@ -42,13 +42,13 @@ class CustomDomainScript extends SmartyScreen {
 		if ($user) {
 		
 			$site_id = (int) $runData->getParameterList()->getParameterValue("site_id");
-			$site = DB_SitePeer::instance()->selectOneByPrimaryKey($site_id);
+			$site = DB_SitePeer::instance()->selectByPrimaryKey($site_id);
 			
 			if ($site && $site->getCustomDomain()) {
 				$skey = $runData->generateSessionDomainHash($site->getCustomDomain());
 				$proto = ($_SERVER["HTTPS"]) ? "https" : "http";
 				$domain = $site->getCustomDomain();
-				$runData->contextAdd("redir", "$proto://$domain/domainauth.php?" . http_build_query(array("user_id" => $user_id, "skey" => $skey)));
+				$runData->contextAdd("redir", "$proto://$domain/domainauth.php?" . http_build_query(array("user_id" => $user->getUserId(), "skey" => $skey)));
 			}
 			
 		} elseif (! $anon) {
