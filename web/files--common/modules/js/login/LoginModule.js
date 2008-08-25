@@ -42,11 +42,8 @@ WIKIDOT.modules.LoginModule.listeners = {
 	},
 	
 	cancel: function(e){
-		var p = new Object();
-		p.action = "LoginAction";
-		p.event = "loginCancel";
-		OZONE.ajax.requestModule(null, p, WIKIDOT.modules.LoginModule.callbacks.cancel);
-		
+		var url = getQueryString('origUrl', 'http://'+URL_HOST); 
+		window.location.href = url;
 	},
 	
 	namePress: function(e){
