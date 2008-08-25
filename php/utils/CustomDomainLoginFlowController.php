@@ -106,6 +106,8 @@ class CustomDomainLoginFlowController extends UploadedFileFlowController {
 		$setie = isset($_GET["setiecookie"]);
 		$siteHost = $_SERVER['HTTP_HOST'];
 		
+		$site = $this->getSite($siteHost);
+		
 		if ($setie) {
 			
 			if ($siteHost != GlobalProperties::$URL_DOMAIN) {
@@ -121,14 +123,11 @@ class CustomDomainLoginFlowController extends UploadedFileFlowController {
 			$this->redirect($url);
 			
 		} else {
-			$site = $this->getSite($siteHost);
 		
 			if (! $site) {
 				$this->siteNotExists();
 				return;
 			}
-			
-			$siteId = (int) $site->getSiteId();
 		
 			if (! $confirm) {
 				
@@ -138,7 +137,7 @@ class CustomDomainLoginFlowController extends UploadedFileFlowController {
 				$session = $runData->getSessionFromDomainHash($skey, $_SERVER['HTTP_HOST'], $user_id);
 				
 				if ($session) {
-					setcookie(GlobalProperties::$SESSION_COOKIE_NAME, "_domain_cookie_${user_id}_${skey}", null, '/');
+					setcookie(GlobalProperties::$SESSION_COOKIE_NAME, "_domain_cookie_${user_id}_${skey}", null, '/', GlobalProperties::$SESSION_COOKIE_DOMAIN);
 					$this->redirectConfirm($url);
 				} else {
 					$this->redirect($url);
