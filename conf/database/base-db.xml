@@ -12,6 +12,8 @@
 		<column name="started" type="timestamp"/>
 		<column name="last_accessed" type="timestamp"/>
 		<column name="ip_address" type="varchar(90)" />
+		<column name="ip_address_ssl" type="varchar(90)" />
+		<column name="ua_hash" type="varchar(256)" />
 		<column name="check_ip" type="boolean" default="false" />
 		<coulmn name="timeout" type="int"/>
 		<column name="infinite" type="boolean" default="false" />

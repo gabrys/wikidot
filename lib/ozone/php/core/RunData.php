@@ -391,6 +391,10 @@ class RunData {
 	
 			// set IP
 			$session->setIpAddress($this->createIpString());
+			
+			// set UA hash
+			$session->setUaHash($this->createUaHash());
+			
 			// set unique SESSION_ID
 			$session->setSessionId($sessionId);
 	
@@ -504,11 +508,24 @@ class RunData {
 
 		if ($session->getCheckIp() == true) {
 			$currentIpString = $this->createIpString();
-			if ($currentIpString != $session->getIpAddress()) {
+			if($_SERVER['HTTPS'] && $session->getIpAddressSsl()){
+				$sessionIpString = $session->getIpAddressSsl();
+			} else {
+				$sessionIpString = $session->getIpAddress();
+			}
+			if ($currentIpString != $sessionIpString) {
 				$sessionValid = false;
 				$this->session = null;
 				return; // nasty, we should not remove this session.
 			}
+		}
+		
+		/* Check UA hash. */
+		
+		if($session->getUaHash() != $this->createUaHash()){
+			$sessionValid = false;
+			$this->session = null;
+			return;
 		}
 		
 		if($sessionValid == false){
@@ -685,6 +702,10 @@ class RunData {
 
 		return $out;
 
+	}
+	
+	public function createUaHash() {
+		return md5($_SERVER['HTTP_USER_AGENT'] . 'hashstring');
 	}
 	
 	public function setTemp($key, $value){
