@@ -44,7 +44,7 @@ class PrivateWikiScriptController extends UploadedFileFlowController {
 			// ucookie is not there, let's redirect to start the fun
 			
 			$this->setContentTypeHeader("text/javascript");
-			echo "document.location = '/local--auth/' + encodeURIComponent(document.location.toString());";
+			echo "window.location = '/local--auth/' + encodeURIComponent(window.location);";
 			
 		}
 			

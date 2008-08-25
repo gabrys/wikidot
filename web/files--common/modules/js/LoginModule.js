@@ -33,7 +33,7 @@ WIKIDOT.modules.LoginModule.callbacks = {
 		} else {
 			// login ok. do sth.
 			// request wiki creation module
-			document.location.href="/";
+			window.location.href="/";
 		}
 	}	
 }

@@ -2,7 +2,7 @@
 
 {if $redir}
 
-	document.location = '{$redir}&url=' + encodeURIComponent(document.location.toString());
+	window.location = '{$redir}&url=' + encodeURIComponent(window.location);
 	
 {/if}
 
@@ -13,7 +13,7 @@
  	{literal}
 	if (navigator.appName.indexOf('Internet Explorer') != -1) {
 	{/literal}
-		document.location = '{$redirIE}&url=' + encodeURIComponent(document.location.toString());
+		window.location = '{$redirIE}&url=' + encodeURIComponent(window.location);
 	{literal}
 	}
 	{/literal}
