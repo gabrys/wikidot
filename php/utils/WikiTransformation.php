@@ -34,6 +34,7 @@ class WikiTransformation {
      * Each element is an array (page_id, page_unix_name)
      */
     public static $internalLinksExist;
+    public static $externalLinks;
     public static $internalLinksNotExist;
     public static $inclusions;
     
@@ -50,6 +51,7 @@ class WikiTransformation {
 		if($initialize){
 			self::$internalLinksExist = array();
 			self::$internalLinksNotExist = array();
+			self::$externalLinks = array();
 			$this->resetWiki();
 		}
 	}
@@ -92,7 +94,7 @@ class WikiTransformation {
 		 * %%content{X}%% tags. */
 	    
 	    /* Handle ListPages module inside a template -- %%content%% need to be escaped. */
-	    $template = preg_replace_callback(";^\[\[module\s+ListPages(.*?)\n\[\[/module\]\];ms", array($this, '_assemblyTemplateHandleListPages'), $template);
+	    $template = preg_replace_callback(";^\\[\\[module\\s+ListPages(.*?)\n\\[\\[/module\\]\\];ms", array($this, '_assemblyTemplateHandleListPages'), $template);
 	    
 	    if(!preg_match(';%%content({[0-9]+})?%%;', $template)) {
 	        return $source;
@@ -102,7 +104,10 @@ class WikiTransformation {
 	    $template = preg_replace(';%%content({[0-9]+})?%%;', '%%%\\0%%%', $template);
 	    $template = preg_replace(';(?<!%)%%[a-z0-9\(\)_]+%%(?!%);i', '%%%\\0%%%', $template);
 	    $template = preg_replace(';(?<!%)%%date(\|.*?)?%%(?!%);i', '%%%\\0%%%', $template);
+	    
 	    $template = preg_replace(";%\xFA%(content({[0-9]+}))?%\xFA%;", "%%\\1%%", $template);
+	    $template = preg_replace(";%\xFA%([a-z0-9\(\)_]+)%\xFA%;i", '%%\\1%%', $template);
+	    $template = preg_replace(";%\xFA%(date(\|.*?)?)%\xFA%;i", '%%\\1%%', $template);
 	    
 		/* Check if has a ===== delimiter. */
 	    $split = preg_split(';^={4,}$;sm', $template);
@@ -235,10 +240,14 @@ class WikiTransformation {
     }
 	
 	private function _assemblyTemplateHandleListPages($m){
-	    if(preg_match(';^\[\[module;sm', $m[1])){
-	        return $m[0];
+		if(preg_match(';^\[\[module;sm', $m[1])){
+	    	return $m[0];
 	    }else{
-	        return preg_replace(';%%(content({[0-9]+}))?%%;', "%\xFA%\\1%\xFA%", $m[0]);
+	    	$b = preg_replace(';%%(content({[0-9]+}))?%%;', "%\xFA%\\1%\xFA%", $m[0]);
+	    	$b = preg_replace(';(?<!%)%%([a-z0-9\(\)_]+)%%(?!%);i', "%\xFA%\\1%\xFA%", $b);
+	    	$b = preg_replace(';(?<!%)%%(date(\|.*?)?)%%(?!%);i', "%\xFA%\\1%\xFA%", $b);
+	    	//$b = preg_replace(";%\xFA%(content({[0-9]+}))?%\xFA%;", "%\xFA%\\1%\xFA%", $b);
+	        return $b;
 	    }
 	}
 	

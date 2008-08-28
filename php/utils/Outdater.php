@@ -212,11 +212,14 @@ class Outdater {
 		$linksNotExist = $wt->wiki->vars['internalLinksNotExist'];
 		$inclusions = $wt->wiki->vars['inclusions'];
 		$inclusionsNotExist = $wt->wiki->vars['inclusionsNotExist'];
+		$externalLinks = $wt->wiki->vars['externalLinks'];
 
 		$this->vars['linksExist'] = $linksExist;
 		$this->vars['linksNotExist'] = $linksNotExist;
 		$this->vars['inclusions'] = $inclusions;
 		$this->vars['inclusionsNotExist'] = $inclusionsNotExist;
+		$this->vars['externalLinks'] = $externalLinks;
+		
 	}
 	
 	private function assemblySource($source, $templateSource, $page = null){
@@ -321,6 +324,42 @@ class Outdater {
 				$dblink->setToPageName($link);
 				$dblink->setSiteId($page->getSiteId());
 				$dblink->save();	
+			}
+		}
+		
+		/*
+		 * Insert external links. 
+		 */
+		$externalLinks = $this->vars['externalLinks'];
+		if(!$externalLinks){
+			$externalLinks = array();
+		}
+		$externalLinks = $this->vars['externalLinks'];
+		$c = new Criteria();
+		$c->add("page_id", $page->getPageId());
+		$dblinks = DB_PageExternalLinkPeer::instance()->select($c);
+		
+		/* From $externalLinks remove links that are already in $dblinks. */
+
+		foreach($dblinks as $dblink){
+			if(in_array($dblink->getToUrl(), $externalLinks)){
+				unset($externalLinks[$dblink->getToUrl()]);
+			} else {
+				/* remove from database */
+				DB_PageExternalLinkPeer::instance()->deleteByPrimaryKey($dblink->getLinkId());
+			}
+		}
+		
+		/* Now save new URLs. */
+		$now = new ODate();
+		if($externalLinks){
+			foreach($externalLinks as $elink){
+				$dblink = new DB_PageExternalLink();
+				$dblink->setPageId($page->getPageId());
+				$dblink->setSiteId($page->getSiteId());
+				$dblink->setToUrl($elink);
+				$dblink->setDate($now);
+				$dblink->save();
 			}
 		}
 	}
@@ -761,7 +800,7 @@ class Outdater {
     		} else {
     			$categoryName = "_default";
     		}
-    		if(preg_match(';_(title)?template$;', $page)) {
+    		if(preg_match(';_template$;', $page)) {
     		    $site = $GLOBALS['site'];
     		    $category = DB_CategoryPeer::instance()->selectByName($categoryName, $site->getSiteId(), false);
     		    $this->recompileCategory($category);

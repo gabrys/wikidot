@@ -48,7 +48,10 @@
 		
 		<column name="category_template_id" type="int"/>
 		
-		<column name="enable_pingback_out" type="boolean" default="true"/>
+		<column name="autonumerate" type="boolean" default="false" notNull="true"/>
+		<column name="page_title_template" type="varchar(256)"/>
+		
+		<column name="enable_pingback_out" type="boolean" default="false"/>
 		<column name="enable_pingback_in" type="boolean" default="false"/>
 		
 	</table>
@@ -398,6 +401,8 @@
 		<column name="openid_enabled" type="boolean" default="false"/>
 		
 		<column name="allow_members_invite" type="boolean" default="false"/>
+		
+		<column name="enable_all_pingback_out" type="boolean" default="true"/>
 		
 	</table>
 	
