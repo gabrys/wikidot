@@ -18,7 +18,7 @@
  * 
  * @category Wikidot
  * @package Wikidot
- * @version $Id: UploadedFileFlowController.php,v 1.5 2008/08/01 14:00:27 quake Exp $
+ * @version $Id: UploadedFileFlowController.php,v 1.9 2008/08/28 12:01:29 redbeard Exp $
  * @copyright Copyright (c) 2008, Wikidot Inc.
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
@@ -212,12 +212,21 @@ class UploadedFileFlowController extends WebFlowController {
 	protected function setExpiresHeader($expires) {
 		$expires = (int) $expires;
 		
+		if($this->isBuggyIeDamnYouBastard()){
+			/*
+			 * Sorry, no headers for Explorer. See this URL:
+			 * http://www.alagad.com/go/blog-entry/error-internet-explorer-cannot-download-filename-from-webserver
+			 */
+			return;
+		}
 		if ($expires) {
 			if ($expires > 0) {
 				$date = gmdate("D, d M Y H:i:s", time() + $expires) . " GMT";
 				header("Expires: " . $date);
 			} else {
-				header("Cache-Control: no-cache, must-revalidate");
+				header('Cache-Control: no-store, no-cache, must-revalidate'); 
+				header('Cache-Control: post-check=0, pre-check=0', FALSE); 
+				header('Pragma: no-cache'); 
 				header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
 			}
 		}
@@ -377,7 +386,7 @@ class UploadedFileFlowController extends WebFlowController {
 	 * @param DB_Site $site
 	 * @return bool is the ucookie valid
 	 */
-	public function validateUCookie($ucookie, $site) {
+	protected function validateUCookie($ucookie, $site) {
 		if (! $ucookie || ! $ucookie->getOzoneSession() || ! $ucookie->getOzoneSession()->getOzoneUser() || ! $site) {
 			return false;
 		}
@@ -442,8 +451,21 @@ class UploadedFileFlowController extends WebFlowController {
 							return;
 						}
 					} else {
-						setcookie("ucookie", $matches[1], 0, "/", $siteHost);
-						$this->redirect($site, GlobalProperties::$URL_UPLOAD_DOMAIN, $file, "CONFIRM");
+						/* The proper cookie might already exist! Check it. */
+						$ucookie = null;
+						if (isset($_COOKIE["ucookie"])) {
+							$ucookie = DB_UcookiePeer::instance()->selectByPrimaryKey($_COOKIE["ucookie"]);
+							if (! $this->validateUCookie($ucookie, $site)) {
+								$ucookie = null;
+							}
+						}
+						if(!$ucookie){
+							setcookie("ucookie", $matches[1], 0, "/", $siteHost);
+							$this->redirect($site, GlobalProperties::$URL_UPLOAD_DOMAIN, $file, "CONFIRM");
+						}else {
+							$this->redirect($site, GlobalProperties::$URL_UPLOAD_DOMAIN, $file);
+						}
+						
 						return;
 					}
 				}
@@ -504,5 +526,13 @@ class UploadedFileFlowController extends WebFlowController {
 		
 		$this->forbidden();
 		
+	}
+	
+	public function isBuggyIeDamnYouBastard(){
+    	if (isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false){
+        	return true;
+    	} else {
+        	return false;
+    	}
 	}
 }
