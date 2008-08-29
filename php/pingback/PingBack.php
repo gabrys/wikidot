@@ -46,6 +46,22 @@ class PingBack {
 	private static $BLOCK_ELEMENTS = array("div", "p", "body", "ul", "ol", "td", "pre", "center");
 	
 	/**
+	 * Content-types for HTML
+	 * 
+	 * @var array
+	 */
+	private static $HTML_CONTENT_TYPES = array('text/html', 'application/xhtml+xml', 'application/xml', 'text/xml');
+	
+	/**
+	 * How much of page body to fetch (in bytes). We don't need
+	 * the whole document, because the head is at the top.
+	 * NOT USED YET!
+	 * 
+	 * @var int
+	 */
+	private static $HTML_FETCH_BYTES = 2048;
+	
+	/**
 	 * how many bytes we want in context before and after the link
 	 * the context is cut to full words anyways
 	 *
@@ -91,6 +107,8 @@ class PingBack {
 			throw new PingBackException("HTTP Error: " . $e->getMessage());
 		} catch (Zend_XmlRpc_Client_FaultException $e) {			
 			throw new PingBackException("XMLRCP Error: " . $e->getMessage(), $e->getCode());
+		} catch (PingBackException $e) {
+			throw new PingBackException("Pingback Error: " . $e->getMessage());
 		} catch (Exception $e) {
 			throw new PingBackException("Unknown Error: " . $e->getMessage());
 		}
@@ -111,8 +129,8 @@ class PingBack {
 	public function pong() {
 		$ret = array();
 		
-		$ret["title"] = $this->getExternalTitle();
-		$ret["context"] = $this->getExternalContext();
+		$ret['title'] = $this->getExternalTitle();
+		$ret['context'] = $this->getExternalContext();
 		$ret['extrnalURI'] = $this->externalURI;
 		$ret['wikidotURI'] = $this->wikidotURI;
 		return $ret;
@@ -132,6 +150,15 @@ class PingBack {
 	 */
 	private $externalURI = null;
 	
+	private function isHtmlByContentType($contentType) {
+		foreach (self::$HTML_CONTENT_TYPES as $ct) {
+			if (preg_match(";^$ct;", $contentType)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * Gets external site's PingBack XMLRPC endpoint URI
 	 * Checks for the X-Pingback header and if this fails,
@@ -141,11 +168,12 @@ class PingBack {
 	 * @return string
 	 */
 	private function getExternalPingBackURI() {
-		$extPage = $this->getExternalPage();
+		$extPage = $this->getExternalPageHead();
 		$pb_url = $extPage->getHeader("X-Pingback");
+		
 		try {
 			if (! $pb_url) {
-				$html = $this->getExternalPageAsSimpleXml();
+				$html = $this->getExternalPageDomAsSimpleXml();
 				$pb_urlx = $this->xpath1($html, "//link[@rel='pingback'][1]");
 				if (! $pb_urlx) {
 					throw new Exception();
@@ -155,6 +183,8 @@ class PingBack {
 			if (! $pb_url) {
 				throw new Exception();
 			}
+		} catch (PingBackException $e) {
+			throw $e;
 		} catch (Exception $e) {
 			throw new PingBackNotAvailableException("Site does not seem to support PingBack service");
 		}
@@ -179,7 +209,7 @@ class PingBack {
 	 * @return string the HTML title or the URI of external page
 	 */
 	private function getExternalTitle() {
-		$xml = $this->getExternalPageAsSimpleXml();
+		$xml = $this->getExternalPageDomAsSimpleXml();
 		
 		try {
 			
@@ -196,7 +226,7 @@ class PingBack {
 			$title = $this->externalURI();
 		}
 		
-		return $title;
+		return (string) $title;
 	}
 	
 	/**
@@ -206,7 +236,7 @@ class PingBack {
 	 */
 	private function getExternalContext() {
 		
-		$xml = $this->getExternalPageAsSimpleXml();
+		$xml = $this->getExternalPageDomAsSimpleXml();
 		
 		$href = htmlspecialchars($this->wikidotURI);
 		$path = "//body//a[@href=\"$href\"][1]";
@@ -250,7 +280,7 @@ class PingBack {
 		
 		// Find THE "a" tag and add a pingback class to it
 		$xml = new SimpleXMLElement("<context>$ret</context>");
-		$node = $this->xpath1($xml, "//a[@href=\"" . htmlspecialchars($this->wikidotURI) . "\"][1]");
+		$node = $this->xpath1($xml, "//a[@href=\"" . $href . "\"][1]");
 		if ($node) {
 			$node["class"] = "pingback";
 		}
@@ -286,32 +316,63 @@ class PingBack {
 	}
 	
 	/**
+	 * Requests the external page using the given method (mostly GET and HEAD)
+	 *
+	 * @param string $method
+	 * @return Zend_Http_Response
+	 */
+	private function requestExternalPage($method = "GET") {
+		try {
+			$hc = new Zend_Http_Client($this->externalURI);
+			$resp = $hc->request($method);
+			if ($resp->getStatus() != 200) {
+				throw new PingBackException("Site does not exist", 16);
+			}
+		} catch (Zend_Http_Client_Adapter_Exception $e) {
+			throw new PingBackException("HTTP error: " . $e->getMessage(), 16);
+		}
+		return $resp;
+	}
+	
+	/**
+	 * HTTP headers response object of the external URI
+	 *
+	 * @var Zend_Http_Response
+	 */
+	private $externalPageHead = null;
+	
+	/**
+	 * Requests the HTTP header of the external URL unless already fetched
+	 *
+	 * @return Zend_Http_Response the HTTP response object
+	 */
+	private function getExternalPageHead() {
+		if ($this->externalPageBody) {
+			return $this->externalPageBody;
+		}
+		if (! $this->externalPageHead) {
+			$this->externalPageHead = $this->requestExternalPage("HEAD");
+		}
+		return $this->externalPageHead;
+	}
+	
+	/**
 	 * HTTP (body and headers) response object of the external URI
 	 *
 	 * @var Zend_Http_Response
 	 */
-	private $externalPage = null;
-	private $externalPageSet = false;
+	private $externalPageBody = null;
 	
 	/**
 	 * Requests the URL unless already fetched
 	 *
 	 * @return Zend_Http_Response the HTTP response object
 	 */
-	private function getExternalPage() {
-		if (! $this->externalPageSet) {
-			try {
-				$hc = new Zend_Http_Client($this->externalURI);
-				$this->externalPage = $hc->request("GET");
-				if ($this->externalPage->getStatus() != 200) {
-					throw new PingBackException("Site does not exist", 16);
-				}
-				$this->externalPageSet = true;
-			} catch (Zend_Http_Client_Adapter_Exception $e) {
-				throw new PingBackException("HTTP error: " . $e->getMessage(), 16);
-			}
+	private function getExternalPageBody() {
+		if (! $this->externalPageBody) {
+			$this->externalPageBody = $this->requestExternalPage("GET");
 		}
-		return $this->externalPage;
+		return $this->externalPageBody;
 	}
 	
 	/**
@@ -319,27 +380,35 @@ class PingBack {
 	 *
 	 * @var SimpleXMLElement
 	 */
-	private $externalPageAsSimpleXml = null;
-	private $externalPageAsSimpleXmlSet = false;
+	private $externalPageDomAsSimpleXml = null;
 	
 	/**
 	 * Gets the SimpleXMLElement of the HTML from the external URI
 	 *
 	 * @return SimpleXMLElement simple XML element of the external document
 	 */
-	private function getExternalPageAsSimpleXml() {
+	private function getExternalPageDomAsSimpleXml() {
 		
-		if (! $this->externalPageAsSimpleXmlSet) {
+		if (! $this->externalPageDomAsSimpleXml) {
+			$head = $this->getExternalPageHead();
+			if ($this->isHtmlByContentType($head->getHeader("Content-type"))) {
 			
-			$html = $this->getExternalPage()->getBody();
-			$dom = new DOMDocument();
-			@$dom->loadHTML($html);
+				$html = $this->getExternalPageBody()->getBody();
+				$dom = new DOMDocument();
+				@$dom->loadHTML($html);
+				
+				$xml = @simplexml_import_dom($dom);
+				if (is_a($xml, "SimpleXMLElement")) {
+					$this->externalPageDomAsSimpleXml = $xml;
+				}
+				
+			}
 			
-			$xml = @simplexml_import_dom($dom);
-			$this->externalPageAsSimpleXml = $xml;
-			$this->externalPageAsSimpleXmlSet = true;
+			if (! $this->externalPageDomAsSimpleXml) {
+				throw new PingBackNotAvailableException("Cannot parse DOM - probably not a HTML response");
+			}
 		}
 		
-		return $this->externalPageAsSimpleXml;
+		return $this->externalPageDomAsSimpleXml;
 	}
 }

@@ -23,9 +23,6 @@
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
 
-require_once('../php/setup.php');
-require_once('../php/pingback/PingBack.php');
+class PingBackProcessingException  extends PingBackException {
 
-$pb = new Pingback("http://pl.youtube.com/watch?v=E-jyPSLplDg", "http://help.youtube.com/support/youtube/bin/static.py?page=start.cs");
-$p = $pb->pong();
-var_dump($p);
+}
