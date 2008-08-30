@@ -15,9 +15,9 @@
  *
  * @category   Zend
  * @package    Zend_Filter
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Digits.php 6765 2007-11-07 18:10:02Z darby $
+ * @version    $Id: Digits.php 8732 2008-03-10 15:21:46Z darby $
  */
 
 
@@ -30,7 +30,7 @@ require_once 'Zend/Filter/Interface.php';
 /**
  * @category   Zend
  * @package    Zend_Filter
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Filter_Digits implements Zend_Filter_Interface
@@ -69,8 +69,12 @@ class Zend_Filter_Digits implements Zend_Filter_Interface
         if (!self::$_unicodeEnabled) {
             // POSIX named classes are not supported, use alternative 0-9 match
             $pattern = '/[^0-9]/';
+        } else if (extension_loaded('mbstring')) {
+            // Filter for the value with mbstring
+            $pattern = '/[^[:digit:]]/';
         } else {
-            $pattern = '/[\p{^N}]/u';
+            // Filter for the value without mbstring
+            $pattern = '/[\p{^N}]/';
         }
 
         return preg_replace($pattern, '', (string) $value);

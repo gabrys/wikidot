@@ -16,9 +16,9 @@
  * @category   Zend
  * @package    Zend_OpenId
  * @subpackage Zend_OpenId_Provider
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id:$
+ * @version    $Id: Provider.php 10106 2008-07-15 16:58:38Z dmitry $
  */
 
 /**
@@ -37,7 +37,7 @@ require_once "Zend/OpenId/Extension.php";
  * @category   Zend
  * @package    Zend_OpenId
  * @subpackage Zend_OpenId_Provider
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_OpenId_Provider
@@ -423,17 +423,11 @@ class Zend_OpenId_Provider
             $params['openid_session_type'] == 'no-encryption') {
             $ret['mac_key'] = base64_encode($secret);
         } else if (isset($params['openid_session_type']) &&
-            $params['openid_session_type'] == 'DH-SHA1' &&
-            !empty($params['openid_dh_modulus']) &&
-            !empty($params['openid_dh_gen']) &&
-            !empty($params['openid_dh_consumer_public'])) {
+            $params['openid_session_type'] == 'DH-SHA1') {
             $dhFunc = 'sha1';
         } else if (isset($params['openid_session_type']) &&
             $params['openid_session_type'] == 'DH-SHA256' &&
-            $version >= 2.0 &&
-            !empty($params['openid_dh_modulus']) &&
-            !empty($params['openid_dh_gen']) &&
-            !empty($params['openid_dh_consumer_public'])) {
+            $version >= 2.0) {
             $dhFunc = 'sha256';
         } else {
             $ret['error'] = 'Wrong "openid.session_type"';
@@ -446,9 +440,22 @@ class Zend_OpenId_Provider
         }
 
         if (isset($dhFunc)) {
-            $dh = Zend_OpenId::createDhKey(
-                base64_decode($params['openid_dh_modulus']),
-                base64_decode($params['openid_dh_gen']));
+            if (empty($params['openid_dh_consumer_public'])) {
+                $ret['error'] = 'Wrong "openid.dh_consumer_public"';
+                return $ret;
+            }
+            if (empty($params['openid_dh_gen'])) {
+                $g = pack('H*', Zend_OpenId::DH_G);
+            } else {
+                $g = base64_decode($params['openid_dh_gen']);
+            }
+            if (empty($params['openid_dh_modulus'])) {
+                $p = pack('H*', Zend_OpenId::DH_P);
+            } else {
+                $p = base64_decode($params['openid_dh_modulus']);
+            }
+
+            $dh = Zend_OpenId::createDhKey($p, $g);
             $dh_details = Zend_OpenId::getDhKeyDetails($dh);
 
             $sec = Zend_OpenId::computeDhSecret(
@@ -501,7 +508,7 @@ class Zend_OpenId_Provider
 
         if (isset($params['openid_identity']) &&
             !$this->_storage->hasUser($params['openid_identity'])) {
-            $ret['openid.mode'] = 'cancel';
+            $ret['openid.mode'] = ($immediate && $version >= 2.0) ? 'setup_needed': 'cancel';
             return $ret;
         }
 
@@ -534,7 +541,7 @@ class Zend_OpenId_Provider
         }
 
         if (!Zend_OpenId_Extension::forAll($extensions, 'parseRequest', $params)) {
-            $ret['openid.mode'] = 'cancel';
+            $ret['openid.mode'] = ($immediate && $version >= 2.0) ? 'setup_needed': 'cancel';
             return $ret;
         }
 

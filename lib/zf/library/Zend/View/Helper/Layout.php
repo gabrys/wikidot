@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_View
- * @subpackage Helpers
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: Layout.php 7078 2007-12-11 14:29:33Z matthew $
+ * @subpackage Helper
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id: Layout.php 8420 2008-02-26 16:53:53Z darby $
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -24,8 +24,8 @@
  * View helper for retrieving layout object
  *
  * @package    Zend_View
- * @subpackage Helpers
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @subpackage Helper
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_View_Helper_Layout
@@ -38,8 +38,8 @@ class Zend_View_Helper_Layout
 
     /**
      * Set view
-     * 
-     * @param  Zend_View_Interface $view 
+     *
+     * @param  Zend_View_Interface $view
      * @return void
      */
     public function setView(Zend_View_Interface $view)
@@ -49,7 +49,7 @@ class Zend_View_Helper_Layout
 
     /**
      * Get layout object
-     * 
+     *
      * @return Zend_Layout
      */
     public function getLayout()
@@ -68,8 +68,8 @@ class Zend_View_Helper_Layout
 
     /**
      * Set layout object
-     * 
-     * @param  Zend_Layout $layout 
+     *
+     * @param  Zend_Layout $layout
      * @return Zend_Layout_Controller_Action_Helper_Layout
      */
     public function setLayout(Zend_Layout $layout)
@@ -82,7 +82,7 @@ class Zend_View_Helper_Layout
      * Return layout object
      *
      * Usage: $this->layout()->setLayout('alternate');
-     * 
+     *
      * @return Zend_Layout
      */
     public function layout()

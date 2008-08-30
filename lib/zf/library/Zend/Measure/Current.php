@@ -12,13 +12,12 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Measure
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: Current.php 7001 2007-11-30 22:05:35Z thomas $
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
+ * @category  Zend
+ * @package   Zend_Measure
+ * @copyright Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd     New BSD License
+ * @version   $Id: Current.php 9516 2008-05-24 22:00:15Z thomas $
  */
-
 
 /**
  * Implement needed classes
@@ -27,17 +26,17 @@ require_once 'Zend/Measure/Exception.php';
 require_once 'Zend/Measure/Abstract.php';
 require_once 'Zend/Locale.php';
 
-
 /**
+ * Class for handling current conversions
+ *
  * @category   Zend
  * @package    Zend_Measure
  * @subpackage Zend_Measure_Current
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Measure_Current extends Zend_Measure_Abstract
 {
-    // Current definitions
     const STANDARD = 'AMPERE';
 
     const ABAMPERE             = 'ABAMPERE';
@@ -67,7 +66,12 @@ class Zend_Measure_Current extends Zend_Measure_Abstract
     const WATT_PER_VOLT        = 'WATT_PER_VOLT';
     const WEBER_PER_HENRY      = 'WEBER_PER_HENRY';
 
-    protected $_UNITS = array(
+    /**
+     * Calculations for all current units
+     *
+     * @var array
+     */
+    protected $_units = array(
         'ABAMPERE'             => array('10',           'abampere'),
         'AMPERE'               => array('1',            'A'),
         'BIOT'                 => array('10',           'Bi'),

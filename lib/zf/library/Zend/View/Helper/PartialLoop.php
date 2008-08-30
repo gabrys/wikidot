@@ -15,8 +15,8 @@
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: PartialLoop.php 7086 2007-12-11 20:35:31Z matthew $
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id: PartialLoop.php 10280 2008-07-22 17:02:41Z matthew $
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -28,8 +28,8 @@ require_once 'Zend/View/Helper/Partial.php';
  * over data provided and renders for each iteration.
  *
  * @package    Zend_View
- * @subpackage Helpers
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @subpackage Helper
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_View_Helper_PartialLoop extends Zend_View_Helper_Partial 
@@ -37,6 +37,8 @@ class Zend_View_Helper_PartialLoop extends Zend_View_Helper_Partial
     /**
      * Renders a template fragment within a variable scope distinct from the
      * calling View object.
+     *
+     * If no arguments are provided, returns object instance.
      *
      * @param  string $name Name of view script
      * @param  string|array $module If $model is empty, and $module is an array,
@@ -46,16 +48,30 @@ class Zend_View_Helper_PartialLoop extends Zend_View_Helper_Partial
      * @param  array $model Variables to populate in the view
      * @return string 
      */
-    public function partialLoop($name, $module = null, $model = null)
+    public function partialLoop($name = null, $module = null, $model = null)
     {
-        if ((null == $model) && (null !== $module)) {
+        if (0 == func_num_args()) {
+            return $this;
+        }
+
+        if ((null === $model) && (null !== $module)) {
             $model  = $module;
             $module = null;
         } 
 
-        if (!is_array($model) && (!$model instanceof Iterator)) {
+        if (!is_array($model) 
+            && (!$model instanceof Traversable) 
+            && (is_object($model) && !method_exists($model, 'toArray'))
+        ) {
             require_once 'Zend/View/Helper/Partial/Exception.php';
             throw new Zend_View_Helper_Partial_Exception('PartialLoop helper requires iterable data');
+        }
+
+        if (is_object($model) 
+            && (!$model instanceof Traversable) 
+            && method_exists($model, 'toArray')
+        ) {
+            $model = $model->toArray();
         }
 
         $content = '';

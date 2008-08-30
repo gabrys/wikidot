@@ -12,13 +12,12 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Measure
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: Lightness.php 7001 2007-11-30 22:05:35Z thomas $
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
+ * @category  Zend
+ * @package   Zend_Measure
+ * @copyright Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd     New BSD License
+ * @version   $Id: Lightness.php 9516 2008-05-24 22:00:15Z thomas $
  */
-
 
 /**
  * Implement needed classes
@@ -27,36 +26,41 @@ require_once 'Zend/Measure/Exception.php';
 require_once 'Zend/Measure/Abstract.php';
 require_once 'Zend/Locale.php';
 
-
 /**
+ * Class for handling temperature conversions
+ *
  * @category   Zend
  * @package    Zend_Measure
  * @subpackage Zend_Measure_Lightness
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Measure_Lightness extends Zend_Measure_Abstract
 {
-    // Lightness definitions
-    const STANDARD               = 'CANDELA_PER_SQUARE_METER';
+    const STANDARD = 'CANDELA_PER_SQUARE_METER';
 
-    const APOSTILB                      = 'APOSTILB';
-    const BLONDEL                       = 'BLONDEL';
-    const CANDELA_PER_SQUARE_CENTIMETER = 'CANDELA_PER_SQUARE_CENTIMETER';
-    const CANDELA_PER_SQUARE_FOOT       = 'CANDELA_PER_SQUARE_FOOT';
-    const CANDELA_PER_SQUARE_INCH       = 'CANDELA_PER_SQUARE_INCH';
-    const CANDELA_PER_SQUARE_METER      = 'CANDELA_PER_SQUARE_METER';
-    const FOOTLAMBERT                   = 'FOOTLAMBERT';
+    const APOSTILB                          = 'APOSTILB';
+    const BLONDEL                           = 'BLONDEL';
+    const CANDELA_PER_SQUARE_CENTIMETER     = 'CANDELA_PER_SQUARE_CENTIMETER';
+    const CANDELA_PER_SQUARE_FOOT           = 'CANDELA_PER_SQUARE_FOOT';
+    const CANDELA_PER_SQUARE_INCH           = 'CANDELA_PER_SQUARE_INCH';
+    const CANDELA_PER_SQUARE_METER          = 'CANDELA_PER_SQUARE_METER';
+    const FOOTLAMBERT                       = 'FOOTLAMBERT';
     const KILOCANDELA_PER_SQUARE_CENTIMETER = 'KILOCANDELA_PER_SQUARE_CENTIMETER';
-    const KILOCANDELA_PER_SQUARE_FOOT   = 'KILOCANDELA_PER_SQUARE_FOOT';
-    const KILOCANDELA_PER_SQUARE_INCH   = 'KILOCANDELA_PER_SQUARE_INCH';
-    const KILOCANDELA_PER_SQUARE_METER  = 'KILOCANDELA_PER_SQUARE_METER';
-    const LAMBERT                       = 'LAMBERT';
-    const MILLILAMBERT                  = 'MILLILAMBERT';
-    const NIT                           = 'NIT';
-    const STILB                         = 'STILB';
+    const KILOCANDELA_PER_SQUARE_FOOT       = 'KILOCANDELA_PER_SQUARE_FOOT';
+    const KILOCANDELA_PER_SQUARE_INCH       = 'KILOCANDELA_PER_SQUARE_INCH';
+    const KILOCANDELA_PER_SQUARE_METER      = 'KILOCANDELA_PER_SQUARE_METER';
+    const LAMBERT                           = 'LAMBERT';
+    const MILLILAMBERT                      = 'MILLILAMBERT';
+    const NIT                               = 'NIT';
+    const STILB                             = 'STILB';
 
-    protected $_UNITS = array(
+    /**
+     * Calculations for all lightness units
+     *
+     * @var array
+     */
+    protected $_units = array(
         'APOSTILB'                      => array('0.31830989',   'asb'),
         'BLONDEL'                       => array('0.31830989',   'blondel'),
         'CANDELA_PER_SQUARE_CENTIMETER' => array('10000',        'cd/cm²'),

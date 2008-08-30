@@ -12,13 +12,12 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Measure
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: Weight.php 7001 2007-11-30 22:05:35Z thomas $
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
+ * @category  Zend
+ * @package   Zend_Measure
+ * @copyright Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd     New BSD License
+ * @version   $Id: Weight.php 9516 2008-05-24 22:00:15Z thomas $
  */
-
 
 /**
  * Implement needed classes
@@ -27,17 +26,17 @@ require_once 'Zend/Measure/Exception.php';
 require_once 'Zend/Measure/Abstract.php';
 require_once 'Zend/Locale.php';
 
-
 /**
+ * Class for handling cooking weight conversions
+ *
  * @category   Zend
  * @package    Zend_Measure
  * @subpackage Zend_Measure_Cooking_Weight
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Measure_Cooking_Weight extends Zend_Measure_Abstract
 {
-    // Cooking_Weight definitions
     const STANDARD = 'GRAM';
 
     const HALF_STICK    = 'HALF_STICK';
@@ -51,7 +50,12 @@ class Zend_Measure_Cooking_Weight extends Zend_Measure_Abstract
     const TABLESPOON    = 'TABLESPOON';
     const TABLESPOON_US = 'TABLESPOON_US';
 
-    protected $_UNITS = array(
+    /**
+     * Calculations for all cooking weight units
+     *
+     * @var array
+     */
+    protected $_units = array(
         'HALF_STICK'    => array(array('' => '453.59237', '/' => '8'),                    'half stk'),
         'STICK'         => array(array('' => '453.59237', '/' => '4'),                    'stk'),
         'CUP'           => array(array('' => '453.59237', '/' => '2'),                    'c'),

@@ -4,18 +4,18 @@
  *
  * LICENSE
  *
- * This source file is subject to version 1.0 of the Zend Framework
- * license, that is bundled with this package in the file LICENSE.txt, and
- * is available through the world-wide-web at the following URL:
- * http://framework.zend.com/license/new-bsd. If you did not receive
- * a copy of the Zend Framework license and are unable to obtain it
- * through the world-wide-web, please send a note to license@zend.com
- * so we can mail you a copy immediately.
+ * This source file is subject to the new BSD license that is bundled
+ * with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://framework.zend.com/license/new-bsd
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@zend.com so we can send you a copy immediately.
  *
  * @package    Zend_View
- * @subpackage Helpers
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: Abstract.php 7095 2007-12-12 20:34:33Z matthew $
+ * @subpackage Helper
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id: Abstract.php 9131 2008-04-04 11:42:43Z thomas $
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -24,7 +24,7 @@
  *
  * @package    Zend_View
  * @subpackage Helpers
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_View_Helper_Placeholder_Container_Abstract extends ArrayObject
@@ -96,7 +96,6 @@ abstract class Zend_View_Helper_Placeholder_Container_Abstract extends ArrayObje
      */
     public function __construct()
     {
-
         parent::__construct(array(), parent::ARRAY_AS_PROPS);
     }
     
@@ -215,16 +214,12 @@ abstract class Zend_View_Helper_Placeholder_Container_Abstract extends ArrayObje
      * Set the indentation string for __toString() serialization,
      * optionally, if a number is passed, it will be the number of spaces
      *
-     * @param string|int $indent
-     * @return Zend_View_Helper_Placeholder_Container
+     * @param  string|int $indent
+     * @return Zend_View_Helper_Placeholder_Container_Abstract
      */
     public function setIndent($indent)
     {
-        if (is_int($indent)) {
-            $indent = str_repeat(' ', $indent);
-        }
-        
-        $this->_indent = (string) $indent;
+        $this->_indent = $this->getWhitespace($indent);
         return $this;
     }
 
@@ -237,7 +232,22 @@ abstract class Zend_View_Helper_Placeholder_Container_Abstract extends ArrayObje
     {
         return $this->_indent;
     }
-    
+
+    /**
+     * Retrieve whitespace representation of $indent
+     * 
+     * @param  int|string $indent 
+     * @return string
+     */
+    public function getWhitespace($indent)
+    {
+        if (is_int($indent)) {
+            $indent = str_repeat(' ', $indent);
+        }
+
+        return (string) $indent;
+    }
+   
     /**
      * Start capturing content to push into placeholder
      *
@@ -340,15 +350,16 @@ abstract class Zend_View_Helper_Placeholder_Container_Abstract extends ArrayObje
      */
     public function toString($indent = null)
     {
-        $indent = ($indent != null) ? $indent : $this->_indent;
-        $indent = (is_int($indent)) ? str_repeat(' ', $indent) : $indent;
+        $indent = ($indent !== null) 
+                ? $this->getWhitespace($indent) 
+                : $this->getIndent();
         
         $items  = $this->getArrayCopy();
         $return = $indent 
                 . $this->getPrefix()
                 . implode($this->getSeparator(), $items)
                 . $this->getPostfix();
-        $return = str_replace("\n", "\n{$indent}", $return);
+        $return = preg_replace("/(\r\n?|\n)/", '$1' . $indent, $return);
         return $return;
     }
 

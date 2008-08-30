@@ -16,8 +16,8 @@
  * @category   Zend
  * @package    Zend_Http
  * @subpackage Client_Adapter
- * @version    $Id: Socket.php 7110 2007-12-13 23:24:01Z shahar $
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id: Socket.php 9911 2008-07-02 22:42:08Z shahar $
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -31,7 +31,7 @@ require_once 'Zend/Http/Client/Adapter/Interface.php';
  * @category   Zend
  * @package    Zend_Http
  * @subpackage Client_Adapter
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Http_Client_Adapter_Socket implements Zend_Http_Client_Adapter_Interface
@@ -56,6 +56,7 @@ class Zend_Http_Client_Adapter_Socket implements Zend_Http_Client_Adapter_Interf
      * @var array
      */
     protected $config = array(
+        'persistent'    => false,
         'ssltransport'  => 'ssl',
         'sslcert'       => null,
         'sslpassphrase' => null
@@ -132,11 +133,14 @@ class Zend_Http_Client_Adapter_Socket implements Zend_Http_Client_Adapter_Interf
                 }
             }
 
+            $flags = STREAM_CLIENT_CONNECT;
+            if ($this->config['persistent']) $flags |= STREAM_CLIENT_PERSISTENT;
+            
             $this->socket = @stream_socket_client($host . ':' . $port,
                                                   $errno,
                                                   $errstr,
                                                   (int) $this->config['timeout'],
-                                                  STREAM_CLIENT_CONNECT,
+                                                  $flags,
                                                   $context);
             if (! $this->socket) {
                 $this->close();
@@ -223,12 +227,17 @@ class Zend_Http_Client_Adapter_Socket implements Zend_Http_Client_Adapter_Interf
             }
         }
 
+        $statusCode = Zend_Http_Response::extractCode($response);
+         
         // Handle 100 and 101 responses internally by restarting the read again
-        if (Zend_Http_Response::extractCode($response) == 100 ||
-            Zend_Http_Response::extractCode($response) == 101) return $this->read();
+        if ($statusCode == 100 || $statusCode == 101) return $this->read();
 
-        // If this was a HEAD request, return after reading the header (no need to read body)
-        if ($this->method == Zend_Http_Client::HEAD) return $response;
+        /**
+         * Responses to HEAD requests and 204 or 304 responses are not expected
+         * to have a body - stop reading here
+         */
+        if ($statusCode == 304 || $statusCode == 204 || 
+            $this->method == Zend_Http_Client::HEAD) return $response;
 
         // Check headers to see what kind of connection / transfer encoding we have
         $headers = Zend_Http_Response::extractHeaders($response);
@@ -284,7 +293,7 @@ class Zend_Http_Client_Adapter_Socket implements Zend_Http_Client_Adapter_Interf
                 $left_to_read -= strlen($chunk);
                 $response .= $chunk;
             }
-
+        
         // Fallback: just read the response (should not happen)
         } else {
             while ($buff = @fread($this->socket, 8192)) {
@@ -309,11 +318,15 @@ class Zend_Http_Client_Adapter_Socket implements Zend_Http_Client_Adapter_Interf
     }
 
     /**
-     * Destructor: make sure the socket is disconnected
+     * Destructor: make sure the socket is disconnected 
+     * 
+     * If we are in persistent TCP mode, will not close the connection
      *
      */
     public function __destruct()
     {
-        if ($this->socket) $this->close();
+        if (! $this->config['persistent']) {
+            if ($this->socket) $this->close();
+        }
     }
 }

@@ -15,9 +15,9 @@
  *
  * @category   Zend
  * @package    Zend_OpenId
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id:$
+ * @version    $Id: OpenId.php 9290 2008-04-23 09:04:56Z dmitry $
  */
 
 /**
@@ -31,15 +31,6 @@ require_once "Zend/OpenId/Exception.php";
 require_once "Zend/Controller/Response/Abstract.php";
 
 /**
-  * Default Diffie-Hellman key generator (1024 bit)
-  */
-define('ZEND_OPEN_ID_DH_P',
-       'dcf93a0b883972ec0e19989ac5a2ce310e1d37717e8d9571bb7623731866e61e' .
-       'f75a2e27898b057f9891c2e27a639c3f29b60814581cd3b2ca3986d268370557' .
-       '7d45c2e7e52dc81c7a171876e5cea74b1448bfdfaf18828efd2519f14e45e382' .
-       '6634af1949e5b535cc829a483b8a76223e5d490a257f05bdff16f2fb22c583ab');
-
-/**
  * Static class that contains common utility functions for
  * {@link Zend_OpenId_Consumer} and {@link Zend_OpenId_Provider}.
  *
@@ -49,15 +40,15 @@ define('ZEND_OPEN_ID_DH_P',
  *
  * @category   Zend
  * @package    Zend_OpenId
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_OpenId
 {
     /**
-     * Default Diffie-Hellman key generator
+     * Default Diffie-Hellman key generator (1024 bit)
      */
-    const DH_P   = ZEND_OPEN_ID_DH_P;
+    const DH_P   = 'dcf93a0b883972ec0e19989ac5a2ce310e1d37717e8d9571bb7623731866e61ef75a2e27898b057f9891c2e27a639c3f29b60814581cd3b2ca3986d2683705577d45c2e7e52dc81c7a171876e5cea74b1448bfdfaf18828efd2519f14e45e3826634af1949e5b535cc829a483b8a76223e5d490a257f05bdff16f2fb22c583ab';
 
     /**
      * Default Diffie-Hellman prime number (should be 2 or 5)
@@ -116,7 +107,16 @@ class Zend_OpenId
         }
 
         $url .= $port;
-        if (isset($_SERVER['SCRIPT_URL'])) {
+        if (isset($_SERVER['HTTP_X_REWRITE_URL'])) {
+            $url .= $_SERVER['HTTP_X_REWRITE_URL'];
+        } elseif (isset($_SERVER['REQUEST_URI'])) {
+            $query = strpos($_SERVER['REQUEST_URI'], '?');
+            if ($query === false) {
+                $url .= $_SERVER['REQUEST_URI'];
+            } else {
+                $url .= substr($_SERVER['REQUEST_URI'], 0, $query);
+            }
+        } else if (isset($_SERVER['SCRIPT_URL'])) {
             $url .= $_SERVER['SCRIPT_URL'];
         } else if (isset($_SERVER['REDIRECT_URL'])) {
             $url .= $_SERVER['REDIRECT_URL'];
@@ -259,7 +259,7 @@ class Zend_OpenId
             }
         }
 
-        if (!preg_match('|^([^:]+)://([^:@]*(?:[:][^@]*)?@)?([^/:@?#]*)(?:[:]([^/?#]*))?(/[^?]*)?((?:[?](?:[^#]*))?(?:#.*)?)$|', $res, $reg)) {
+        if (!preg_match('|^([^:]+)://([^:@]*(?:[:][^@]*)?@)?([^/:@?#]*)(?:[:]([^/?#]*))?(/[^?#]*)?((?:[?](?:[^#]*))?)((?:#.*)?)$|', $res, $reg)) {
             return false;
         }
         $scheme = $reg[1];
@@ -268,6 +268,7 @@ class Zend_OpenId
         $port = $reg[4];
         $path = $reg[5];
         $query = $reg[6];
+        $fragment = $reg[7]; /* strip it */
 
         if (empty($scheme) || empty($host)) {
             return false;
@@ -479,7 +480,7 @@ class Zend_OpenId
             return hash($func, $data, true);
         } else if ($func === 'sha1') {
             return sha1($data, true);
-        } else if ($func = 'sha256') {
+        } else if ($func === 'sha256') {
             if (function_exists('mhash')) {
                 return mhash(MHASH_SHA256 , $data);
             }
@@ -555,7 +556,13 @@ class Zend_OpenId
     static protected function bigNumToBin($bn)
     {
         if (extension_loaded('gmp')) {
-            return pack("H*", gmp_strval($bn, 16));
+            $s = gmp_strval($bn, 16);
+            if (strlen($s) % 2 != 0) {
+                $s = '0' . $s;
+            } else if ($s[0] > '7') {
+                $s = '00' . $s;
+            }
+            return pack("H*", $s);
         } else if (extension_loaded('bcmath')) {
             $cmp = bccomp($bn, 0);
             if ($cmp == 0) {
@@ -569,6 +576,9 @@ class Zend_OpenId
             while (bccomp($bn, 0) > 0) {
                 $bin = chr(bcmod($bn, 256)) . $bin;
                 $bn = bcdiv($bn, 256);
+            }
+            if (ord($bin[0]) > 127) {
+                $bin = chr(0) . $bin;
             }
             return $bin;
         }
@@ -661,6 +671,9 @@ class Zend_OpenId
     {
         if (function_exists('openssl_dh_compute_key')) {
             $ret = openssl_dh_compute_key($pub_key, $dh);
+            if (ord($ret[0]) > 127) {
+                $ret = chr(0) . $ret;
+            }
             return $ret;
         } else if (extension_loaded('gmp')) {
             $bn_pub_key = self::binToBigNum($pub_key);

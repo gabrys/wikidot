@@ -12,13 +12,12 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Measure
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: Volume.php 7001 2007-11-30 22:05:35Z thomas $
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
+ * @category  Zend
+ * @package   Zend_Measure
+ * @copyright Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd     New BSD License
+ * @version   $Id: Volume.php 9516 2008-05-24 22:00:15Z thomas $
  */
-
 
 /**
  * Implement needed classes
@@ -27,17 +26,17 @@ require_once 'Zend/Measure/Exception.php';
 require_once 'Zend/Measure/Abstract.php';
 require_once 'Zend/Locale.php';
 
-
 /**
+ * Class for handling cooking volume conversions
+ *
  * @category   Zend
  * @package    Zend_Measure
  * @subpackage Zend_Measure_Cooking_Volume
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Measure_Cooking_Volume extends Zend_Measure_Abstract
 {
-    // Cooking_Volume definitions
     const STANDARD = 'CUBIC_METER';
 
     const CAN_2POINT5       = 'CAN_2POINT5';
@@ -111,7 +110,12 @@ class Zend_Measure_Cooking_Volume extends Zend_Measure_Abstract
     const TEASPOON_UK       = 'TEASPOON_UK';
     const TEASPOON_US       = 'TEASPOON_US';
 
-    protected $_UNITS = array(
+    /**
+     * Calculations for all cooking volume units
+     *
+     * @var array
+     */
+    protected $_units = array(
         'CAN_2POINT5'       => array(array('' => '0.0037854118', '/' => '16', '' => '3.5'), '2.5th can'),
         'CAN_10'            => array(array('' => '0.0037854118', '*' => '0.75'),          '10th can'),
         'BARREL_WINE'       => array('0.143201835',   'bbl'),

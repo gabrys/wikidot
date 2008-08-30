@@ -15,9 +15,9 @@
  *
  * @category   Zend
  * @package    Zend_Validate
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: NotEmpty.php 5134 2007-06-06 17:54:16Z darby $
+ * @version    $Id: NotEmpty.php 10370 2008-07-24 16:22:42Z matthew $
  */
 
 
@@ -30,7 +30,7 @@ require_once 'Zend/Validate/Abstract.php';
 /**
  * @category   Zend
  * @package    Zend_Validate
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Validate_NotEmpty extends Zend_Validate_Abstract
@@ -55,11 +55,15 @@ class Zend_Validate_NotEmpty extends Zend_Validate_Abstract
      */
     public function isValid($value)
     {
-        $valueString = (string) $value;
+        $this->_setValue((string) $value);
 
-        $this->_setValue($valueString);
-
-        if (empty($value)) {
+        if (is_string($value)
+            && (('' === $value) 
+                || preg_match('/^\s+$/s', $value))
+        ) {
+            $this->_error();
+            return false;
+        } elseif (!is_string($value) && empty($value)) {
             $this->_error();
             return false;
         }

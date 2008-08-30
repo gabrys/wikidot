@@ -14,7 +14,7 @@
  *
  * @category   Zend
  * @package    Zend_Mime
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -26,7 +26,7 @@ require_once 'Zend/Mime.php';
 /**
  * @category   Zend
  * @package    Zend_Mime
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Mime_Decode
@@ -193,7 +193,7 @@ class Zend_Mime_Decode
         }
         
         $field = $firstName . '=' . $field;
-        if (!preg_match_all('%([^=]+)=("[^"]+"|[^;]+)(;\s*|$)%', $field, $matches)) {
+        if (!preg_match_all('%([^=\s]+)\s*=("[^"]+"|[^;]+)(;\s*|$)%', $field, $matches)) {
             throw new Zend_Exception('not a valid header field');
         }
 

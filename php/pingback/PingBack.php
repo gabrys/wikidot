@@ -184,7 +184,7 @@ class PingBack {
 				throw new Exception();
 			}
 		} catch (PingBackException $e) {
-			throw $e;
+			throw new PingBackNotAvailableException("Site does not seem to support PingBack service; reason: " . $e->getMessage());
 		} catch (Exception $e) {
 			throw new PingBackNotAvailableException("Site does not seem to support PingBack service");
 		}
@@ -323,7 +323,7 @@ class PingBack {
 	 */
 	private function requestExternalPage($method = "GET") {
 		try {
-			$hc = new Zend_Http_Client($this->externalURI);
+			$hc = new Zend_Http_Client($this->externalURI, array("strictredirects" => true));
 			$resp = $hc->request($method);
 			if ($resp->getStatus() != 200) {
 				throw new PingBackException("Site does not exist", 16);

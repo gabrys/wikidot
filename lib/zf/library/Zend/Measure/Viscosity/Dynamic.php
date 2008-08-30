@@ -12,13 +12,12 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Measure
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: Dynamic.php 7001 2007-11-30 22:05:35Z thomas $
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
+ * @category  Zend
+ * @package   Zend_Measure
+ * @copyright Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd     New BSD License
+ * @version   $Id: Dynamic.php 9516 2008-05-24 22:00:15Z thomas $
  */
-
 
 /**
  * Implement needed classes
@@ -27,57 +26,62 @@ require_once 'Zend/Measure/Exception.php';
 require_once 'Zend/Measure/Abstract.php';
 require_once 'Zend/Locale.php';
 
-
 /**
+ * Class for handling acceleration conversions
+ *
  * @category   Zend
  * @package    Zend_Measure
  * @subpackage Zend_Measure_Viscosity_Dynamic
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Measure_Viscosity_Dynamic extends Zend_Measure_Abstract
 {
-    // Viscosity_Dynamic definitions
     const STANDARD = 'KILOGRAM_PER_METER_SECOND';
 
-    const CENTIPOISE           = 'CENTIPOISE';
-    const DECIPOISE            = 'DECIPOISE';
+    const CENTIPOISE                              = 'CENTIPOISE';
+    const DECIPOISE                               = 'DECIPOISE';
     const DYNE_SECOND_PER_SQUARE_CENTIMETER       = 'DYNE_SECOND_PER_SQUARE_CENTIMETER';
     const GRAM_FORCE_SECOND_PER_SQUARE_CENTIMETER = 'GRAM_FORCE_SECOND_PER_SQUARE_CENTIMETER';
     const GRAM_PER_CENTIMETER_SECOND              = 'GRAM_PER_CENTIMETER_SECOND';
     const KILOGRAM_FORCE_SECOND_PER_SQUARE_METER  = 'KILOGRAM_FORCE_SECOND_PER_SQUARE_METER';
-    const KILOGRAM_PER_METER_HOUR    = 'KILOGRAM_PER_METER_HOUR';
-    const KILOGRAM_PER_METER_SECOND  = 'KILOGRAM_PER_METER_SECOND';
-    const MILLIPASCAL_SECOND   = 'MILLIPASCAL_SECOND';
-    const MILLIPOISE           = 'MILLIPOISE';
-    const NEWTON_SECOND_PER_SQUARE_METER = 'NEWTON_SECOND_PER_SQUARE_METER';
-    const PASCAL_SECOND        = 'PASCAL_SECOND';
-    const POISE                = 'POISE';
-    const POISEUILLE           = 'POISEUILLE';
-    const POUND_FORCE_SECOND_PER_SQUARE_FEET = 'POUND_FORCE_SECOND_PER_SQUARE_FEET';
-    const POUND_FORCE_SECOND_PER_SQUARE_INCH = 'POUND_FORCE_SECOND_PER_SQUARE_INCH';
-    const POUND_PER_FOOT_HOUR                = 'POUND_PER_FOOT_HOUR';
-    const POUND_PER_FOOT_SECOND              = 'POUND_PER_FOOT_SECOND';
-    const POUNDAL_HOUR_PER_SQUARE_FOOT       = 'POUNDAL_HOUR_PER_SQUARE_FOOT';
-    const POUNDAL_SECOND_PER_SQUARE_FOOT     = 'POUNDAL_SECOND_PER_SQUARE_FOOT';
-    const REYN                 = 'REYN';
-    const SLUG_PER_FOOT_SECOND = 'SLUG_PER_FOOT_SECOND';
-    const LBFS_PER_SQUARE_FOOT = 'LBFS_PER_SQUARE_FOOT';
-    const NS_PER_SQUARE_METER  = 'NS_PER_SQUARE_METER';
-    const WATER_20C            = 'WATER_20C';
-    const WATER_40C            = 'WATER_40C';
-    const HEAVY_OIL_20C        = 'HEAVY_OIL_20C';
-    const HEAVY_OIL_40C        = 'HEAVY_OIL_40C';
-    const GLYCERIN_20C         = 'GLYCERIN_20C';
-    const GLYCERIN_40C         = 'GLYCERIN_40C';
-    const SAE_5W_MINUS18C      = 'SAE_5W_MINUS18C';
-    const SAE_10W_MINUS18C     = 'SAE_10W_MINUS18C';
-    const SAE_20W_MINUS18C     = 'SAE_20W_MINUS18C';
-    const SAE_5W_99C           = 'SAE_5W_99C';
-    const SAE_10W_99C          = 'SAE_10W_99C';
-    const SAE_20W_99C          = 'SAE_20W_99C';
+    const KILOGRAM_PER_METER_HOUR                 = 'KILOGRAM_PER_METER_HOUR';
+    const KILOGRAM_PER_METER_SECOND               = 'KILOGRAM_PER_METER_SECOND';
+    const MILLIPASCAL_SECOND                      = 'MILLIPASCAL_SECOND';
+    const MILLIPOISE                              = 'MILLIPOISE';
+    const NEWTON_SECOND_PER_SQUARE_METER          = 'NEWTON_SECOND_PER_SQUARE_METER';
+    const PASCAL_SECOND                           = 'PASCAL_SECOND';
+    const POISE                                   = 'POISE';
+    const POISEUILLE                              = 'POISEUILLE';
+    const POUND_FORCE_SECOND_PER_SQUARE_FEET      = 'POUND_FORCE_SECOND_PER_SQUARE_FEET';
+    const POUND_FORCE_SECOND_PER_SQUARE_INCH      = 'POUND_FORCE_SECOND_PER_SQUARE_INCH';
+    const POUND_PER_FOOT_HOUR                     = 'POUND_PER_FOOT_HOUR';
+    const POUND_PER_FOOT_SECOND                   = 'POUND_PER_FOOT_SECOND';
+    const POUNDAL_HOUR_PER_SQUARE_FOOT            = 'POUNDAL_HOUR_PER_SQUARE_FOOT';
+    const POUNDAL_SECOND_PER_SQUARE_FOOT          = 'POUNDAL_SECOND_PER_SQUARE_FOOT';
+    const REYN                                    = 'REYN';
+    const SLUG_PER_FOOT_SECOND                    = 'SLUG_PER_FOOT_SECOND';
+    const LBFS_PER_SQUARE_FOOT                    = 'LBFS_PER_SQUARE_FOOT';
+    const NS_PER_SQUARE_METER                     = 'NS_PER_SQUARE_METER';
+    const WATER_20C                               = 'WATER_20C';
+    const WATER_40C                               = 'WATER_40C';
+    const HEAVY_OIL_20C                           = 'HEAVY_OIL_20C';
+    const HEAVY_OIL_40C                           = 'HEAVY_OIL_40C';
+    const GLYCERIN_20C                            = 'GLYCERIN_20C';
+    const GLYCERIN_40C                            = 'GLYCERIN_40C';
+    const SAE_5W_MINUS18C                         = 'SAE_5W_MINUS18C';
+    const SAE_10W_MINUS18C                        = 'SAE_10W_MINUS18C';
+    const SAE_20W_MINUS18C                        = 'SAE_20W_MINUS18C';
+    const SAE_5W_99C                              = 'SAE_5W_99C';
+    const SAE_10W_99C                             = 'SAE_10W_99C';
+    const SAE_20W_99C                             = 'SAE_20W_99C';
 
-    protected $_UNITS = array(
+    /**
+     * Calculations for all dynamic viscosity units
+     *
+     * @var array
+     */
+    protected $_units = array(
         'CENTIPOISE'          => array('0.001',      'cP'),
         'DECIPOISE'           => array('0.01',       'dP'),
         'DYNE_SECOND_PER_SQUARE_CENTIMETER'       => array('0.1',     'dyn s/cm²'),

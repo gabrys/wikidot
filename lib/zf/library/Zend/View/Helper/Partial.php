@@ -15,8 +15,8 @@
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: Partial.php 7086 2007-12-11 20:35:31Z matthew $
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id: Partial.php 8525 2008-03-03 21:05:02Z matthew $
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -24,12 +24,18 @@
  * Helper for rendering a template fragment in its own variable scope.
  *
  * @package    Zend_View
- * @subpackage Helpers
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @subpackage Helper
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_View_Helper_Partial 
+class Zend_View_Helper_Partial
 {
+    /**
+     * Variable to which object will be assigned
+     * @var string
+     */
+    protected $_objectKey;
+
     /**
      * Instance of parent Zend_View object
      *
@@ -41,24 +47,30 @@ class Zend_View_Helper_Partial
      * Renders a template fragment within a variable scope distinct from the
      * calling View object.
      *
-     * If the $model is an array, it is passed to the view object's assign() 
+     * If no arguments are passed, returns the helper instance.
+     *
+     * If the $model is an array, it is passed to the view object's assign()
      * method.
      *
-     * If the $model is an object, it first checks to see if the object 
-     * implements a 'toArray' method; if so, it passes the result of that 
-     * method to to the view object's assign() method. Otherwise, the result of 
+     * If the $model is an object, it first checks to see if the object
+     * implements a 'toArray' method; if so, it passes the result of that
+     * method to to the view object's assign() method. Otherwise, the result of
      * get_object_vars() is passed.
      *
      * @param  string $name Name of view script
      * @param  string|array $module If $model is empty, and $module is an array,
-     *                              these are the variables to populate in the 
-     *                              view. Otherwise, the module in which the 
+     *                              these are the variables to populate in the
+     *                              view. Otherwise, the module in which the
      *                              partial resides
      * @param  array $model Variables to populate in the view
-     * @return string 
+     * @return string|Zend_View_Helper_Partial
      */
-    public function partial($name, $module = null, $model = null)
+    public function partial($name = null, $module = null, $model = null)
     {
+        if (0 == func_num_args()) {
+            return $this;
+        }
+
         $view = $this->cloneView();
         if ((null !== $module) && is_string($module)) {
             $moduleDir = Zend_Controller_Front::getInstance()->getControllerDirectory($module);
@@ -68,17 +80,19 @@ class Zend_View_Helper_Partial
             }
             $viewsDir = dirname($moduleDir) . '/views';
             $view->addBasePath($viewsDir);
-        } elseif ((null == $model) && (null !== $module) 
-            && (is_array($module) || is_object($module))) 
+        } elseif ((null == $model) && (null !== $module)
+            && (is_array($module) || is_object($module)))
         {
             $model = $module;
-        } 
+        }
 
         if (!empty($model)) {
             if (is_array($model)) {
                 $view->assign($model);
             } elseif (is_object($model)) {
-                if (method_exists($model, 'toArray')) {
+                if (null !== ($objectKey = $this->getObjectKey())) {
+                    $view->assign($objectKey, $model);
+                } elseif (method_exists($model, 'toArray')) {
                     $view->assign($model->toArray());
                 } else {
                     $view->assign(get_object_vars($model));
@@ -111,5 +125,35 @@ class Zend_View_Helper_Partial
         $view = clone $this->view;
         $view->clearVars();
         return $view;
+    }
+
+    /**
+     * Set object key
+     *
+     * @param  string $key
+     * @return Zend_View_Helper_Partial
+     */
+    public function setObjectKey($key)
+    {
+        if (null === $key) {
+            $this->_objectKey = null;
+        } else {
+            $this->_objectKey = (string) $key;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Retrieve object key
+     *
+     * The objectKey is the variable to which an object in the iterator will be
+     * assigned.
+     *
+     * @return null|string
+     */
+    public function getObjectKey()
+    {
+        return $this->_objectKey;
     }
 }

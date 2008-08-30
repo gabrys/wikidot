@@ -15,7 +15,7 @@
  * @category   Zend
  * @package    Zend_Controller
  * @subpackage Plugins
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -29,9 +29,9 @@ require_once 'Zend/Controller/Plugin/Abstract.php';
  * @category   Zend
  * @package    Zend_Controller
  * @subpackage Plugins
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Layout.php 6997 2007-11-30 14:28:15Z matthew $
+ * @version    $Id: Layout.php 8064 2008-02-16 10:58:39Z thomas $
  */
 class Zend_Layout_Controller_Plugin_Layout extends Zend_Controller_Plugin_Abstract
 {

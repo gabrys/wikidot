@@ -14,26 +14,20 @@
  *
  * @category   Zend
  * @package    Zend_Date
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: DateObject.php 7015 2007-12-01 20:01:36Z thomas $
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id: DateObject.php 9077 2008-03-27 19:10:40Z thomas $
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-
-/**
- * Include needed Date classes
- */
-require_once 'Zend/Date/Exception.php';
 
 /**
  * @category   Zend
  * @package    Zend_Date
  * @subpackage Zend_Date_DateObject
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Date_DateObject {
-
 
     /**
      * UNIX Timestamp
@@ -94,6 +88,7 @@ abstract class Zend_Date_DateObject {
         } else if ($timestamp === null) {
             $this->_unixTimestamp = time();
         } else {
+            require_once 'Zend/Date/Exception.php';
             throw new Zend_Date_Exception('\'' . $timestamp . '\' is not a valid UNIX timestamp', $timestamp);
         }
 
@@ -204,8 +199,9 @@ abstract class Zend_Date_DateObject {
 
             // Date is after UNIX epoch
             // go through leapyears
-            // add months from letest given year
+            // add months from latest given year
             for ($count = 1970; $count <= $year; $count++) {
+
                 $leapyear = self::isYearLeapYear($count);
                 if ($count < $year) {
 
@@ -313,14 +309,12 @@ abstract class Zend_Date_DateObject {
             date_default_timezone_set($this->_timezone);
         }
         if ($timestamp === null) {
-
             $result = ($gmt) ? @gmdate($format) : @date($format);
             date_default_timezone_set($oldzone);
             return $result;
         }
 
         if (abs($timestamp) <= 0x7FFFFFFF) {
-
             $result = ($gmt) ? @gmdate($format, $timestamp) : @date($format, $timestamp);
             date_default_timezone_set($oldzone);
             return $result;
@@ -346,8 +340,8 @@ abstract class Zend_Date_DateObject {
                 if ($dst === 1) {
                     $timestamp += 3600;
                 }
-                $temp = new DateTime('@'.$tempstamp);
-                $timestamp += $temp->getOffset();
+                $temp = date('Z', $tempstamp);
+                $timestamp += $temp;
             }
 
             if (isset(self::$_cache)) {
@@ -1017,14 +1011,15 @@ abstract class Zend_Date_DateObject {
             $zone = $oldzone;
         }
 
-        // throw an error on false input, but only if the new date extension is avaiable
+        // throw an error on false input, but only if the new date extension is available
         if (function_exists('timezone_open')) {
             if (!@timezone_open($zone)) {
+                require_once 'Zend/Date/Exception.php';
                 throw new Zend_Date_Exception("timezone ($zone) is not a known timezone", $zone);
             }
         }
-        // this can generate an error if the date extension is not avaiable and a false timezone is given
-        $result = date_default_timezone_set($zone);
+        // this can generate an error if the date extension is not available and a false timezone is given
+        $result = @date_default_timezone_set($zone);
         if ($result === true) {
             $this->_offset   = mktime(0, 0, 0, 1, 2, 1970) - gmmktime(0, 0, 0, 1, 2, 1970);
             $this->_timezone = $zone;

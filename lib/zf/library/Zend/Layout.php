@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Layout
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Layout.php 7100 2007-12-13 12:51:25Z matthew $
+ * @version    $Id: Layout.php 9358 2008-05-05 12:22:35Z matthew $
  */
 
 /**
@@ -24,7 +24,7 @@
  *
  * @category   Zend
  * @package    Zend_Layout
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Layout
@@ -64,6 +64,12 @@ class Zend_Layout
      * @var bool
      */
     protected $_inflectorEnabled = true;
+
+    /**
+     * Inflector target
+     * @var string
+     */
+    protected $_inflectorTarget = ':script.:suffix';
 
     /**
      * Layout view
@@ -107,6 +113,12 @@ class Zend_Layout
     protected $_view;
 
     /**
+     * View script suffix for layout script
+     * @var string
+     */
+    protected $_viewSuffix = 'phtml';
+
+    /**
      * Constructor
      *
      * Accepts either:
@@ -146,16 +158,6 @@ class Zend_Layout
             $this->_initMvc();
         } else {
             $this->_setMvcEnabled(false);
-        }
-
-        if (null === $this->getInflector()) {
-            require_once 'Zend/Filter/Inflector.php';
-            $inflector = new Zend_Filter_Inflector(':script.:suffix');
-            $inflector->addRules(array(
-                ':script' => array('Word_CamelCaseToDash', 'StringToLower'),
-                'suffix'  => 'phtml'
-            ));
-            $this->setInflector($inflector);
         }
     }
 
@@ -500,6 +502,7 @@ class Zend_Layout
     public function getView() 
     {
         if (null === $this->_view) {
+            require_once 'Zend/Controller/Action/HelperBroker.php';
             $viewRenderer = Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
             if (null === $viewRenderer->view) {
                 $viewRenderer->initView();
@@ -508,7 +511,51 @@ class Zend_Layout
         }
         return $this->_view;
     } 
+
+    /**
+     * Set layout view script suffix
+     *
+     * @param  string $viewSuffix
+     * @return Zend_Layout
+     */
+    public function setViewSuffix($viewSuffix)
+    {
+        $this->_viewSuffix = (string) $viewSuffix;
+        return $this;
+    }
  
+    /**
+     * Retrieve layout view script suffix
+     *
+     * @return string
+     */
+    public function getViewSuffix()
+    {
+        return $this->_viewSuffix;
+    }
+
+    /**
+     * Retrieve inflector target
+     *
+     * @return string
+     */
+    public function getInflectorTarget()
+    {
+        return $this->_inflectorTarget;
+    }
+
+    /**
+     * Set inflector target
+     *
+     * @param  string $inflectorTarget
+     * @return Zend_Layout
+     */
+    public function setInflectorTarget($inflectorTarget)
+    {
+        $this->_inflectorTarget = (string) $inflectorTarget;
+        return $this;
+    }
+
     /**
      * Set inflector to use when resolving layout names
      *
@@ -528,6 +575,15 @@ class Zend_Layout
      */
     public function getInflector()
     {
+        if (null === $this->_inflector) {
+            require_once 'Zend/Filter/Inflector.php';
+            $inflector = new Zend_Filter_Inflector();
+            $inflector->setTargetReference($this->_inflectorTarget)
+                      ->addRules(array(':script' => array('Word_CamelCaseToDash', 'StringToLower')))
+                      ->setStaticRuleReference('suffix', $this->_viewSuffix);
+            $this->setInflector($inflector);
+        }
+
         return $this->_inflector;
     }
 

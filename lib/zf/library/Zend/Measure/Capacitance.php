@@ -12,13 +12,12 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Measure
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: Capacitance.php 7001 2007-11-30 22:05:35Z thomas $
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
+ * @category  Zend
+ * @package   Zend_Measure
+ * @copyright Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd     New BSD License
+ * @version   $Id: Capacitance.php 9516 2008-05-24 22:00:15Z thomas $
  */
-
 
 /**
  * Implement needed classes
@@ -27,45 +26,50 @@ require_once 'Zend/Measure/Exception.php';
 require_once 'Zend/Measure/Abstract.php';
 require_once 'Zend/Locale.php';
 
-
 /**
+ * Class for handling capacitance conversions
+ *
  * @category   Zend
  * @package    Zend_Measure
  * @subpackage Zend_Measure_Capacitance
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Measure_Capacitance extends Zend_Measure_Abstract
 {
-    // Capacitance definitions
     const STANDARD = 'FARAD';
 
-    const ABFARAD              = 'ABFARAD';
-    const AMPERE_PER_SECOND_VOLT   = 'AMPERE_PER_SECOND_VOLT';
-    const CENTIFARAD           = 'CENTIFARAD';
-    const COULOMB_PER_VOLT         = 'COULOMB_PER_VOLT';
-    const DECIFARAD            = 'DECIFARAD';
-    const DEKAFARAD            = 'DEKAFARAD';
-    const ELECTROMAGNETIC_UNIT = 'ELECTROMAGNETIC_UNIT';
-    const ELECTROSTATIC_UNIT   = 'ELECTROSTATIC_UNIT';
-    const FARAD                = 'FARAD';
-    const FARAD_INTERNATIONAL  = 'FARAD_INTERNATIONAL';
-    const GAUSSIAN             = 'GAUSSIAN';
-    const GIGAFARAD            = 'GIGAFARAD';
-    const HECTOFARAD           = 'HECTOFARAD';
-    const JAR                  = 'JAR';
-    const KILOFARAD            = 'KILOFARAD';
-    const MEGAFARAD            = 'MEGAFARAD';
-    const MICROFARAD           = 'MICROFARAD';
-    const MILLIFARAD           = 'MILLIFARAD';
-    const NANOFARAD            = 'NANOFARAD';
-    const PICOFARAD            = 'PICOFARAD';
-    const PUFF                 = 'PUFF';
-    const SECOND_PER_OHM       = 'SECOND_PER_OHM';
-    const STATFARAD            = 'STATFARAD';
-    const TERAFARAD            = 'TERAFARAD';
+    const ABFARAD                = 'ABFARAD';
+    const AMPERE_PER_SECOND_VOLT = 'AMPERE_PER_SECOND_VOLT';
+    const CENTIFARAD             = 'CENTIFARAD';
+    const COULOMB_PER_VOLT       = 'COULOMB_PER_VOLT';
+    const DECIFARAD              = 'DECIFARAD';
+    const DEKAFARAD              = 'DEKAFARAD';
+    const ELECTROMAGNETIC_UNIT   = 'ELECTROMAGNETIC_UNIT';
+    const ELECTROSTATIC_UNIT     = 'ELECTROSTATIC_UNIT';
+    const FARAD                  = 'FARAD';
+    const FARAD_INTERNATIONAL    = 'FARAD_INTERNATIONAL';
+    const GAUSSIAN               = 'GAUSSIAN';
+    const GIGAFARAD              = 'GIGAFARAD';
+    const HECTOFARAD             = 'HECTOFARAD';
+    const JAR                    = 'JAR';
+    const KILOFARAD              = 'KILOFARAD';
+    const MEGAFARAD              = 'MEGAFARAD';
+    const MICROFARAD             = 'MICROFARAD';
+    const MILLIFARAD             = 'MILLIFARAD';
+    const NANOFARAD              = 'NANOFARAD';
+    const PICOFARAD              = 'PICOFARAD';
+    const PUFF                   = 'PUFF';
+    const SECOND_PER_OHM         = 'SECOND_PER_OHM';
+    const STATFARAD              = 'STATFARAD';
+    const TERAFARAD              = 'TERAFARAD';
 
-    protected $_UNITS = array(
+    /**
+     * Calculations for all capacitance units
+     *
+     * @var array
+     */
+    protected $_units = array(
         'ABFARAD'              => array('1.0e+9',      'abfarad'),
         'AMPERE_PER_SECOND_VOLT' => array('1',         'A/sV'),
         'CENTIFARAD'           => array('0.01',        'cF'),

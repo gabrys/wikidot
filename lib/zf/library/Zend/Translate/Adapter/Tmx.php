@@ -14,7 +14,7 @@
  *
  * @category   Zend
  * @package    Zend_Translate
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @version    $Id: Date.php 2498 2006-12-23 22:13:38Z thomas $
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
@@ -23,9 +23,6 @@
 /** Zend_Locale */
 require_once 'Zend/Locale.php';
 
-/** Zend_Translate_Exception */
-require_once 'Zend/Translate/Exception.php';
-
 /** Zend_Translate_Adapter */
 require_once 'Zend/Translate/Adapter.php';
 
@@ -33,7 +30,7 @@ require_once 'Zend/Translate/Adapter.php';
 /**
  * @category   Zend
  * @package    Zend_Translate
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Translate_Adapter_Tmx extends Zend_Translate_Adapter {
@@ -72,7 +69,7 @@ class Zend_Translate_Adapter_Tmx extends Zend_Translate_Adapter {
      */
     protected function _loadTranslationData($filename, $locale, array $options = array())
     {
-        $options = array_merge($this->_options, $options);
+        $options = $this->_options + $options;
 
         if ($options['clear']) {
             $this->_translate = array();
@@ -83,10 +80,12 @@ class Zend_Translate_Adapter_Tmx extends Zend_Translate_Adapter {
         }
 
         if (!is_readable($filename)) {
+            require_once 'Zend/Translate/Exception.php';
             throw new Zend_Translate_Exception('Translation file \'' . $filename . '\' is not readable.');
         }
 
-        $this->_file = xml_parser_create();
+        $encoding = $this->_findEncoding($filename);
+        $this->_file = xml_parser_create($encoding);
         xml_set_object($this->_file, $this);
         xml_parser_set_option($this->_file, XML_OPTION_CASE_FOLDING, 0);
         xml_set_element_handler($this->_file, "_startElement", "_endElement");
@@ -97,6 +96,7 @@ class Zend_Translate_Adapter_Tmx extends Zend_Translate_Adapter {
                           xml_error_string(xml_get_error_code($this->_file)),
                           xml_get_current_line_number($this->_file));
             xml_parser_free($this->_file);
+            require_once 'Zend/Translate/Exception.php';
             throw new Zend_Translate_Exception($ex);
         }
     }
@@ -112,14 +112,14 @@ class Zend_Translate_Adapter_Tmx extends Zend_Translate_Adapter {
         } else {
             switch(strtolower($name)) {
                 case 'tu':
-                    if (array_key_exists('tuid', $attrib)) {
+                    if (isset($attrib['tuid']) === true) {
                         $this->_tu = $attrib['tuid'];
                     }
                     break;
                 case 'tuv':
-                    if (array_key_exists('xml:lang', $attrib)) {
+                    if (isset($attrib['xml:lang']) === true) {
                         $this->_tuv = $attrib['xml:lang'];
-                        if (!array_key_exists($this->_tuv, $this->_translate)) {
+                        if (isset($this->_translate[$this->_tuv]) === false) {
                             $this->_translate[$this->_tuv] = array();
                         }
                     }
@@ -148,7 +148,7 @@ class Zend_Translate_Adapter_Tmx extends Zend_Translate_Adapter {
                     break;
                 case 'seg':
                     $this->_seg = null;
-                    if (!empty($this->_content) or !array_key_exists($this->_tu, $this->_translate[$this->_tuv])) {
+                    if (!empty($this->_content) or (isset($this->_translate[$this->_tuv][$this->_tu]) === false)) {
                         $this->_translate[$this->_tuv][$this->_tu] = $this->_content;
                     }
                     break;
@@ -163,6 +163,17 @@ class Zend_Translate_Adapter_Tmx extends Zend_Translate_Adapter {
         if (($this->_seg !== null) and ($this->_tu !== null) and ($this->_tuv !== null)) {
             $this->_content .= $data;
         }
+    }
+
+    private function _findEncoding($filename)
+    {
+        $file = file_get_contents($filename, null, null, 0, 100);
+        if (strpos($file, "encoding") !== false) {
+            $encoding = substr($file, strpos($file, "encoding") + 10);
+            $encoding = substr($encoding, 0, strpos($encoding, '"'));
+            return $encoding;
+        }
+        return 'UTF-8';
     }
 
     /**

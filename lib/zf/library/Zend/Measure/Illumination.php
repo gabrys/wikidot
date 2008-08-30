@@ -12,13 +12,12 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Measure
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: Illumination.php 7001 2007-11-30 22:05:35Z thomas $
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
+ * @category  Zend
+ * @package   Zend_Measure
+ * @copyright Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd     New BSD License
+ * @version   $Id: Illumination.php 9516 2008-05-24 22:00:15Z thomas $
  */
-
 
 /**
  * Implement needed classes
@@ -27,32 +26,37 @@ require_once 'Zend/Measure/Exception.php';
 require_once 'Zend/Measure/Abstract.php';
 require_once 'Zend/Locale.php';
 
-
 /**
+ * Class for handling illumination conversions
+ *
  * @category   Zend
  * @package    Zend_Measure
  * @subpackage Zend_Measure_Illumination
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Measure_Illumination extends Zend_Measure_Abstract
 {
-    // Illumination definitions
     const STANDARD = 'LUX';
 
-    const FOOTCANDLE              = 'FOOTCANDLE';
-    const KILOLUX                 = 'KILOLUX';
+    const FOOTCANDLE                  = 'FOOTCANDLE';
+    const KILOLUX                     = 'KILOLUX';
     const LUMEN_PER_SQUARE_CENTIMETER = 'LUMEN_PER_SQUARE_CENTIMETER';
-    const LUMEN_PER_SQUARE_FOOT   = 'LUMEN_PER_SQUARE_FOOT';
-    const LUMEN_PER_SQUARE_INCH   = 'LUMEN_PER_SQUARE_INCH';
-    const LUMEN_PER_SQUARE_METER  = 'LUMEN_PER_SQUARE_METER';
-    const LUX                     = 'LUX';
-    const METERCANDLE             = 'METERCANDLE';
-    const MILLIPHOT               = 'MILLIPHOT';
-    const NOX                     = 'NOX';
-    const PHOT                    = 'PHOT';
+    const LUMEN_PER_SQUARE_FOOT       = 'LUMEN_PER_SQUARE_FOOT';
+    const LUMEN_PER_SQUARE_INCH       = 'LUMEN_PER_SQUARE_INCH';
+    const LUMEN_PER_SQUARE_METER      = 'LUMEN_PER_SQUARE_METER';
+    const LUX                         = 'LUX';
+    const METERCANDLE                 = 'METERCANDLE';
+    const MILLIPHOT                   = 'MILLIPHOT';
+    const NOX                         = 'NOX';
+    const PHOT                        = 'PHOT';
 
-    protected $_UNITS = array(
+    /**
+     * Calculations for all illumination units
+     *
+     * @var array
+     */
+    protected $_units = array(
         'FOOTCANDLE'              => array('10.7639104',   'fc'),
         'KILOLUX'                 => array('1000',         'klx'),
         'LUMEN_PER_SQUARE_CENTIMETER' => array('10000',    'lm/cm²'),

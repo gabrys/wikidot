@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Zend Framework
  *
@@ -15,21 +14,16 @@
  *
  * @category   Zend
  * @package    Zend_Config
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
+ * @version    $Id: Config.php 9665 2008-06-11 07:39:26Z stas $
  */
-
-
-/**
- * Zend_Config_Exception
- */
-require_once 'Zend/Config/Exception.php';
 
 
 /**
  * @category   Zend
  * @package    Zend_Config
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Config implements Countable, Iterator
@@ -88,11 +82,11 @@ class Zend_Config implements Countable, Iterator
      * Zend_Config also implements Countable and Iterator to
      * facilitate easy access to the data.
      *
-     * @param array $array
-     * @param boolean $allowModifications
-     * @throws Zend_Config_Exception
+     * @param  array   $array
+     * @param  boolean $allowModifications
+     * @return void
      */
-    public function __construct($array, $allowModifications = false)
+    public function __construct(array $array, $allowModifications = false)
     {
         $this->_allowModifications = (boolean) $allowModifications;
         $this->_loadedSection = null;
@@ -139,9 +133,10 @@ class Zend_Config implements Countable, Iterator
      * Only allow setting of a property if $allowModifications
      * was set to true on construction. Otherwise, throw an exception.
      *
-     * @param string $name
-     * @param mixed $value
+     * @param  string $name
+     * @param  mixed  $value
      * @throws Zend_Config_Exception
+     * @return void
      */
     public function __set($name, $value)
     {
@@ -153,6 +148,8 @@ class Zend_Config implements Countable, Iterator
             }
             $this->_count = count($this->_data);
         } else {
+            /** @see Zend_Config_Exception */
+            require_once 'Zend/Config/Exception.php';
             throw new Zend_Config_Exception('Zend_Config is read only');
         }
     }
@@ -181,7 +178,7 @@ class Zend_Config implements Countable, Iterator
      * @param string $name
      * @return boolean
      */
-    protected function __isset($name)
+    public function __isset($name)
     {
         return isset($this->_data[$name]);
     }
@@ -189,13 +186,18 @@ class Zend_Config implements Countable, Iterator
     /**
      * Support unset() overloading on PHP 5.1
      *
-     * @param string $name
+     * @param  string $name
+     * @throws Zend_Config_Exception
+     * @return void
      */
-    protected function __unset($name)
+    public function __unset($name)
     {
         if ($this->_allowModifications) {
             unset($this->_data[$name]);
+            $this->_count = count($this->_data);
         } else {
+            /** @see Zend_Config_Exception */
+            require_once 'Zend/Config/Exception.php';
             throw new Zend_Config_Exception('Zend_Config is read only');
         }
 
@@ -306,7 +308,7 @@ class Zend_Config implements Countable, Iterator
 
         return $this;
     }
-    
+
     /**
      * Prevent any more modifications being made to this instance. Useful
      * after merge() has been used to merge multiple Zend_Config objects
@@ -317,14 +319,15 @@ class Zend_Config implements Countable, Iterator
     {
         $this->_allowModifications = false;
     }
-    
+
     /**
      * Throws an exception if $extendingSection may not extend $extendedSection,
      * and tracks the section extension if it is valid.
      *
-     * @param string $extendingSection
-     * @param string $extendedSection
+     * @param  string $extendingSection
+     * @param  string $extendedSection
      * @throws Zend_Config_Exception
+     * @return void
      */
     protected function _assertValidExtend($extendingSection, $extendedSection)
     {
@@ -332,6 +335,8 @@ class Zend_Config implements Countable, Iterator
         $extendedSectionCurrent = $extendedSection;
         while (array_key_exists($extendedSectionCurrent, $this->_extends)) {
             if ($this->_extends[$extendedSectionCurrent] == $extendingSection) {
+                /** @see Zend_Config_Exception */
+                require_once 'Zend/Config/Exception.php';
                 throw new Zend_Config_Exception('Illegal circular inheritance detected');
             }
             $extendedSectionCurrent = $this->_extends[$extendedSectionCurrent];

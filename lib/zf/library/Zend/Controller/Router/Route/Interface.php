@@ -14,20 +14,18 @@
  *
  * @package    Zend_Controller
  * @subpackage Router
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: Interface.php 6398 2007-09-18 13:47:00Z darby $
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id: Interface.php 8064 2008-02-16 10:58:39Z thomas $
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-
-/** Zend_Controller_Router_Exception */
-require_once 'Zend/Controller/Router/Exception.php';
-
+/** Zend_Config */
+require_once 'Zend/Config.php';
 
 /**
  * @package    Zend_Controller
  * @subpackage Router
- * @copyright  Copyright (c) 2005-2007 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 interface Zend_Controller_Router_Route_Interface {
