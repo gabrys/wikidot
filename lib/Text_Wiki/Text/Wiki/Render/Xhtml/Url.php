@@ -9,7 +9,7 @@
  * @package    Text_Wiki
  * @author     Paul M. Jones <pmjones@php.net>
  * @license    http://www.gnu.org/copyleft/lesser.html  LGPL License 2.1
- * @version    $Id$
+ * @version    $Id: Url.php,v 1.5 2008/08/28 11:34:22 redbeard Exp $
  * @link       http://pear.php.net/package/Text_Wiki
  */
 
@@ -58,6 +58,7 @@ class Text_Wiki_Render_Xhtml_Url extends Text_Wiki_Render {
         // extension.
         $pos = strrpos($href, '.');
         $ext = strtolower(substr($href, $pos + 1));
+        $href0 = $href;
         $href = htmlspecialchars($href);
         if($href=="#"){
         	$href="javascript:;";
@@ -120,7 +121,10 @@ class Text_Wiki_Render_Xhtml_Url extends Text_Wiki_Render {
 		if($wiki->vars['externalLinks'] == null){
 			$wiki->vars['externalLinks'] = array();	
 		}
-		$wiki->vars['externalLinks'][$href]=$href;
+		if(preg_match(';^https?://;', $href0)){
+			$href0 = substr($href0,0,2000);
+			$wiki->vars['externalLinks'][$href0]=$href0;
+		}
 
            
         return $output;
