@@ -62,15 +62,7 @@ class WikiScreen extends Screen {
 			if($user == null){
 				$wikiPage = $site->getSettings()->getPrivateLandingPage();
 				$privateAccessGranted = false;
-			}	
-//			if ($privateAccessGranted) {
-//				$pwdomain = $site->getUnixName() . "." . GlobalProperties::$URL_UPLOAD_DOMAIN;
-//				$pwproto = ($_SERVER["HTTPS"]) ? "https" : "http";
-//				$pwurl = "$pwproto://$pwdomain/filesauth.php";
-//				
-//				$runData->contextAdd("usePrivateWikiScript", true);
-//				$runData->contextAdd("privateWikiScriptUrl", $pwurl);
-//			}
+			}
 		}
 		
 		if($wikiPage==""){$wikiPage=$site->getDefaultPage();}

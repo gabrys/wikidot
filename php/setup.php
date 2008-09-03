@@ -40,7 +40,7 @@ if(!defined('WIKIDOT_SETUP_COMPLETED')){
 		define('OZONE_ROOT', WIKIDOT_ROOT.DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR.'ozone');
 	}
 	
-	require_once (WIKIDOT_ROOT.DIRECTORY_SEPARATOR."conf/GlobalProperties.php");
+	require_once (WIKIDOT_ROOT.DIRECTORY_SEPARATOR."php/utils/GlobalProperties.php");
 	require_once (WIKIDOT_ROOT.DIRECTORY_SEPARATOR."lib/ozone/php/core/functions.php");
 	require_once (WIKIDOT_ROOT.DIRECTORY_SEPARATOR."lib/ozone/php/core/autoload.inc.php");
 	

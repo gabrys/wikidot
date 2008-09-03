@@ -23,28 +23,12 @@
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
 
-class CustomDomainLoginFlowController extends UploadedFileFlowController {
+class CustomDomainLoginFlowController extends WikidotController {
 
-	protected $controllerUrl = "/domainauth.php";
-	
-	/**
-	 * Redirects browser to certain URL build from URL and params
-	 *
-	 * @param string $url URL to redirect to
-	 * @param array $params params to pass with GET
-	 */
-	protected function redirect($url, $params = null) {
-		if (is_array($params)) {
-			$url = $url . "?" . http_build_query($params);
-		}
-		
-		header('HTTP/1.1 301 Moved Permanently');
-		header("Location: $url");
-		
-	}
+	static public $controllerUrl = "/domainauth.php";
 	
 	protected function redirectConfirm($url) {
-		$this->redirect($this->controllerUrl, array("confirm" => "cookie", "url" => $url));
+		$this->redirect(self::$controllerUrl, array("confirm" => "cookie", "url" => $url));
 	}
 	
 	protected function cookieError($url) {
@@ -52,45 +36,6 @@ class CustomDomainLoginFlowController extends UploadedFileFlowController {
 		$this->setContentTypeHeader("text/html");
 		echo "<p>Can't proceed, you should accept cookies for this domain.</p>";
 		echo "<p>Then you can go back to $url</p>";
-	}
-	
-	/**
-	 * Gets a site from given hostname. This version works for custom domains
-	 *
-	 * @param string $siteHost
-	 * @return DB_Site
-	 */
-	protected function getSite($siteHost) {
-		
-		$memcache = Ozone::$memcache;
-		
-		// select site based on the custom domain
-			
-		$mcKey = 'site_cd..'.$siteHost;
-		$site = $memcache->get($mcKey);
-		if ($site == false) {	
-			$c = new Criteria();
-			$c->add("custom_domain", $siteHost);
-			$c->add("site.deleted", false);
-			$site = DB_SitePeer::instance()->selectOne($c);
-			if ($site) {
-				$memcache->set($mcKey, $site, 0, 3600);
-			}	
-		}
-		GlobalProperties::$SESSION_COOKIE_DOMAIN = '.'.$siteHost;
-		
-		return $site;
-	}
-	
-	/**
-	 * sets the Content-type header
-	 *
-	 * @param string $mime
-	 */
-	protected function setContentTypeHeader($mime) {
-		if ($mime) {
-			header("Content-type: $mime; charset=utf-8");
-		}
 	}
 	
 	public function process() {
@@ -106,7 +51,7 @@ class CustomDomainLoginFlowController extends UploadedFileFlowController {
 		$setie = isset($_GET["setiecookie"]);
 		$siteHost = $_SERVER['HTTP_HOST'];
 		
-		$site = $this->getSite($siteHost);
+		$site = $this->siteFromHost($siteHost, true, true);
 		
 		if ($setie) {
 			

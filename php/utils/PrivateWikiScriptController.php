@@ -28,24 +28,17 @@ class PrivateWikiScriptController extends UploadedFileFlowController {
 	public function process() {
 		
 		Ozone::init();
+		$runData = new RunData();
+		$runData->init();
+		Ozone::setRunData($runData);
 		
-		$site = $this->getSite($_SERVER['HTTP_HOST']);
+		$runData->handleSessionStart();
+		$user = $runData->getUser();
+		$site = $this->siteFromHost($_SERVER['HTTP_HOST'], false, true);
 		
-		// check if ucookie exists and is valid
-		$ukey = null;
-		if (isset($_COOKIE["ucookie"])) {
-			$ukey = $_COOKIE["ucookie"];
-		}
-		
-		$ucookie = DB_UcookiePeer::instance()->selectByPrimaryKey($ukey);
-		
-		if (! $ukey || ! $this->validateUCookie($ucookie, $site)) {
-			
-			// ucookie is not there, let's redirect to start the fun
-			
+		if (! $this->userAllowed($user, $site)) {
 			$this->setContentTypeHeader("text/javascript");
 			echo "window.location = '/local--auth/' + encodeURIComponent(window.location);";
-			
 		}
 			
 	}
