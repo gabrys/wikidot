@@ -67,8 +67,8 @@ $patterns = array(
 	'mybloglog' => ';^<script\s+type=(\'|")text/javascript(\'|") src=(\'|")http://[a-z0-9]+\.mybloglog\.com/[^\'"]+(\'|")>\s*</script>$;si',
 	'revver' => ';^<script\s+src="http://[a-z]+\.revver\.com/player/[^"]+"\s+type="text/javascript">\s*</script>$;si',
 	'youtube' => ';^<embed[^>]*?src="http://video\.google\.com/googleplayer\.swf[^"]+"[^>]*>\s*</embed>$;is',
-	'googlevideo' => '/^<object\s+width="[0-9]+"\s+height="[0-9]+">\s*<param\s+name="movie"\s+value="http:\/\/www\.youtube\.com\/.+?">\s*' .
-		'<\/param>(\s*<param[^>]*>\s*<\/param>\s*)?\s*<embed\s+src="http:\/\/www\.youtube\.com\/.+?"\s+type="application\/x\-shockwave\-flash"[^>]*>\s*<\/embed>\s*<\/object>$/si',
+	'googlevideo' => '/^<object\s+width="[0-9]+"\s+height="[0-9]+">\s*<param\s+name="movie"\s+value="http:\/\/[a-z]*\.youtube\.com\/.+?">\s*' .
+		'<\/param>(\s*<param[^>]*>\s*<\/param>\s*)?\s*<embed\s+src="http:\/\/[a-z]*\.youtube\.com\/.+?"\s+type="application\/x\-shockwave\-flash"[^>]*>\s*<\/embed>\s*<\/object>$/si',
 	'aweber-form' => ';^<script type="text/javascript" src="http://forms\.aweber\.com/form/[^"]+\.js">\s*</script>$;si',
 	'platial-mapkit' => ';^(<!\-\- START MAPKIT \-\->)?\s*<script type="text/javascript" src="http://platial\.com/mapkit/load[^"]+">\s*</script>\s*<script type="text/javascript">MapKit\.display\(\)\;</script>\s*(<!\-\- END MAPKIT \-\->)?$;si',
 	'odeo1' => '/^<embed\ssrc="http:\/\/www\.odeo\.com\/flash\/[a-z0-9_]+\.swf"[^<]*<\/embed>' .
@@ -106,5 +106,5 @@ $patterns = array(
 	'picasa2' 			=> ';^<embed type="application/x\-shockwave\-flash" src="http://picasaweb\.google\.pl/s/c/bin/slideshow\.swf" width="[0-9]+" height="[0-9]+" flashvars="[^"<>]+" pluginspage="http://www\.macromedia\.com/go/getflashplayer"></embed>$;si',
 	'gametrailers'		=> ';^<object\s+classid="clsid:[^">]*"\s+codebase="[^">]*"\s+id="gtembed"\s+width="[^">]*"\s+height="[^">]*">\s*<param\s+name="allowScriptAccess"\s+value="sameDomain"\s*/>\s*<param\s+name="allowFullScreen"\s+value="true"\s*/>\s*<param\s+name="movie"\s+value="http://www.gametrailers.com/remote_wrap.php\?mid=[0-9]+"/>\s*<param\s+name="quality"\s+value="high"\s*/>\s+<embed\s+src="http://www.gametrailers.com/remote_wrap.php\?mid=[0-9]+"\s+swLiveConnect="true"\s+name="gtembed"\s+align="middle"\s+allowScriptAccess="sameDomain"\s+allowFullScreen="true"\s+quality="high"\s+pluginspage="http://www.macromedia.com/go/getflashplayer"\s+type="application/x-shockwave-flash"\s+width="[0-9]*"\s+height="[0-9]*"></embed>\s*</object>$;si',
 	'googlemaps'		=> ';^<iframe width="[0-9]+" height="[0-9]+" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="http://maps\.google\.[a-z]{2,3}/[^"<>]+"></iframe>(<br /><small><a href="http://maps\.google\.[a-z]{2,3}/[^"<>]+" style="color:#[0-0A-F]{6}\;text-align:left">[^<>]+</a></small>)?$;si',
-	'youtube-js'		=> ";^<script\s+type='text/javascript' src='http://www\.youtube\.com/watch_custom_player\?id=[^'>]*'></script>$;si",
+	'youtube-js'		=> ";^<script\s+type='text/javascript' src='http://[a-z]*\.youtube\.com/watch_custom_player\?id=[^'>]*'></script>$;si",
 	);
