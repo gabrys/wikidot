@@ -27,7 +27,7 @@
 		id="login-form-keeplogged" checked="checked"/>
 	<label for="login-form-keeplogged">{t}Keep me logged in unless I log out{/t}</label> <span id="keep-logged-info">[?]</span>
 	<br/>
-	&nbsp;&nbsp;&nbsp;&nbsp&nbsp;(Uncheck if on a shared computer)
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Uncheck if on a shared computer)
 	
 	<br/>
 	<input class="checkbox" name="bindIP" type="checkbox" checked="checked"
