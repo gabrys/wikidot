@@ -43,7 +43,9 @@ class GlobalProperties {
 	public static $USE_SSL;
 	public static $SECRET;
 	public static $SECRET_DOMAIN_LOGIN;
+	public static $USE_UPLOAD_DOMAIN;
 	public static $URL_UPLOAD_DOMAIN;
+	public static $RESTRICT_HTML;
 	
 	// database settings
 	public static $DATABASE_SERVER;
@@ -150,10 +152,12 @@ class GlobalProperties {
 		self::$URL_HOST					= self::fromIni("main",		"main_wiki",		"www." . self::$URL_DOMAIN);
 		
 		// security settings
-		self::$SECRET					= self::fromIni("security",	"secret");			// no default!
-		self::$USE_SSL					= self::fromIni("security",	"ssl",				false);
-		self::$SECRET_DOMAIN_LOGIN		= self::fromIni("security",	"secret_login",		self::$SECRET . "_custom_domain_login");
-		self::$URL_UPLOAD_DOMAIN		= self::fromIni("security",	"domain_upload",	"wd.files." . self::$URL_DOMAIN);
+		self::$SECRET					= self::fromIni("security",	"secret");					// no default!
+		self::$USE_SSL					= self::fromIni("security",	"ssl",						false);
+		self::$SECRET_DOMAIN_LOGIN		= self::fromIni("security",	"secret_login",				self::$SECRET . "_custom_domain_login");
+		self::$USE_UPLOAD_DOMAIN		= self::fromIni("security",	"upload_separate_domain",	false);
+		self::$URL_UPLOAD_DOMAIN		= self::fromIni("security",	"upload_domain",			"wd.files." . self::$URL_DOMAIN);
+		self::$RESTRICT_HTML			= self::fromIni("security",	"upload_restrict_html",		true);
 		
 		// database settings
 		self::$DATABASE_USER			= self::fromIni("db",		"user");			// no default!

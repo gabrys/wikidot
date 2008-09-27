@@ -25,6 +25,9 @@
 
 abstract class WikidotController extends WebFlowController {
 	
+	static protected $HTML_MIME_TYPES = array("text/html", "application/xhtml+xml", "application/xml", "text/xml");
+	static protected $HTML_SERVE_AS = "text/plain";
+	
 	/**
 	 * Gets a site from given hostname. This version works for custom domains and upload domain if needed
 	 *
@@ -112,7 +115,7 @@ abstract class WikidotController extends WebFlowController {
 	 * @param string $path
 	 * @param int $expires time in seconds
 	 */
-	protected function serveFileWithMime($path, $expires = null) {
+	protected function serveFileWithMime($path, $expires = null, $restrictHtml = false) {
 
 		/* guess/set the mime type for the file */
 		if ($dir == "theme" || preg_match("/\.css$/", $path)) {
@@ -122,7 +125,7 @@ abstract class WikidotController extends WebFlowController {
 		}
 
 		if (! isset($mime)) {
-			$mime = $this->fileMime($path);
+			$mime = $this->fileMime($path, $restrictHtml);
 		}
 
 		$this->serveFile($path, $mime, $expires);
@@ -157,7 +160,7 @@ abstract class WikidotController extends WebFlowController {
 	 * @param string $path path to file
 	 * @return string the MIME type
 	 */
-	protected function fileMime($path) {
+	protected function fileMime($path, $restrictHtml = false) {
 
 		if (file_exists($path)) {
 			$mime =  FileMime::mime($path);
@@ -167,6 +170,10 @@ abstract class WikidotController extends WebFlowController {
 			
 		if (! $mime || $mime == "application/msword") {
 			$mime = "application/octet-stream";
+		}
+		
+		if ($restrictHtml && in_array($mime, self::$HTML_MIME_TYPES)) {
+			$mime = self::$HTML_SERVE_AS;
 		}
 
 		return $mime;

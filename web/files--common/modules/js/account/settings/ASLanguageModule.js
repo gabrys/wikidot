@@ -38,11 +38,7 @@ WIKIDOT.modules.ASLanguageModule.callbacks = {
 		w.show();
 		var lang = r.language;
 		var url;
-		if(lang == 'pl'){
-			url = "http://pl."+URL_DOMAIN+"/account:you";
-		}else{
-			url = "http://www."+URL_DOMAIN+"/account:you";
-		}
+		url = "http://"+URL_HOST+"/account:you";
 		setTimeout("window.location.href='"+url+"'", 1500);
 	}
 		

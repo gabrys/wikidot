@@ -169,9 +169,14 @@ class UploadedFileFlowController extends WikidotController {
 			}
 				
 			$ext = new CodeblockExtractor($site, $pageName, $number);
-				
+			
+			$mime = $ext->getMimeType();
+			if (GlobalProperties::$RESTRICT_HTML && in_array($mime, self::$HTML_MIME_TYPES)) {
+				$mime = self::$HTML_SERVE_AS;
+			}
+			$this->setContentTypeHeader($mime);
 			$this->setExpiresHeader($expires);
-			$this->setContentTypeHeader($ext->getMimeType());
+			
 			echo $ext->getContents();
 				
 		} else {
@@ -221,14 +226,14 @@ class UploadedFileFlowController extends WikidotController {
 
 		$path = $this->buildPath($site, $file);
 
-		if ($this->isUploadDomain($siteHost)) {
+		if ($this->isUploadDomain($siteHost) || ! GlobalProperties::$USE_UPLOAD_DOMAIN) {
 				
 			if ($this->publicArea($site, $file)) {
 					
 				if ($this->isCodeRequest($file)) {
 					$this->serveCode($site, $file, 3600);
 				} else {
-					$this->serveFileWithMime($path, 3600);
+					$this->serveFileWithMime($path, 3600, GlobalProperties::$RESTRICT_HTML);
 				}
 
 				return;
@@ -247,7 +252,7 @@ class UploadedFileFlowController extends WikidotController {
 					} elseif ($this->isAuthRequest($file)) {
 						$this->serveAuthResponse($file);
 					} else {
-						$this->serveFileWithMime($path, -3600);
+						$this->serveFileWithMime($path, -3600, GlobalProperties::$RESTRICT_HTML);
 					}
 					return;
 						
