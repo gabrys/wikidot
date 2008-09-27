@@ -76,7 +76,7 @@
 						{t}Please confirm:{/t}
 					</td>
 					<td>
-						<input type="checkbox" name="tos" class="checkbox" class="checkbox">
+						<input type="checkbox" name="tos" class="checkbox">
 						
 						<!-- TODO: De-Wikidot.com-ize - change -->
 						{t 1=$URL_HOST}I have read and agree to the <a href="http://%1/legal:terms-of-service"
