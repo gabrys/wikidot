@@ -111,7 +111,7 @@ table#odialog-box-container td div{
 	padding: 0 50px 20px 50px;
 	background-repeat: no-repeat;
 	background-position: bottom center;
-	background-image: url(http://test.wikidot.com/common--theme/base/images/progress/progressbar.gif);
+	background-image: url(../images/progress/progressbar.gif);
 }
 .owindow.osuccess {
 	width: auto;

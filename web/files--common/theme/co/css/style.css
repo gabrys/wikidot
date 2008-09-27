@@ -48,7 +48,7 @@ a:hover {
 /* Banner */
 #header {
 	background-color: #172028;
-	background-image: url(/common--theme/co/images/banner.gif);
+	background-image: url(../images/banner.gif);
 	background-repeat: repeat-y;
 	border-bottom: 2px solid #2A343D;
 	/*padding-top: 5px;

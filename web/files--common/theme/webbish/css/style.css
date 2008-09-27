@@ -28,7 +28,7 @@ input{
 
 #container-wrap{
 	padding: 0 0 0 35px;
-	background-image:url(/common--theme/webbish/images/sideback2_l.png);
+	background-image:url(../images/sideback2_l.png);
 	background-repeat: repeat-y;
 	background-position: top left;
 	background-color: white;
@@ -36,7 +36,7 @@ input{
 
 #container {
 	padding: 0 35px 0 0;
-	background-image:url(/common--theme/webbish/images/sideback2_r.png);
+	background-image:url(../images/sideback2_r.png);
 	background-repeat: repeat-y;
 	background-position: top right;
 	
@@ -73,7 +73,7 @@ textarea{
 
 	background-color: #8a8a8a;
 
-	background-image:url(/common--theme/webbish/images/sideback_l.png);
+	background-image:url(../images/sideback_l.png);
 	background-repeat: repeat-y;
 	background-position: top right;
 }
@@ -85,7 +85,7 @@ textarea{
 	width: 3em; height: 100%;
 
 	background-color: #8a8a8a;
-	background-image:url(/common--theme/webbish/images/sideback_r.png);
+	background-image:url(../images/sideback_r.png);
 	background-repeat: repeat-y;
 	background-position: top left;
 }*/

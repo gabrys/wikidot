@@ -51,7 +51,7 @@ h3{
  width:173px;
  height:148px;
 
- background: transparent url(/common--theme/flower-blossom/images/flors.gif); background-repeat:no-repeat;
+ background: transparent url(../images/flors.gif); background-repeat:no-repeat;
  padding:0;
  margin:0;
 position: absolute;
@@ -62,7 +62,7 @@ top:2em; left:0;
  width:173px;
  height:148px;
 
- background: transparent url(/common--theme/flower-blossom/images/florsr.gif); background-repeat:no-repeat;
+ background: transparent url(../images/florsr.gif); background-repeat:no-repeat;
  padding:0;
  margin:0;
 	position: absolute;
@@ -123,7 +123,7 @@ top:2em; right:0;
   text-align:center;
   padding: 0;
 
-  background: #687d4a url(/common--theme/flower-blossom/images/navbck.png);
+  background: #687d4a url(../images/navbck.png);
   color:#e0eac8;
   border-top: 1px solid  #3f3c1e;  border-bottom: 1px solid  #3f3c1e;
 	left: 0; right: 0;
@@ -145,14 +145,14 @@ top:2em; right:0;
  padding: 8px 1em;
  color:#edeeca;
  border-left:1px solid #3f3c1e;
- background: #687d4a url(/common--theme/flower-blossom/images/navbck.png);
+ background: #687d4a url(../images/navbck.png);
  line-height:30px;
  font:normal 100% verdana, "Century Gothic",  Arial, Helvetica, sans-serif;
 }
 
 #top-bar a:hover{
  color:#333;
- background: #486127 url(/common--theme/flower-blossom/images/navbck3.png); border-bottom:0;
+ background: #486127 url(../images/navbck3.png); border-bottom:0;
 }
 
 
@@ -197,7 +197,7 @@ top:2em; right:0;
 #side-bar a:hover { background:inherit; color:#AA1835;}
 
 #side-bar h1{
-  background:#687d4a url(/common--theme/flower-blossom/images/navbck.png);
+  background:#687d4a url(../images/navbck.png);
   color:#e0eac8;
   margin: 24px 0 0 0;
   padding: 10px 10px 10px 10px;

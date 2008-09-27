@@ -1,9 +1,9 @@
-@import url(/common--theme/base/css/text_highlighter.css);
-@import url(/common--theme/base/css/autocomplete.css);
-@import url(/common--theme/base/css/forum.css);
-@import url(/common--theme/base/css/editor.css);
-@import url(/common--theme/base/css/odialog.css);
-@import url(/common--theme/base/css/wde.css);
+@import url(text_highlighter.css);
+@import url(autocomplete.css);
+@import url(forum.css);
+@import url(editor.css);
+@import url(odialog.css);
+@import url(wde.css);
 
 
 body{
@@ -836,7 +836,7 @@ table.page-files .options{
 
 a.avatar-hover,  a.avatar-hover:hover {
 	background: none;
-	background-image: url(/common--theme/base/images/background/opacity2.png);
+	background-image: url(../images/background/opacity2.png);
 	padding: 8px;
 	text-decoration: none;
 	font-size: 130%;
@@ -891,7 +891,7 @@ a.avatar-hover div span{
 .wait-block{
 	padding-left: 20px; 
 	background-repeat: no-repeat;
-	background-image: url(/common--theme/base/images/progress/progresscircle.gif)
+	background-image: url(../images/progress/progresscircle.gif)
 }
 
 .error-inline{
@@ -941,7 +941,7 @@ a.avatar-hover div span{
 	height: 20px;
 	background-repeat: no-repeat;
 	background-position: center center;
-	background-image: url(/common--theme/base/images/progress/progressbar.gif);
+	background-image: url(../images/progress/progressbar.gif);
 }
 
 

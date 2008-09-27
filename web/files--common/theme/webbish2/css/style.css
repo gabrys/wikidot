@@ -26,7 +26,7 @@ input{
 
 #container-wrap{
 	padding: 0 0 0 35px;
-	background-image:url(/common--theme/webbish2/images/sideback2_l.png);
+	background-image:url(../images/sideback2_l.png);
 	background-repeat: repeat-y;
 	background-position: top left;
 	background-color: white;
@@ -34,7 +34,7 @@ input{
 
 #container {
 	padding: 0 35px 0 0;
-	background-image:url(/common--theme/webbish2/images/sideback2_r.png);
+	background-image:url(../images/sideback2_r.png);
 	background-repeat: repeat-y;
 	background-position: top right;
 	
@@ -94,7 +94,7 @@ textarea{
 #header {
 	border-bottom: 1px solid #888;
 	height: 8em;
-	background: url(/common--theme/webbish2/images/webbish-header-bg.png) repeat-x top;
+	background: url(../images/webbish-header-bg.png) repeat-x top;
 }
 
 #header h1{
