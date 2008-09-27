@@ -209,7 +209,7 @@ class FileAction extends SmartyAction {
 			
 			// DO NOT RUN identify ON ALL FILES!!!!!!!!!!!!
 			// OR limit the resources please
-			$cmd = 'identify -limit memory 100mb -limit disk 100mb '.escapeshellarg($dest); 
+			$cmd = 'identify '.escapeshellarg($dest); 
 			$res = exec_time($cmd, 8, $out);
 			if($res){
 				// is at least "imageable" - can have thumbnails
