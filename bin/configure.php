@@ -31,25 +31,6 @@
 $files = array("/web/.htaccess", "/files/apache.vhost.wikidot.conf", "/files/crontab", "/files/lighttpd-wikidot.conf");
 
 chdir(dirname(__FILE__));
-if(!file_exists('../conf/GlobalProperties.php')){
-    $r = dirname(dirname(__FILE__));
-    echo <<<EOF
-File /conf/GlobalProperties.php cannot be found. Please use
-the original /conf/GlobalProperties.php.orig to create your 
-own configuration.
-
-If you are lazy, simply do (copy and paste to your terminal):
-
-cd $r/conf
-cp GlobalProperties.php.orig GlobalProperties.php
-nano GlobalProperties.php
-
-make changes, save the file and run this configuration script
-again.
-
-EOF;
-    exit(0);
-}
 require("../php/setup.php");
 
 chdir(WIKIDOT_ROOT);
@@ -78,6 +59,7 @@ echo <<<EOT
 Now please use the following files:
 
 files/apache.vhost.wikidot.conf - append to your Apache configuration,
+OR files/lighttpd-wikidot.conf - include to lighttpd configuration (sample Lighttpd configuration: files/lighttpd.conf)
 files/crontab - append to your Crontab configuration
 
 You might also get a Flickr API key from http://flickr.com and
