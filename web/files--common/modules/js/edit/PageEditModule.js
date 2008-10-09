@@ -420,7 +420,7 @@ WIKIDOT.modules.PageEditModule.utils = {
 
 	sourceChanged: function() {
 		var a = OZONE.utils.formToArray("edit-page-form");
-		return (WIKIDOT.modules.PageEditModule.vars.savedSource == a["source"]); 
+		return (WIKIDOT.modules.PageEditModule.vars.savedSource != a["source"]); 
 	},
 	
 	updateSavedSource: function() {
