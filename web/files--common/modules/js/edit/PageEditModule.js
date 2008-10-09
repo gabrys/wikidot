@@ -15,8 +15,8 @@ WIKIDOT.modules.PageEditModule.vars = {
 	editMode: 'page', // the default mode
 	stopCounterFlag: false,
 	inputFlag: false, // changed to true by any input
-	lastInput: (new Date()).getTime() // last input.
-	savedSource: ''; // source saved on server
+	lastInput: (new Date()).getTime(), // last input.
+	savedSource: '' // source saved on server
 };
 
 WIKIDOT.modules.PageEditModule.listeners = {
