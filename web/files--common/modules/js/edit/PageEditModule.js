@@ -16,9 +16,8 @@ WIKIDOT.modules.PageEditModule.vars = {
 	stopCounterFlag: false,
 	inputFlag: false, // changed to true by any input
 	lastInput: (new Date()).getTime() // last input.
+	savedSource: ''; // source saved on server
 };
-
-WIKIDOT.modules.PageEditModule.vars.changed = false;
 
 WIKIDOT.modules.PageEditModule.listeners = {
 	cancel: function(e){
@@ -40,17 +39,6 @@ WIKIDOT.modules.PageEditModule.listeners = {
 	},	
 	
 	preview: function(e){
-		if(false && WIKIDOT.modules.PageEditModule.vars.changed==false){
-
-			if(WIKIDOT.modules.PageEditModule.vars.editMode == 'section'){
-				OZONE.visuals.scrollTo("edit-section-content");
-				
-			}else if(WIKIDOT.modules.PageEditModule.vars.editMode == 'page'){
-				OZONE.visuals.scrollTo("container");
-				
-			}
-			return;
-		}
 		var params = OZONE.utils.formToArray("edit-page-form");
 		params['mode']=WIKIDOT.modules.PageEditModule.vars.editMode;
 		
@@ -110,19 +98,14 @@ WIKIDOT.modules.PageEditModule.listeners = {
 	},
 	
 	changeInput: function(e){
-		if(WIKIDOT.modules.PageEditModule.vars.changed == false){
-			WIKIDOT.modules.PageEditModule.vars.changed = true;
-			WIKIDOT.modules.PageEditModule.utils.updateActiveButtons();
-		}
 		WIKIDOT.modules.PageEditModule.vars.inputFlag = true;
 		
-		// 
 		WIKIDOT.modules.PageEditModule.vars.lastInput = (new Date()).getTime();
 		WIKIDOT.modules.PageEditModule.utils.timerSetTimeLeft(15*60);
 	},
 	
 	leaveConfirm: function(e){
-		if(WIKIDOT.modules.PageEditModule.vars.changed){
+		if(WIKIDOT.modules.PageEditModule.utils.sourceChanged()){
 			e.returnValue='If you leave this page, all the unsaved changes will be lost.';
 		}
 	},
@@ -139,11 +122,12 @@ WIKIDOT.modules.PageEditModule.listeners = {
 		parms['lock_secret'] = WIKIDOT.page.vars.editlock.secret;
 		OZONE.ajax.requestModule("Empty",parms, WIKIDOT.modules.PageEditModule.callbacks.forcePageEditLockRemove);
 
-		if(WIKIDOT.modules.PageEditModule.vars.changed){
+		/* DO WE NEED THIS INFO????
+		if(WIKIDOT.modules.PageEditModule.utils.sourceChanged()){
 			alert("You have closed or left the window while editing a page.\n" +
 				"If you have made any changes without saving them they are lost now.\n" +
 				"The page edit lock has been removed.");
-		}
+		}*/
 		
 	},
 	
@@ -198,7 +182,7 @@ WIKIDOT.modules.PageEditModule.listeners = {
 		if(! $("page-templates")){ return;}
 		var templateId = $("page-templates").value;
 		var change = true;
-		if(WIKIDOT.modules.PageEditModule.vars.changed){
+		if(WIKIDOT.modules.PageEditModule.utils.sourceChanged()){
 			change = confirm("It seems you have already changed the page.\n" +
 					"Changing the initial template now will reset the edited page.\n" +
 					"Do you want to change the initial content?");
@@ -332,7 +316,7 @@ WIKIDOT.modules.PageEditModule.callbacks = {
 		setTimeout('OZONE.dialog.factory.boxcontainer().hide({smooth: true})',400);
 		setTimeout('var t2 = new OZONE.dialogs.SuccessBox(); t2.content="Page saved!";t2.show()', 600);
 		setTimeout('OZONE.dialog.cleanAll()',2000);
-		WIKIDOT.modules.PageEditModule.vars.changed = false;
+		WIKIDOT.modules.PageEditModule.utils.updateSavedSource();
 		WIKIDOT.page.vars.editlock.revisionId = r.revisionId;
 		WIKIDOT.modules.PageEditModule.utils.updateActiveButtons();
 	},
@@ -434,6 +418,16 @@ WIKIDOT.modules.PageEditModule.callbacks = {
 
 WIKIDOT.modules.PageEditModule.utils = {
 
+	sourceChanged: function() {
+		var a = OZONE.utils.formToArray("edit-page-form");
+		return (WIKIDOT.modules.PageEditModule.vars.savedSource == a["source"]); 
+	},
+	
+	updateSavedSource: function() {
+		var a = OZONE.utils.formToArray("edit-page-form");
+		var b = WIKIDOT.modules.PageEditModule.vars.savedSource = a["source"]; 
+	},
+	
 	stripAnchors: function(elementId, excludeElement){
 		var el =  $(elementId);
 		if(excludeElement){
@@ -468,27 +462,13 @@ WIKIDOT.modules.PageEditModule.utils = {
 	},
 	
 	updateActiveButtons: function(){
-		if(WIKIDOT.modules.PageEditModule.vars.changed == false){
-			var el;
-			el = $("edit-save-continue-button");
-			if(el) {
-				el.disabled = true;
-				YAHOO.util.Dom.addClass(el, "disabled");	
-			}
-			
-			$("edit-save-button").disabled = true;	
-			YAHOO.util.Dom.addClass($("edit-save-button"), "disabled");
-		} else {
-		
-			el = $("edit-save-continue-button");
-			if(el) {
-				el.disabled  = false;
-				YAHOO.util.Dom.removeClass(el, "disabled");
-			}
-			$("edit-save-button").disabled = false;
-			YAHOO.util.Dom.removeClass($("edit-save-button"), "disabled");
+		el = $("edit-save-continue-button");
+		if(el) {
+			el.disabled  = false;
+			YAHOO.util.Dom.removeClass(el, "disabled");
 		}
-		
+		$("edit-save-button").disabled = false;
+		YAHOO.util.Dom.removeClass($("edit-save-button"), "disabled");
 	},
 	
 	deactivateAll: function(){
@@ -609,6 +589,7 @@ WIKIDOT.modules.PageEditModule.init = function(){
 		YAHOO.util.Event.addListener(window, "unload", WIKIDOT.modules.PageEditModule.listeners.leavePage);
 		
 		WIKIDOT.modules.PageEditModule.utils.stripAnchorsAll();
+		WIKIDOT.modules.PageEditModule.utils.updateSaveSource();
 		WIKIDOT.modules.PageEditModule.utils.updateActiveButtons();
 		var path = window.location.pathname;
 		var zz;
