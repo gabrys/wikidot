@@ -425,7 +425,7 @@ WIKIDOT.modules.PageEditModule.utils = {
 	
 	updateSavedSource: function() {
 		var a = OZONE.utils.formToArray("edit-page-form");
-		var b = WIKIDOT.modules.PageEditModule.vars.savedSource = a["source"]; 
+		var WIKIDOT.modules.PageEditModule.vars.savedSource = a["source"]; 
 	},
 	
 	stripAnchors: function(elementId, excludeElement){
