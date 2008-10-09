@@ -589,7 +589,7 @@ WIKIDOT.modules.PageEditModule.init = function(){
 		YAHOO.util.Event.addListener(window, "unload", WIKIDOT.modules.PageEditModule.listeners.leavePage);
 		
 		WIKIDOT.modules.PageEditModule.utils.stripAnchorsAll();
-		WIKIDOT.modules.PageEditModule.utils.updateSaveSource();
+		WIKIDOT.modules.PageEditModule.utils.updateSavedSource();
 		WIKIDOT.modules.PageEditModule.utils.updateActiveButtons();
 		var path = window.location.pathname;
 		var zz;
