@@ -330,7 +330,7 @@ class FileAction extends SmartyAction {
 		if($newName == null || $newName==''){
 			throw new ProcessException(_("No new name given."), "name_error");	
 		}
-		if(strlen($newName)>30){
+		if(strlen($newName)>90){
 			throw new ProcessException(_("New file name too long."), "name_error");	
 		}
 		if($newName === $file->getFilename()){
