@@ -688,7 +688,7 @@ class FileAction extends SmartyAction {
 		
 		$is = getimagesize($filename);
 		if($is[2] == 3 || $is[2] == 1){
-			$tmpfile = $path.'/tmpfile.png';	
+			$tmpfile = escapeshellarg($path.'/tmpfile.png');	
 			copy($filename, $tmpfile);
 			$cmd = 	'convert -size '.escapeshellarg($is[0].'x'.$is[1]).'  ' .
 					'-draw \'image Over 0,0 0,0 "'.$tmpfile.'"\'  xc:white '.$tmpfile .' 2>&1';
