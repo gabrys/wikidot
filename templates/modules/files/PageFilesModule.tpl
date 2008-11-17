@@ -16,7 +16,7 @@
 		{foreach from=$files item=file}
 			<tr id="file-row-{$file->getFileId()}">
 				<td >
-					<a href="{$filePath}{$file->getFilename()|escape}">{$file->getFilename()|escape}</a>
+					<a href="{$filePath}{$file->getFilename()|escape:"url"}">{$file->getFilename()|escape}</a>
 				</td>
 				<td >
 					<span title="{$file->getDescription()|escape}">{$file->getDescriptionShort()|escape}</span>
