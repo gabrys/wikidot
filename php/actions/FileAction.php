@@ -18,7 +18,7 @@
  * 
  * @category Wikidot
  * @package Wikidot
- * @version $Id: FileAction.php,v 1.15 2008/11/14 14:16:06 quake Exp $
+ * @version $Id: FileAction.php,v 1.18 2008/11/17 09:41:25 quake Exp $
  * @copyright Copyright (c) 2008, Wikidot Inc.
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
@@ -195,8 +195,8 @@ class FileAction extends SmartyAction {
 			}
 			
 			// determine mime type using file cmd
-			$fdesc =  FileMime::description($file['tmp_name']);
-			$fmime =  FileMime::mime($file['tmp_name']);
+			$fdesc = FileMime::description($file['tmp_name']);
+			$fmime = FileMime::mime($file['tmp_name']);
 
 			$uploadDir = $site->getLocalFilesPath()."/files/".$page->getUnixName();
 			mkdirfull($uploadDir);
@@ -214,7 +214,7 @@ class FileAction extends SmartyAction {
 			if($res){
 				// is at least "imageable" - can have thumbnails
 				// resized images dir
-				$resizedDir = $site->getLocalFilesPath . "/resized-images/".$page->getUnixName().
+				$resizedDir = $site->getLocalFilesPath() . "/resized-images/".$page->getUnixName().
 						'/'.$destinationFilename;
 				mkdirfull($resizedDir);
 				
@@ -690,10 +690,9 @@ class FileAction extends SmartyAction {
 			$tmpfile = $path.'/tmpfile.png';
 			$tmpfile_x = escapeshellarg($tmpfile);
 			copy($filename, $tmpfile);
-			$cmd = 	'convert -size '.escapeshellarg($is[0].'x'.$is[1]).'  ' .
-					'-draw \'image Over 0,0 0,0 "'.$tmpfile_x.'"\'  xc:white '.$tmpfile_x .' 2>&1';
+			$cmd = 'convert ' . $tmpfile_x . ' -background white -flatten ' . $tmpfile_x . ' 2>&1';
 			exec_time($cmd, 8);
-			$cmd = 'convert '.$tmpfile_x.' -resize \'500x500>\'  +profile \'*\'  '.$medium.' 2>&1';
+			$cmd = 'convert ' . $tmpfile_x . ' -resize \'500x500>\'  +profile \'*\'  ' . $medium . ' 2>&1';
 		}else{
 			$cmd = 'convert '.escapeshellarg($filename.'[0]').' -resize \'500x500>\'  +profile \'*\'  '.$medium.' 2>&1';
 		}
