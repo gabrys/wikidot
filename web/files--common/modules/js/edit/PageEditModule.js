@@ -25,7 +25,7 @@ WIKIDOT.modules.PageEditModule.listeners = {
 		var r = YAHOO.util.Event.removeListener(window, "beforeunload", WIKIDOT.modules.PageEditModule.listeners.leaveConfirm);
 		YAHOO.util.Event.removeListener(window, "unload", WIKIDOT.modules.PageEditModule.listeners.leavePage);
 		
-		if(WIKIREQUEST.info.requestPageName.match(/^([a-z0-9]+:)?autoincrementpage$/)){
+		if($('wikidot-disable-locks-flag')){
 			window.location.href='/'+WIKIREQUEST.info.requestPageName;
 			return;
 		}
@@ -69,7 +69,15 @@ WIKIDOT.modules.PageEditModule.listeners = {
 			params['range_start'] = WIKIDOT.page.vars.editlock.rangeStart;
 			params['range_end'] = WIKIDOT.page.vars.editlock.rangeEnd;
 		}
-
+		
+		/* Handle tags. */
+		try{
+			path = location.href.toString();
+			if(zz = path.match(/\/tags\/([^\/]+)/)){
+				// set the title
+				params.tags = decodeURIComponent(zz[1]);
+			}
+		}catch(e){}
 		OZONE.ajax.requestModule("Empty",params,WIKIDOT.modules.PageEditModule.callbacks.save);
 	
 	},
@@ -318,7 +326,6 @@ WIKIDOT.modules.PageEditModule.callbacks = {
 		setTimeout('OZONE.dialog.cleanAll()',2000);
 		WIKIDOT.modules.PageEditModule.utils.updateSavedSource();
 		WIKIDOT.page.vars.editlock.revisionId = r.revisionId;
-		WIKIDOT.modules.PageEditModule.utils.updateActiveButtons();
 	},
 	
 	cancel: function(response){
@@ -347,7 +354,7 @@ WIKIDOT.modules.PageEditModule.callbacks = {
 		WIKIDOT.page.vars.editlock.id = r['lock_id'];
 		WIKIDOT.page.vars.editlock.secret = r['lock_secret'];
 		var t2 = new OZONE.dialogs.SuccessBox(); //global??? pheeee...
-		t2.content="Lock successfully aquired";
+		t2.content="Lock successfully acquired";
 		t2.show();
 	},
 	
@@ -401,7 +408,7 @@ WIKIDOT.modules.PageEditModule.callbacks = {
 			WIKIDOT.modules.PageEditModule.utils.timerStart();
 			WIKIDOT.modules.PageEditModule.vars.lastInput = (new Date()).getTime();
 			var t2 = new OZONE.dialogs.SuccessBox(); //global??? pheeee...
-			t2.content="Lock succesfully aquired.";
+			t2.content="Lock succesfully acquired.";
 			t2.show();
 		}
 	},
@@ -462,7 +469,7 @@ WIKIDOT.modules.PageEditModule.utils = {
 	},
 	
 	updateActiveButtons: function(){
-		el = $("edit-save-continue-button");
+		var el = $("edit-save-continue-button");
 		if(el) {
 			el.disabled  = false;
 			YAHOO.util.Dom.removeClass(el, "disabled");
@@ -531,18 +538,18 @@ WIKIDOT.modules.PageEditModule.utils = {
 	},
 	
 	timerStart: function(){
-		if(WIKIREQUEST.info.requestPageName.match(/^([a-z0-9]+:)?autoincrementpage$/)){return;}
+		if($('wikidot-disable-locks-flag')){return;}
 		WIKIDOT.modules.PageEditModule.vars.timerId = setInterval('WIKIDOT.modules.PageEditModule.utils.timerTick()', 1000);
 	},
 	timerStop: function(){
-		if(WIKIREQUEST.info.requestPageName.match(/^([a-z0-9]+:)?autoincrementpage$/)){return;}
+		if($('wikidot-disable-locks-flag')){return;}
 		clearInterval(WIKIDOT.modules.PageEditModule.vars.timerId);
 	},
 	/**
 	 * Send a request to a server to update lock.
 	 */
 	updateLock: function(){
-		if(WIKIREQUEST.info.requestPageName.match(/^([a-z0-9]+:)?autoincrementpage$/)){return;}
+		if($('wikidot-disable-locks-flag')){return;}
 		var secSinceLastInput = Math.round(((new Date()).getTime() - WIKIDOT.modules.PageEditModule.vars.lastInput)*0.001);
 		var params = new Object();
 		params['action'] = 'WikiPageAction';
@@ -651,3 +658,4 @@ WIKIDOT.modules.PageEditModule.init = function(){
 
 // WHY??? ;-)
 setTimeout("WIKIDOT.modules.PageEditModule.init()", 10);
+
