@@ -76,6 +76,9 @@ class Indexer {
 		}
 		$ie->setVector("(setweight( to_tsvector('$title'), 'C')||setweight( to_tsvector('$unixName'), 'C') || to_tsvector('".db_escape_string($text)."')||setweight( to_tsvector('$tagstring'), 'C'))", true);
 		$ie->save();
+		
+		$lucene = new Wikidot_Search_Lucene();
+		$lucene->queueFtsEntry($ie->getFtsId());
 	}
 	
 	public function deindexPage($page){

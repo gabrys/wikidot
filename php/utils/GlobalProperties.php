@@ -54,6 +54,10 @@ class GlobalProperties {
 	public static $DATABASE_PASSWORD;
 	public static $DATABASE_NAME;
 	
+	// search settings
+	public static $SEARCH_LUCENE_INDEX;
+	public static $SEARCH_LUCENE_QUEUE;
+	
 	// mail settings
 	public static $DEFAULT_SMTP_HOST;
 	public static $DEFAULT_SMTP_PORT;
@@ -165,6 +169,10 @@ class GlobalProperties {
 		self::$DATABASE_NAME			= self::fromIni("db",		"database");		// no default!
 		self::$DATABASE_SERVER			= self::fromIni("db",		"host",				"127.0.0.1");
 		self::$DATABASE_PORT			= self::fromIni("db",		"port",				"5432");
+		
+		// search settings
+		self::$SEARCH_LUCENE_INDEX		= self::fromIni("search",	"lucene_index",		WIKIDOT_ROOT . "/tmp/lucene_index");
+		self::$SEARCH_LUCENE_QUEUE		= self::fromIni("search",	"lucene_queue",		WIKIDOT_ROOT . "/tmp/lucene_queue");
 		
 		// mail settings
 		self::$DEFAULT_SMTP_HOST		= self::fromIni("mail",		"host",				"127.0.0.1");
