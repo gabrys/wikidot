@@ -177,12 +177,12 @@ class GlobalProperties {
 		// mail settings
 		self::$DEFAULT_SMTP_HOST		= self::fromIni("mail",		"host",				"127.0.0.1");
 		self::$DEFAULT_SMTP_PORT		= self::fromIni("mail",		"port",				25);
-		self::$DEFAULT_SMTP_USER		= self::fromIni("mail",		"user",				null);
-		self::$DEFAULT_SMTP_PASSWORD	= self::fromIni("mail",		"password",			null);
+		self::$DEFAULT_SMTP_USER		= self::fromIni("mail",		"user",				"");
+		self::$DEFAULT_SMTP_PASSWORD	= self::fromIni("mail",		"password",			"");
 		self::$DEFAULT_SMTP_SECURE		= self::fromIni("mail",		"ssl",				false) ? "ssl" : "";
 		self::$DEFAULT_SMTP_AUTH		= self::fromIni("mail",		"auth",				false);
 		self::$DEFAULT_SMTP_HOSTNAME	= self::fromIni("mail",		"hostname",			self::$DEFAULT_SMTP_HOST);
-		self::$DEFAULT_SMTP_FROM_EMAIL	= self::fromIni("mail",		"from_mail",		(strstr(self::$DATABASE_USER, "@")) ? self::$DATABASE_USER : self::$DATABASE_USER . "@" . self::$DEFAULT_SMTP_HOSTNAME);
+		self::$DEFAULT_SMTP_FROM_EMAIL	= self::fromIni("mail",		"from_mail",		(strstr(self::$DEFAULT_SMTP_USER, "@")) ? self::$DEFAULT_SMTP_USER : self::$DEFAULT_SMTP_USER . "@" . self::$DEFAULT_SMTP_HOSTNAME);
 		self::$DEFAULT_SMTP_FROM_NAME	= self::fromIni("mail",		"from_name",		self::$SERVICE_NAME . " Mailer");
 		self::$DEFAULT_SMTP_REPLY_TO	= self::fromIni("mail",		"reply_to",			"no-reply@" . self::$DEFAULT_SMTP_HOSTNAME);
 		self::$DEFAULT_SMTP_SENDER		= self::fromIni("mail",		"sender",			self::$DEFAULT_SMTP_FROM_EMAIL);
