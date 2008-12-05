@@ -57,23 +57,30 @@ class SearchAllModule extends SmartyModule {
 		$limit = $perPage*2+1;
 		$offset = ($pageNumber - 1)*$perPage;
 		
-		$qe = $query;
-		$qe = preg_replace("/[!:\?]/",' ', $qe);
-		$qe = preg_replace("/[&\|!]+/", ' ', $qe);
-		$qe = preg_replace("/((^)|([\s]+))\-/", '&!', $qe);
-		$qe = str_replace("-", " ", $qe);
-		$qe = trim($qe);
-		$qe = preg_replace('/ +/', '&', $qe);
-		// prepare fts query
+		$lucene_query = $query;
+		$lucene_query = preg_replace("/[!:\?]/",' ', $lucene_query);
+		$lucene_query = preg_replace("/[&\|!]+/", ' ', $lucene_query);
+		$lucene_query = trim($lucene_query);
 		
-		// escaped query
-		$eq = "'".db_escape_string($qe)."'";
+		if ($area == 'p') {
+			$lucene_query .= " +item_type:page";
+		} elseif ($area == 'f') {
+			$lucene_query .= " +item_type:thread";
+		}
+		
+		$lucene = new Wikidot_Search_Lucene();
+		$lucene_hits = $lucene->query($lucene_query);
+		$lucene_hits = array_slice($lucene_hits, $offset, $limit);
+		
+		$ts_query = preg_replace("/((^)|([\s]+))\-/", '&!', $lucene_query);
+		$ts_query = str_replace("-", " ", $ts_query);
+		$ts_query = trim($ts_query);
+		$ts_query = preg_replace('/ +/', '&', $ts_query);
 		
 		// search pages
 		$headlineOptions = "'MaxWords=200, MinWords=100'";
 		
 		$db = Database::connection();
-
     	$v = pg_version($db->getLink());
     	
 		if(!preg_match(';^8\.3;', $v['server'])){
@@ -82,58 +89,52 @@ class SearchAllModule extends SmartyModule {
 			$tsprefix = 'ts_'; // because in postgresql 8.3 functions are ts_rank and ts_header
 		}
 		
-		$q = "SELECT *, fts_entry.unix_name AS fts_unix_name, {$tsprefix}headline(text, q, 'MaxWords=50, MinWords=30') AS headline_text, {$tsprefix}headline(title, q, $headlineOptions) AS headline_title FROM fts_entry, site, to_tsquery($eq) AS q " .
-			"WHERE site.visible=TRUE AND site.private = FALSE AND site.deleted = FALSE";
-	
+		$res = array();
 		
-		if($area){
+		foreach ($lucene_hits as $hit) {
 			
-			switch($area){
-				case 'f':
-					$q .= " AND thread_id IS NOT NULL ";
-					break;
-				case 'p':
-					$q .= " AND page_id IS NOT NULL ";
-					break;
+			$fts_id = $hit->fts_id;
+			
+			$q = "SELECT *, 
+					fts_entry.unix_name AS fts_unix_name, 
+					{$tsprefix}headline(text, q, 'MaxWords=50, MinWords=30') AS headline_text, 
+					{$tsprefix}headline(title, q, $headlineOptions) AS headline_title 
+				FROM fts_entry, to_tsquery($ts_query) AS q
+				WHERE fts_id = $fts_id";
+			
+			$r = $db->query($q);
+			$res_one = $r->fetchAll();
+			
+			if ($res_one && count($res_one)) {
+				$res[] = $res_one[0];
 			}
-				
 		}
-		$q .= " AND " .
-				"vector @@ q " .
-				"AND fts_entry.site_id=site.site_id " .
-				"ORDER BY {$tsprefix}rank(vector, q) DESC LIMIT $limit OFFSET $offset";
 		
-		$r = $db->query($q);
-		$res = $r->fetchAll();
-
-		if($res){
-			// fix urls
-			$counted = count($res); 
+		// fix urls
+		$counted = count($res);
+	
+		$pagerData = array();
+		$pagerData['current_page'] = $pageNumber;
+		if ($counted > $perPage * 2) {
+			$knownPages = $pageNumber + 2;
+			$pagerData['known_pages'] = $knownPages;
+		} elseif ($counted > $perPage) {
+			$knownPages = $pageNumber + 1;
+			$pagerData['total_pages'] = $knownPages; 
+		} else {
+			$totalPages = $pageNumber;	
+			$pagerData['total_pages'] = $totalPages;
+		}
 		
-			$pagerData = array();
-			$pagerData['current_page'] = $pageNumber;
-			if($counted >$perPage*2){
-				$knownPages=$pageNumber + 2;
-				$pagerData['known_pages'] = $knownPages;	
-			} elseif($counted>$perPage){
-				$knownPages=$pageNumber + 1;
-				$pagerData['total_pages'] = $knownPages; 
+		$res = array_slice($res, 0, $perPage);
+		for ($i=0; $i<count($res); $i++){
+			$o = $res[$i];
+			$res[$i]['site'] = new DB_Site($res[$i]);
+			if($o['page_id'] !== null){
+				$res[$i]['url'] = 'http://'.$res[$i]['site']->getDomain().'/'.$o['fts_unix_name'];	
 			}else{
-				$totalPages = $pageNumber;	
-				$pagerData['total_pages'] = $totalPages;
+				$res[$i]['url'] = 'http://'.$res[$i]['site']->getDomain().'/forum/t-'.$o['thread_id'].'/'.$o['unix_name'];	
 			}
-			
-			$res = array_slice($res, 0, $perPage);
-			for($i=0; $i<count($res); $i++){
-				$o = $res[$i];
-				$res[$i]['site'] = new DB_Site($res[$i]);
-				if($o['page_id'] !== null){
-					$res[$i]['url'] = 'http://'.$res[$i]['site']->getDomain().'/'.$o['fts_unix_name'];	
-				}else{
-					$res[$i]['url'] = 'http://'.$res[$i]['site']->getDomain().'/forum/t-'.$o['thread_id'].'/'.$o['unix_name'];	
-				}
-			}
-			
 		}
 		
 		$runData->contextAdd("pagerData", $pagerData);
