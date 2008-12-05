@@ -100,6 +100,9 @@ class Wikidot_Search_Lucene {
 			$doc->addField(Zend_Search_Lucene_Field::text("site_id", $fts->getSiteId()));
 			$doc->addField(Zend_Search_Lucene_Field::text("fts_id", $fts->getFtsId()));
 			
+			// delete it first
+			$this->deleteItems("fts_id:" . $fts->getFtsId());
+			
 			// TITLE
 			$title_field = Zend_Search_Lucene_Field::text("title", $fts->getTitle());
 			$title_field->boost = 7;
@@ -107,6 +110,7 @@ class Wikidot_Search_Lucene {
 			
 			if ($fts->getPageId()) {
 				
+				// delete also by page_id (this shouldn't delete anything more)
 				$this->deleteItems("page_id:" . $fts->getPageId());
 				
 				$doc->addField(Zend_Search_Lucene_Field::text("item_type", "page"));
@@ -124,6 +128,7 @@ class Wikidot_Search_Lucene {
 				
 			} elseif ($fts->getThreadId()) {
 				
+				// delete also by thread_id (this shouldn't delete anything more)
 				$this->deleteItems("thread_id:" . $fts->getThreadId());
 				
 				$doc->addField(Zend_Search_Lucene_Field::keyword("item_type", "thread"));
@@ -235,7 +240,7 @@ class Wikidot_Search_Lucene {
 			echo "indexing " . $site->getUnixName() . "\n";
 			$this->indexSite($site);
 			
-			if ($site->getSiteId() % 7 == 0) {
+			if ($site->getSiteId() % 50 == 0) {
 				echo "commiting\n";
 				$this->index->commit();
 			}
