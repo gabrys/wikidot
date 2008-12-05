@@ -79,7 +79,7 @@ class Wikidot_Search_Lucene {
 	
 	protected function addFtsEntry($fts, $site = null) {
 		if ($fts) {
-			if (in_array($this->processedFtsEntries, $fts->getFtsId())) {
+			if (in_array($fts->getFtsId(), $this->processedFtsEntries)) {
 				return;
 			}
 			
@@ -115,7 +115,6 @@ class Wikidot_Search_Lucene {
 					$tags = $page->getTagsAsArray();
 					$tags_field = Zend_Search_Lucene_Field::text("tags", implode(" ", $tags));
 					$tags_field->boost = 5 * count($tags);
-					echo implode(" ", $tags);
 					$doc->addField($tags_field);
 					
 				}
