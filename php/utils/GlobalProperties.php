@@ -177,7 +177,7 @@ class GlobalProperties {
 		// mail settings
 		self::$DEFAULT_SMTP_HOST		= self::fromIni("mail",		"host",				"127.0.0.1");
 		self::$DEFAULT_SMTP_PORT		= self::fromIni("mail",		"port",				25);
-		self::$DEFAULT_SMTP_USER		= self::fromIni("mail",		"user",				"");
+		self::$DEFAULT_SMTP_USER		= self::fromIni("mail",		"user",				"admin");
 		self::$DEFAULT_SMTP_PASSWORD	= self::fromIni("mail",		"password",			"");
 		self::$DEFAULT_SMTP_SECURE		= self::fromIni("mail",		"ssl",				false) ? "ssl" : "";
 		self::$DEFAULT_SMTP_AUTH		= self::fromIni("mail",		"auth",				false);
