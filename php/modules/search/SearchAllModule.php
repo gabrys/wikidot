@@ -62,6 +62,12 @@ class SearchAllModule extends SmartyModule {
 		$lucene_query = preg_replace("/[&\|!]+/", ' ', $lucene_query);
 		$lucene_query = trim($lucene_query);
 		
+		$ts_query = preg_replace("/((^)|([\s]+))\-/", '&!', $lucene_query);
+		$ts_query = str_replace("-", " ", $ts_query);
+		$ts_query = trim($ts_query);
+		$ts_query = preg_replace('/ +/', '&', $ts_query);
+		$ts_query = "'" . db_escape_string($ts_query) . "'";
+		
 		if ($area == 'p') {
 			$lucene_query .= " +item_type:page";
 		} elseif ($area == 'f') {
@@ -71,12 +77,6 @@ class SearchAllModule extends SmartyModule {
 		$lucene = new Wikidot_Search_Lucene();
 		$lucene_hits = $lucene->query($lucene_query);
 		$lucene_hits = array_slice($lucene_hits, $offset, $limit);
-		
-		$ts_query = preg_replace("/((^)|([\s]+))\-/", '&!', $lucene_query);
-		$ts_query = str_replace("-", " ", $ts_query);
-		$ts_query = trim($ts_query);
-		$ts_query = preg_replace('/ +/', '&', $ts_query);
-		$ts_query = "'" . db_escape_string($ts_query) . "'";
 		
 		// search pages
 		$headlineOptions = "'MaxWords=200, MinWords=100'";
