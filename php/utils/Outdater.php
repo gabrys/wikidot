@@ -98,7 +98,6 @@ class Outdater {
 				//$this->outdateDescendantsCache($page); // this is done in Deleter
 				$this->outdatePageTagsCache($page);
 				$this->outdatePageCache($page);
-				$this->deindexPage($page);
 				$this->handleTemplateChange($page);
 				break;
 			case 'parent_changed':
@@ -734,10 +733,6 @@ class Outdater {
 	
 	public function indexPage($page){
 		Indexer::instance()->indexPage($page);
-	}
-	
-	public function deindexPage($page){
-		Indexer::instance()->deindexPage($page);
 	}
 	
 	public function outdatePageTagsCache($page){

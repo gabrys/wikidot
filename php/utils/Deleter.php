@@ -102,6 +102,10 @@ class Deleter {
         $outdater = new Outdater();
         $outdater->pageEvent('delete', $page->getUnixName());
         
+        // and from search index
+        $lucene = new Wikidot_Search_Lucene();
+        $lucene->queueDeletePage($page->getPageId());
+        
         // outdate descs too
         foreach ($descs as $desc) {
             $outdater->outdatePageCache($desc);
