@@ -237,7 +237,7 @@ class Wikidot_Search_Lucene {
 			
 			if ($site->getSiteId() % 13 != 0) {
 				echo "commiting\n";
-				$this->commit();
+				$this->index->commit();
 			}
 		}
 	}
