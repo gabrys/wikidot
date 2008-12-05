@@ -61,7 +61,7 @@ class SearchModule extends SmartyModule {
 		$offset = ($pageNumber - 1)*$perPage;
 		
 		$qe = $query;
-		$qe = preg_replace("/[!:\?]/",' ', $qe);
+		$qe = preg_replace("/[!:\?^]/",' ', $qe);
 		$qe = preg_replace("/[&\|!]+/", ' ', $qe);
 		$qe = preg_replace("/((^)|([\s]+))\-/", '&!', $qe);
 		$qe = str_replace("-", " ", $qe);

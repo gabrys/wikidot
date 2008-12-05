@@ -62,7 +62,8 @@ class SearchAllModule extends SmartyModule {
 		$lucene_query = preg_replace("/[&\|!]+/", ' ', $lucene_query);
 		$lucene_query = trim($lucene_query);
 		
-		$ts_query = preg_replace("/((^)|([\s]+))\-/", '&!', $lucene_query);
+		$ts_query = str_replace("^", ' ', $lucene_query);
+		$ts_query = preg_replace("/((^)|([\s]+))\-/", '&!', $ts_query);
 		$ts_query = str_replace("-", " ", $ts_query);
 		$ts_query = trim($ts_query);
 		$ts_query = preg_replace('/ +/', '&', $ts_query);
