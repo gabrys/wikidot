@@ -223,6 +223,10 @@ class WikiFlowController extends WebFlowController {
 			}while($renderedOld != $rendered);
 		}
 
+		if (GlobalProperties::$SEARCH_HIGHLIGHT) {
+			$rendered = Wikidot_Search_Highlighter::highlightIfSuitable($rendered, $_SERVER["REQUEST_URI"], $_SERVER["HTTP_REFERER"]);
+		}
+		
 		echo str_replace("%%%CURRENT_TIMESTAMP%%%",time(),$rendered);
 		
 		return $rendered;

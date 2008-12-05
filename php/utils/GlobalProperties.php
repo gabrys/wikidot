@@ -57,6 +57,7 @@ class GlobalProperties {
 	// search settings
 	public static $SEARCH_LUCENE_INDEX;
 	public static $SEARCH_LUCENE_QUEUE;
+	public static $SEARCH_HIGHLIGHT;
 	
 	// mail settings
 	public static $DEFAULT_SMTP_HOST;
@@ -173,6 +174,7 @@ class GlobalProperties {
 		// search settings
 		self::$SEARCH_LUCENE_INDEX		= self::fromIni("search",	"lucene_index",		WIKIDOT_ROOT . "/tmp/lucene_index");
 		self::$SEARCH_LUCENE_QUEUE		= self::fromIni("search",	"lucene_queue",		WIKIDOT_ROOT . "/tmp/lucene_queue");
+		self::$SEARCH_HIGHLIGHT			= self::fromIni("search",	"highlight",		false);
 		
 		// mail settings
 		self::$DEFAULT_SMTP_HOST		= self::fromIni("mail",		"host",				"127.0.0.1");
