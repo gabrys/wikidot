@@ -100,8 +100,8 @@ class SearchAllModule extends SmartyModule {
 					fts_entry.unix_name AS fts_unix_name, 
 					{$tsprefix}headline(text, q, 'MaxWords=50, MinWords=30') AS headline_text, 
 					{$tsprefix}headline(title, q, $headlineOptions) AS headline_title 
-				FROM fts_entry, to_tsquery($ts_query) AS q
-				WHERE fts_id = $fts_id";
+				FROM fts_entry, site to_tsquery($ts_query) AS q
+				WHERE fts_id = $fts_id AND fts_entry.site_id = site.site_id";
 			
 			$r = $db->query($q);
 			$res_one = $r->fetchAll();
