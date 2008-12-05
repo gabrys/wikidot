@@ -41,6 +41,6 @@ foreach ($hits as $hit) {
 	
 	echo "score: ";
 	printf("%0.4f", $hit->score);
-	echo "\tpage_id: " . $page->unix_name . "\n";
+	echo "\tpage_name: " . $page->getUnixName() . "\n";
 }
 
