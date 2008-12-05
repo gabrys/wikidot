@@ -58,11 +58,10 @@ class SearchAllModule extends SmartyModule {
 		$offset = ($pageNumber - 1)*$perPage;
 		
 		$lucene_query = $query;
-		$lucene_query = preg_replace("/[!:\?]/",' ', $lucene_query);
 		$lucene_query = preg_replace("/[&\|!]+/", ' ', $lucene_query);
 		$lucene_query = trim($lucene_query);
 		
-		$ts_query = str_replace("^", ' ', $lucene_query);
+		$ts_query = preg_replace("/[!:\?^]/", ' ', $lucene_query);
 		$ts_query = preg_replace("/((^)|([\s]+))\-/", '&!', $ts_query);
 		$ts_query = str_replace("-", " ", $ts_query);
 		$ts_query = trim($ts_query);
@@ -73,6 +72,10 @@ class SearchAllModule extends SmartyModule {
 			$lucene_query .= " +item_type:page";
 		} elseif ($area == 'f') {
 			$lucene_query .= " +item_type:thread";
+		}
+		
+		if (! strstr($lucene_query, '"')) { // look for exact match too
+			$lucene_query = "\"$lucene_query\"^2 $lucene_query";
 		}
 		
 		$lucene = new Wikidot_Search_Lucene();
