@@ -48,6 +48,7 @@ class Wikidot_Search_Lucene {
 		} catch (Zend_Search_Lucene_Exception $e) {
 			$this->createIndex();
 		}
+		
 		Zend_Search_Lucene_Analysis_Analyzer::setDefault(new Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive());
 	}
 	
@@ -75,7 +76,6 @@ class Wikidot_Search_Lucene {
 		foreach ($this->index->find($query) as $hit) {
 			$this->index->delete($hit->id);
 		}
-		$this->index->commit();
 	}
 	
 	protected function addFtsEntry($fts, $site = null) {
