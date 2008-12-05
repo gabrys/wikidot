@@ -240,5 +240,7 @@ class Wikidot_Search_Lucene {
 				$this->index->commit();
 			}
 		}
+		echo "commiting\n";
+		$this->index->commit();
 	}
 }
