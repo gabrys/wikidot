@@ -66,7 +66,7 @@ class SearchAllModule extends SmartyModule {
 		$ts_query = str_replace("-", " ", $ts_query);
 		$ts_query = trim($ts_query);
 		$ts_query = preg_replace('/ +/', '&', $ts_query);
-		$ts_query = "'" . pg_escape_string($ts_query) . "'";
+		$ts_query = "'" . db_escape_string($ts_query) . "'";
 		
 		if ($area == 'p') {
 			$lucene_query .= " +item_type:page";
@@ -102,6 +102,8 @@ class SearchAllModule extends SmartyModule {
 					{$tsprefix}headline(title, q, $headlineOptions) AS headline_title 
 				FROM fts_entry, site, to_tsquery($ts_query) AS q
 				WHERE fts_id = $fts_id AND fts_entry.site_id = site.site_id";
+			
+			file_put_contents("/tmp/debug-query", "$q\n");
 			
 			$r = $db->query($q);
 			$res_one = $r->fetchAll();
