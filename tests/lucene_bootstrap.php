@@ -25,13 +25,5 @@
 
 require_once ("../php/setup.php");
 
-try {
-	$index = new Zend_Search_Lucene(GlobalProperties::$SEARCH_LUCENE_INDEX);
-	echo "You need to delete the index first!\n";
-	echo "Index location: " . GlobalProperties::$SEARCH_LUCENE_INDEX . "\n";
-	exit();
-} catch (Zend_Search_Lucene_Exception $e) {
-}
-
 $lucene = new Wikidot_Search_Lucene();
 $lucene->indexAllSitesVerbose();
