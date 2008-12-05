@@ -97,12 +97,13 @@ class Wikidot_Search_Lucene {
 			$doc = new Zend_Search_Lucene_Document();
 			
 			$doc->addField(Zend_Search_Lucene_Field::unStored("content", $fts->getText()));
+			$doc->addField(Zend_Search_Lucene_Field::text("site_id", $fts->getSiteId()));
+			$doc->addField(Zend_Search_Lucene_Field::text("fts_id", $fts->getFtsId()));
 			
+			// TITLE
 			$title_field = Zend_Search_Lucene_Field::text("title", $fts->getTitle());
 			$title_field->boost = 7;
 			$doc->addField($title_field);
-			
-			$doc->addField(Zend_Search_Lucene_Field::text("site_id", $fts->getSiteId()));
 			
 			if ($fts->getPageId()) {
 				
@@ -111,6 +112,7 @@ class Wikidot_Search_Lucene {
 				$doc->addField(Zend_Search_Lucene_Field::text("item_type", "page"));
 				$doc->addField(Zend_Search_Lucene_Field::text("page_id", $fts->getPageId()));
 				
+				// TAGS
 				if ($page = DB_PagePeer::instance()->selectByPrimaryKey($fts->getPageId())) {
 					
 					$tags = $page->getTagsAsArray();
@@ -138,6 +140,33 @@ class Wikidot_Search_Lucene {
 		}
 	}
 	
+	protected function indexSite($site) {
+		
+		if ($site) {
+		
+			$atOnce = 20;
+			$offset = 0;
+			
+			$c = new Criteria();
+			$c->add("site_id", $site->getSiteId());
+			$c->setLimit($atOnce, $offset);
+			
+			$pp = DB_FtsEntryPeer::instance();
+			 
+			do {
+				$entries = $pp->selectByCriteria($c);
+				
+				foreach ($entries as $fts) {
+					$this->addFtsEntry($fts, $site);
+				}
+
+				$offset += $atOnce;
+				$c->setLimit($atOnce, $offset);
+				
+			} while (count($entries));
+		}
+	}
+	
 	public function processQueue() {
 		
 		$q = file($this->queueFile);
@@ -155,32 +184,7 @@ class Wikidot_Search_Lucene {
 				
 			} elseif ($type == "INDEX_SITE") {
 				
-				$atOnce = 20;
-				
-				$site = DB_SitePeer::instance()->selectByPrimaryKey($id);
-				
-				if ($site) {
-				
-					$c = new Criteria();
-					$c->add("site_id", $id);
-					$c->setLimit($atOnce, 0);
-					
-					$offset = 0;
-					
-					$pp = DB_FtsEntryPeer::instance();
-					 
-					do {
-						$entries = $pp->selectByCriteria($c);
-						
-						foreach ($entries as $fts) {
-							$this->addFtsEntry($fts, $site);
-						}
-	
-						$offset += $atOnce;
-						$c->setLimit($atOnce, $offset);
-						
-					} while (count($entries));
-				}
+				$this->indexSite(DB_SitePeer::instance()->selectByPrimaryKey($id));
 				
 			} elseif ($type == "DELETE_PAGE") {
 				
@@ -219,5 +223,22 @@ class Wikidot_Search_Lucene {
 
 	public function query($query) {
 		return $this->index->find($query);
+	}
+	
+	public function indexAllSitesVerbose() {
+		$c = new Criteria();
+		$c->add("private", false);
+		$c->add("deleted", false);
+		$c->add("visible", true);
+		
+		foreach (DB_SitePeer::instance()->select($c) as $site) {
+			echo "indexing " . $site->getUnixName() . "\n";
+			$this->indexSite($site);
+			
+			if ($site->getSiteId() % 13 != 0) {
+				echo "commiting\n";
+				$this->commit();
+			}
+		}
 	}
 }

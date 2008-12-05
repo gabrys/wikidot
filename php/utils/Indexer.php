@@ -83,7 +83,9 @@ class Indexer {
 	
 	public function deindexPage($page){
 		$ie = DB_FtsEntryPeer::instance()->selectByPageId($page->getPageId());
-		DB_FtsEntryPeer::instance()->deleteByPrimaryKey($ie->getFtsId());
+		if ($ie) {
+			DB_FtsEntryPeer::instance()->deleteByPrimaryKey($ie->getFtsId());
+		}
 		
 		$lucene = new Wikidot_Search_Lucene();
 		$lucene->queueDeletePage($page->getPageId());
