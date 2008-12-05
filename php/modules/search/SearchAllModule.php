@@ -66,7 +66,7 @@ class SearchAllModule extends SmartyModule {
 		$ts_query = str_replace("-", " ", $ts_query);
 		$ts_query = trim($ts_query);
 		$ts_query = preg_replace('/ +/', '&', $ts_query);
-		$ts_query = "'" . db_escape_string($ts_query) . "'";
+		$ts_query = "'" . pg_escape_string($ts_query) . "'";
 		
 		if ($area == 'p') {
 			$lucene_query .= " +item_type:page";
