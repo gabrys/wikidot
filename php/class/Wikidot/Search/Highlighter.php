@@ -31,10 +31,24 @@ class Wikidot_Search_Highlighter {
 			
 			$in = self::prepareHtml($html);
 			
+			if (! $in) {
+				return $html;
+			}
+			
 			$queryObj = Zend_Search_Lucene_Search_QueryParser::parse($query);
 			$out = $queryObj->highlightMatches($in);
 			
-			$html = self::getHtml($out);
+			if (! $out) {
+				return $html;
+			}
+			
+			$htmlOut = self::getHtml($html, $out);
+			
+			if (! $htmlOut) {
+				return $html;
+			}
+			
+			$html = $htmlOut;
 		}
 		
 		return $html;
@@ -76,12 +90,59 @@ class Wikidot_Search_Highlighter {
 	}
 	
 	static protected function prepareHtml($html) {
-		return "<div>$html</div>";
+		$dom = new DOMDocument();
+		$dom->loadHTML($html);
+		
+		$x = new DOMXPath($dom);
+		$xa = $x->query('//div[@id="main-content"]');
+		
+		$main = $xa->item(0);
+		
+		if (! $main) {
+			return null;
+		}
+		
+		$dom = new DOMDocument();
+		$main = $dom->importNode($main, true);
+		$dom->appendChild($main);
+			
+		return $dom->saveHTML();
 	}
 	
-	static protected function getHtml($html) {
-		$html = preg_replace(":^<!DOCTYPE[^>]*>[^<]*<html><body><div>:m", "", $html);
-		$html = preg_replace(":</div></body></html>$:m", "", $html);
-		return $html;
+	static protected function getHtml($html, $out) {
+		$dom = new DOMDocument();
+		$dom->loadHTML($out);
+		
+		$x = new DOMXPath($dom);
+		$xa = $x->query('id("main-content")');
+		$out_main = $xa->item(0);
+		
+		if (! $out_main) {
+			return null;
+		}
+		
+		$dom = new DOMDocument();
+		$dom->loadHTML($html);
+		
+		$x = new DOMXPath($dom);
+		$xa = $x->query('//div[@id="main-content"]');
+		$main = $xa->item(0);
+		
+		if (! $main) {
+			return null;
+		}
+		
+		$x = new DOMXPath($dom);
+		$xa = $x->query('//div[@id="content-wrap"]');
+		$wrapper = $xa->item(0);
+		
+		if (! $wrapper) {
+			return null;
+		}
+
+		$out_main = $dom->importNode($out_main, true);
+		$wrapper->replaceChild($out_main, $main);
+		
+		return $dom->saveHTML();
 	}
 }
