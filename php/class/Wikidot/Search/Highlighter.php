@@ -83,7 +83,7 @@ class Wikidot_Search_Highlighter {
 	
 	static protected function joinHtml($html, $out) {
 		$dom = new DOMDocument();
-		$dom->loadHTML($out);
+		@$dom->loadHTML($out);
 		
 		$x = new DOMXPath($dom);
 		$xa = $x->query('id("main-content")');
@@ -94,7 +94,7 @@ class Wikidot_Search_Highlighter {
 		}
 		
 		$dom = new DOMDocument();
-		$dom->loadHTML($html);
+		@$dom->loadHTML($html);
 		
 		$x = new DOMXPath($dom);
 		$xa = $x->query('//div[@id="main-content"]');
