@@ -29,26 +29,18 @@ class Wikidot_Search_Highlighter {
 	
 		if (self::suitable($request_uri) && $query = self::query($referer)) {
 			
-			$in = self::prepareHtml($html);
-			
-			if (! $in) {
-				return $html;
-			}
-			
 			$queryObj = Zend_Search_Lucene_Search_QueryParser::parse($query);
-			$out = $queryObj->highlightMatches($in);
+			$out = $queryObj->highlightMatches($html);
 			
 			if (! $out) {
 				return $html;
 			}
 			
-			$htmlOut = self::getHtml($html, $out);
+			$htmlNice = self::joinHtml($html, $out);
 			
-			if (! $htmlOut) {
-				return $html;
+			if ($htmlNice) {
+				return $htmlNice;
 			}
-			
-			$html = $htmlOut;
 		}
 		
 		return $html;
@@ -89,27 +81,7 @@ class Wikidot_Search_Highlighter {
 		
 	}
 	
-	static protected function prepareHtml($html) {
-		$dom = new DOMDocument();
-		$dom->loadHTML($html);
-		
-		$x = new DOMXPath($dom);
-		$xa = $x->query('//div[@id="main-content"]');
-		
-		$main = $xa->item(0);
-		
-		if (! $main) {
-			return null;
-		}
-		
-		$dom = new DOMDocument();
-		$main = $dom->importNode($main, true);
-		$dom->appendChild($main);
-			
-		return $dom->saveHTML();
-	}
-	
-	static protected function getHtml($html, $out) {
+	static protected function joinHtml($html, $out) {
 		$dom = new DOMDocument();
 		$dom->loadHTML($out);
 		
