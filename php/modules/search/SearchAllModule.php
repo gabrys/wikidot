@@ -156,10 +156,11 @@ class SearchAllModule extends SmartyModule {
 		}
 		
 		// pager data
+		$total_pages = ceil($result_count / $perPage);
 		$pagerData = array();
 		$pagerData['current_page'] = $pageNumber;
-		$pagerData['known_pages'] = ceil($result_count / $perPage);
-		$pagerData['total_pages'] = ceil($result_count / $perPage);
+		$pagerData['known_pages'] = min(array($pageNumber + 2, $total_pages));
+		$pagerData['total_pages'] = $total_pages;
 		
 		// construct URLs
 		for ($i = 0; $i < count($res); $i++) {
