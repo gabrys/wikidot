@@ -38,8 +38,8 @@ class SearchAllModule extends SmartyModule {
 			$sites = array();
 			$m = array();
 			$c = new Criteria();
-			while (preg_match("/ site:([a-z0-9-]+) /i", $q, $m) {
-				$c->add("unix_name", strtolower($m[1]))
+			while (preg_match("/ site:([a-z0-9-]+) /i", $q, $m)) {
+				$c->add("unix_name", strtolower($m[1]));
 				if ($s = DB_SitePeer::instance()->selectOneByCriteria($c)) {
 					$sites[] = $s->getSiteId();
 				}
