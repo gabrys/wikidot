@@ -24,16 +24,70 @@
  */
 
 class SearchAllModule extends SmartyModule {
+
+	protected function normalizeWhiteSpace($query) {
+		return trim(preg_replace('/\s+/', ' ', $query));
+	}
+	
+	protected function parseQuery($query, $area = null, $sites = null) {
+		// add some space
+		$q = " $query ";
+		
+		// check for site:X site:Y strings
+		if (! $sites) {
+			$sites = array();
+			$m = array();
+			$c = new Criteria();
+			while (preg_match("/ site:([a-z0-9-]+) /i", $q, $m) {
+				$c->add("unix_name", strtolower($m[1]))
+				if ($s = DB_SitePeer::instance()->selectOneByCriteria($c)) {
+					$sites[] = $s->getSiteId();
+				}
+				$q = str_replace("site:$m[1]", "", $q);
+			}
+		}
+		
+		// we want "pure" query version now
+		$q = preg_replace("/[&\|:\?^~]/", ' ', $q);
+		
+		// add the sites filter
+		if (is_array($sites) && count($sites)) {
+			$q .= " +(site_id:" . implode(" site_id:", $sites) . ") ";	
+		}
+		
+		// add the item type filter
+		if ($area == 'p') {
+			$q .= " +item_type:page ";
+		} elseif ($area == 'f') {
+			$q .= " +item_type:thread ";
+		}
+		
+		$q = $this->normalizeWhiteSpace($q);
+		
+		// give the exact match higher boost
+		if (! strstr($q, '"')) {
+			$q = "\"$q\"^2 $q";
+		}
+		
+		return $q;
+	}
+	
+	protected function simplifyForTs($query) {
+		$q = $this->normalizeWhiteSpace($query);
+		$q = preg_replace("/[&\|:\?^~]/", ' ', $q);
+		$q = preg_replace("/((^)|([\s]+))\-/", '&!', $q);
+		$q = str_replace("-", " ", $q);
+		$q = trim($q);
+		$q = preg_replace('/ +/', '&', $q);
+		return $q;
+	}
 	
 	public function build($runData){
-
+		
+		// parse parameters
 		$pl = $runData->getParameterList();
 		$query = trim($pl->getParameterValue("q"));
 		$area = $pl->getParameterValue("a");
-		
-		if($area != 'p' && $area != 'f' && $area != 'pf'){
-			$area = null;
-		}
 		
 		if($query == ''){
 			return;	
@@ -44,51 +98,35 @@ class SearchAllModule extends SmartyModule {
 			return;	
 		}
 		
-		$site = $runData->getTemp("site");
-		
 		// pagination
-		
 		$pageNumber = $pl->getParameterValue("p");
 		if($pageNumber == null || !is_numeric($pageNumber) || $pageNumber <1){
 			$pageNumber = 1;	
 		}
 		$perPage = 10;
+		$limit = $perPage;
+		$offset = ($pageNumber - 1) * $perPage;
 		
-		$limit = $perPage*2+1;
-		$offset = ($pageNumber - 1)*$perPage;
+		// parse query
+		$lucene_query = $this->parseQuery($query, $area);
+		$ts_query = "'" . db_escape_string($this->simplifyForTs($query)) . "'";
 		
-		$lucene_query = $query;
-		$lucene_query = preg_replace("/[&\|!]+/", ' ', $lucene_query);
-		$lucene_query = trim($lucene_query);
-		
-		$ts_query = preg_replace("/[!:\?^]/", ' ', $lucene_query);
-		$ts_query = preg_replace("/((^)|([\s]+))\-/", '&!', $ts_query);
-		$ts_query = str_replace("-", " ", $ts_query);
-		$ts_query = trim($ts_query);
-		$ts_query = preg_replace('/ +/', '&', $ts_query);
-		$ts_query = "'" . db_escape_string($ts_query) . "'";
-		
-		if ($area == 'p') {
-			$lucene_query .= " +item_type:page";
-		} elseif ($area == 'f') {
-			$lucene_query .= " +item_type:thread";
-		}
-		
-		if (! strstr($lucene_query, '"')) { // look for exact match too
-			$lucene_query = "\"$lucene_query\"^2 $lucene_query";
-		}
-		
+		// find
 		$lucene = new Wikidot_Search_Lucene();
 		$lucene_hits = $lucene->query($lucene_query);
+		$result_count = count($lucene_hits);
+		
+		// limit
 		$lucene_hits = array_slice($lucene_hits, $offset, $limit);
 		
-		// search pages
+		// hedline options
 		$headlineOptions = "'MaxWords=200, MinWords=100'";
 		
+		// fetch items from database with highlight
 		$db = Database::connection();
     	$v = pg_version($db->getLink());
     	
-		if(!preg_match(';^8\.3;', $v['server'])){
+		if (!preg_match(';^8\.3;', $v['server'])) {
 		    $db->query("SELECT set_curcfg('default')");
 		} else {
 			$tsprefix = 'ts_'; // because in postgresql 8.3 functions are ts_rank and ts_header
@@ -117,24 +155,14 @@ class SearchAllModule extends SmartyModule {
 			}
 		}
 		
-		// fix urls
-		$counted = count($res);
-	
+		// pager data
 		$pagerData = array();
 		$pagerData['current_page'] = $pageNumber;
-		if ($counted > $perPage * 2) {
-			$knownPages = $pageNumber + 2;
-			$pagerData['known_pages'] = $knownPages;
-		} elseif ($counted > $perPage) {
-			$knownPages = $pageNumber + 1;
-			$pagerData['total_pages'] = $knownPages; 
-		} else {
-			$totalPages = $pageNumber;	
-			$pagerData['total_pages'] = $totalPages;
-		}
+		$pagerData['known_pages'] = ceil($result_count / $perPage);
+		$pagerData['total_pages'] = ceil($result_count / $perPage);
 		
-		$res = array_slice($res, 0, $perPage);
-		for ($i=0; $i<count($res); $i++){
+		// construct URLs
+		for ($i = 0; $i < count($res); $i++) {
 			$o = $res[$i];
 			$res[$i]['site'] = new DB_Site($res[$i]);
 			if($o['page_id'] !== null){
@@ -145,15 +173,15 @@ class SearchAllModule extends SmartyModule {
 		}
 		
 		$runData->contextAdd("pagerData", $pagerData);
-
 		$runData->contextAdd("results", $res);
 		$runData->contextAdd("countResults", count($res));
+		$runData->contextAdd("totalResults", $result_count);
 		$runData->contextAdd("query", $query);
 		$runData->contextAdd("encodedQuery", urldecode($query));
 		$runData->contextAdd("queryEncoded", urlencode($query));
 		$runData->contextAdd("area", $area);
 		$runData->contextAdd("query_debug", $qe); 
-		$runData->contextAdd("domain", $site->getDomain());
+		$runData->contextAdd("domain", $runData->getTemp("site")->getDomain());
 		
 	}
 	
