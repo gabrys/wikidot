@@ -50,23 +50,23 @@ class SearchAllModule extends SmartyModule {
 		// we want "pure" query version now
 		$q = preg_replace("/[&\|:\?^~]/", ' ', $q);
 		
-		// add the sites filter
-		if (is_array($sites) && count($sites)) {
-			$q .= " +(site_id:" . implode(" site_id:", $sites) . ") ";	
-		}
-		
-		// add the item type filter
-		if ($area == 'p') {
-			$q .= " +item_type:page ";
-		} elseif ($area == 'f') {
-			$q .= " +item_type:thread ";
-		}
-		
 		$q = $this->normalizeWhiteSpace($q);
 		
 		// give the exact match higher boost
 		if (! strstr($q, '"')) {
 			$q = "\"$q\"^2 $q";
+		}
+		
+		// add the item type filter
+		if ($area == 'p') {
+			$q .= " +item_type:page";
+		} elseif ($area == 'f') {
+			$q .= " +item_type:thread";
+		}
+	
+		// add the sites filter
+		if (is_array($sites) && count($sites)) {
+			$q .= " +(site_id:" . implode(" site_id:", $sites) . ")";	
 		}
 		
 		return $q;
