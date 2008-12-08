@@ -180,7 +180,7 @@ class SearchAllModule extends SmartyModule {
 		$runData->contextAdd("encodedQuery", urldecode($query));
 		$runData->contextAdd("queryEncoded", urlencode($query));
 		$runData->contextAdd("area", $area);
-		$runData->contextAdd("query_debug", $qe); 
+		//$runData->contextAdd("query_debug", $lucene_query); 
 		$runData->contextAdd("domain", $runData->getTemp("site")->getDomain());
 		
 	}
