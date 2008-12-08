@@ -74,7 +74,7 @@ class SearchAllModule extends SmartyModule {
 	
 	protected function simplifyForTs($query) {
 		$q = " $query ";
-		$q = preg_replace("/ site:[a-z0-9-]* /", " ", $q);
+		$q = preg_replace("/ site:[a-z0-9-]* /ig", " ", $q);
 		$q = $this->normalizeWhiteSpace($q);
 		$q = preg_replace("/[&\|:\?^~]/", ' ', $q);
 		$q = preg_replace("/((^)|([\s]+))\-/", '&!', $q);
