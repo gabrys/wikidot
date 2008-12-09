@@ -37,7 +37,7 @@ foreach ($hits as $hit) {
 	if ($i == 10) {
 		return;
 	}
-	if ($hit->page_id) {
+	if ($hit->item_type == "page") {
 		$page = DB_PagePeer::instance()->selectByPrimaryKey($hit->page_id);
 	
 		echo "score: ";
