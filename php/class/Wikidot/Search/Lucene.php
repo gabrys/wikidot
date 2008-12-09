@@ -25,6 +25,9 @@
 
 class Wikidot_Search_Lucene {
 	
+	protected $AT_ONCE = 10;	// load N pages from DB at once when indexing
+	protected $CACHE_FOR = 150;	// cache the results for seconds
+	
 	protected $indexFile;
 	protected $index;
 	protected $queueFile;
@@ -154,7 +157,7 @@ class Wikidot_Search_Lucene {
 		
 		if ($site) {
 		
-			$atOnce = 10;
+			$atOnce = $this->AT_ONCE;
 			$offset = 0;
 			
 			$c = new Criteria();
@@ -255,7 +258,7 @@ class Wikidot_Search_Lucene {
 		}
 		
 		if ($cache) {
-			$cache->set($key, $result, 0, 150);
+			$cache->set($key, $result, 0, $this->CACHE_FOR);
 		}
 		
 		return $result;
