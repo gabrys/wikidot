@@ -254,7 +254,7 @@ class Wikidot_Search_Lucene {
 			echo "indexing " . $site->getUnixName() . "\n";
 			$this->indexSite($site);
 			
-			if ($site->getSiteId() % 50 == 0) {
+			if ($site->getSiteId() % 10 == 0) {
 				echo "commiting\n";
 				$this->index->commit();
 			}
