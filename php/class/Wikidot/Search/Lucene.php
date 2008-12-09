@@ -163,10 +163,6 @@ class Wikidot_Search_Lucene {
 			$c = new Criteria();
 			$c->setLimit($atOnce, $offset);
 			
-			if (! $site) { // no site given
-				return;
-			}
-			
 			if ($site == "ALL") {
 				$site = null;
 			} else {
@@ -174,8 +170,11 @@ class Wikidot_Search_Lucene {
 			}
 			
 			$pp = DB_FtsEntryPeer::instance();
-			 
+			$entries = null;
+			
 			do {
+				unset($entries); // try to save SOME memory
+				
 				$entries = $pp->selectByCriteria($c);
 				
 				foreach ($entries as $fts) {
@@ -184,8 +183,6 @@ class Wikidot_Search_Lucene {
 
 				$offset += $atOnce;
 				$c->setLimit($atOnce, $offset);
-				
-				unset($entries); // try to save SOME memory
 				
 				if ($verbose) {
 					echo ".";
