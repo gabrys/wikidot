@@ -163,7 +163,13 @@ class Wikidot_Search_Lucene {
 			$c = new Criteria();
 			$c->setLimit($atOnce, $offset);
 			
-			if ($site != "ALL") {
+			if (! $site) { // no site given
+				return;
+			}
+			
+			if ($site == "ALL") {
+				$site = null;
+			} else {
 				$c->add("site_id", $site->getSiteId());
 			}
 			
