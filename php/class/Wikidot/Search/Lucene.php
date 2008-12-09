@@ -261,9 +261,9 @@ class Wikidot_Search_Lucene {
 			echo "indexing " . $site->getUnixName() . "\n";
 			$this->indexSite($site);
 			echo "commiting\n";
+			$this->index->commit();
 		}
 		echo "commiting\n";
-		$this->index->commit();
 		$this->index->optimize();
 		$this->index->commit();
 	}
