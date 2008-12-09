@@ -76,6 +76,8 @@ class Wikidot_Search_Lucene {
 		foreach ($this->index->find($query) as $hit) {
 			$this->index->delete($hit->id);
 		}
+		
+		$this->index->commit();
 	}
 	
 	protected function addFtsEntry($fts, $site = null) {
@@ -171,6 +173,8 @@ class Wikidot_Search_Lucene {
 				$offset += $atOnce;
 				$c->setLimit($atOnce, $offset);
 				
+				$this->index->commit();
+				
 			} while (count($entries));
 		}
 	}
@@ -208,8 +212,6 @@ class Wikidot_Search_Lucene {
 				
 			}
 		}
-		
-		$this->index->commit();
 	}
 	
 	public function queueFtsEntry($fts_id) {
@@ -260,10 +262,8 @@ class Wikidot_Search_Lucene {
 		foreach (DB_SitePeer::instance()->select($c) as $site) {
 			echo "indexing " . $site->getUnixName() . "\n";
 			$this->indexSite($site);
-			echo "commiting\n";
-			$this->index->commit();
 		}
-		echo "commiting\n";
+		echo "optimizing\n";
 		$this->index->optimize();
 		$this->index->commit();
 	}
