@@ -37,13 +37,15 @@ class SearchAllModule extends SmartyModule {
 		if (! $sites) {
 			$sites = array();
 			$m = array();
-			while (preg_match("/ site:([a-z0-9-]+) /i", $q, $m)) {
-				$c = new Criteria();
-				$c->add("unix_name", strtolower($m[1]));
-				if ($s = DB_SitePeer::instance()->selectOneByCriteria($c)) {
-					$sites[] = $s->getSiteId();
+			if (preg_match("/ site:([a-z0-9,-]+) /i", $q, $m)) {
+				foreach (explode(",", $m[1]) as $site_name) {
+					$c = new Criteria();
+					$c->add("unix_name", strtolower($site_name));
+					if ($s = DB_SitePeer::instance()->selectOneByCriteria($c)) {
+						$sites[] = $s->getSiteId();
+					}
+					$q = str_replace("site:$m[1]", "", $q);
 				}
-				$q = str_replace("site:$m[1]", "", $q);
 			}
 		}
 		
@@ -77,7 +79,7 @@ class SearchAllModule extends SmartyModule {
 		// add public/private sites distinction
 		$q .= " +(site_public:true";
 		if (is_array($userSites) && count($userSites)) {
-			$q .= " site_id:" . implode(" site_id:", $userSites);
+			$q .= " site_id:" . implode("^2 site_id:", $userSites) . "^2";
 		}
 		$q .= ")";
 		
@@ -86,7 +88,7 @@ class SearchAllModule extends SmartyModule {
 	
 	protected function simplifyForTs($query) {
 		$q = " $query ";
-		$q = preg_replace("/ site:[a-z0-9-]+/i", " ", $q);
+		$q = preg_replace("/ site:[a-z0-9,-]+/i", " ", $q);
 		$q = $this->normalizeWhiteSpace($q);
 		$q = preg_replace("/[&\|:\?^~]/", ' ', $q);
 		$q = preg_replace("/((^)|([\s]+))\-/", '&!', $q);
@@ -94,6 +96,22 @@ class SearchAllModule extends SmartyModule {
 		$q = trim($q);
 		$q = preg_replace('/ +/', '&', $q);
 		return $q;
+	}
+	
+	protected function getUserSites($user) {
+		if (! $user) {
+			return null;
+		}
+		
+		$c = new Criteria();
+		$c->add("user_id", $user->getUserId());
+		
+		$ret = array();
+		foreach (DB_MemberPeer::instance()->selectByCriteria($c) as $m) {
+			$ret[] = $m->getSiteId();
+		}
+		
+		return $ret;
 	}
 	
 	public function build($runData){
@@ -122,7 +140,7 @@ class SearchAllModule extends SmartyModule {
 		$offset = ($pageNumber - 1) * $perPage;
 		
 		// parse query
-		$lucene_query = $this->parseQuery($query, $area);
+		$lucene_query = $this->parseQuery($query, $area, null, $this->getUserSites($runData->getUser()));
 		$ts_query = "'" . db_escape_string($this->simplifyForTs($query)) . "'";
 		
 		// find
