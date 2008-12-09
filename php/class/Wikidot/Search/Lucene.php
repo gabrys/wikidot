@@ -90,18 +90,21 @@ class Wikidot_Search_Lucene {
 				$site = DB_SitePeer::instance()->selectByPrimaryKey($fts->getSiteId());
 			}
 			
-			if (! $site || $site->getPrivate() || $site->getDeleted() || ! $site->getVisible()) {
+			if (! $site || $site->getDeleted() || ! $site->getVisible()) {
 				return;
 			}
 			
-			$doc = new Zend_Search_Lucene_Document();
-			
-			$doc->addField(Zend_Search_Lucene_Field::unStored("content", $fts->getText()));
-			$doc->addField(Zend_Search_Lucene_Field::text("site_id", $fts->getSiteId()));
-			$doc->addField(Zend_Search_Lucene_Field::text("fts_id", $fts->getFtsId()));
-			
 			// delete it first
 			$this->deleteItems("fts_id:" . $fts->getFtsId());
+			
+			// construct the document
+			$doc = new Zend_Search_Lucene_Document();
+			
+			// add content, site_id, site_private, fts_id fields
+			$doc->addField(Zend_Search_Lucene_Field::unStored("content", $fts->getText()));
+			$doc->addField(Zend_Search_Lucene_Field::text("site_id", $fts->getSiteId()));
+			$doc->addField(Zend_Search_Lucene_Field::text("site_private", $site->getPrivate()));
+			$doc->addField(Zend_Search_Lucene_Field::text("fts_id", $fts->getFtsId()));
 			
 			// TITLE
 			$title_field = Zend_Search_Lucene_Field::text("title", $fts->getTitle());
@@ -121,7 +124,7 @@ class Wikidot_Search_Lucene {
 					
 					$tags = $page->getTagsAsArray();
 					$tags_field = Zend_Search_Lucene_Field::text("tags", implode(" ", $tags));
-					$tags_field->boost = 5 * count($tags);
+					$tags_field->boost = 4 * count($tags);
 					$doc->addField($tags_field);
 					
 				}
@@ -234,7 +237,7 @@ class Wikidot_Search_Lucene {
 			$result = array();
 			foreach ($this->index->find($query) as $hit) {
 				$result[] = array(
-					"fts_id" => $hit->fts_id
+					"fts_id" => $hit->fts_id,
 				);
 			}
 			$cache->set($key, $result, 0, 150);
@@ -244,7 +247,6 @@ class Wikidot_Search_Lucene {
 	
 	public function indexAllSitesVerbose() {
 		$c = new Criteria();
-		$c->add("private", false);
 		$c->add("deleted", false);
 		$c->add("visible", true);
 		

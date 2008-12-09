@@ -29,7 +29,7 @@ class SearchAllModule extends SmartyModule {
 		return trim(preg_replace('/\s+/', ' ', $query));
 	}
 	
-	protected function parseQuery($query, $area = null, $sites = null) {
+	protected function parseQuery($query, $area = null, $sites = null, $userSites = null) {
 		// add some space
 		$q = " $query ";
 		
@@ -48,13 +48,18 @@ class SearchAllModule extends SmartyModule {
 		}
 		
 		// we want "pure" query version now
-		$q = preg_replace("/[&\|:\?^~]/", ' ', $q);
+		$q = preg_replace("/[&\|:\?~,]/", ' ', $q);
 		
 		$q = $this->normalizeWhiteSpace($q);
 		
 		// give the exact match higher boost
-		if (! strstr($q, '"')) {
+		if (! strstr($q, '"') && ! strstr($q, '^')) {
 			$q = "\"$q\"^2 $q";
+		}
+		
+		// make what user typed in a requirement
+		if (substr_count($q, '(') == substr_count($q, ')')) {
+			$q = "+($q)";
 		}
 		
 		// add the item type filter
@@ -68,6 +73,13 @@ class SearchAllModule extends SmartyModule {
 		if (is_array($sites) && count($sites)) {
 			$q .= " +(site_id:" . implode(" site_id:", $sites) . ")";	
 		}
+		
+		// add public/private sites distinction
+		$q .= " +(site_private:false";
+		if (is_array($userSites) && count($userSites)) {
+			$q .= " site_id:" . implode(" site_id:", $userSites);
+		}
+		$q .= ")";
 		
 		return $q;
 	}
