@@ -150,16 +150,19 @@ class Wikidot_Search_Lucene {
 		}
 	}
 	
-	protected function indexSite($site) {
+	protected function indexSite($site, $verbose = false) {
 		
 		if ($site) {
 		
-			$atOnce = 5;
+			$atOnce = 10;
 			$offset = 0;
 			
 			$c = new Criteria();
-			$c->add("site_id", $site->getSiteId());
 			$c->setLimit($atOnce, $offset);
+			
+			if ($site != "ALL") {
+				$c->add("site_id", $site->getSiteId());
+			}
 			
 			$pp = DB_FtsEntryPeer::instance();
 			 
@@ -173,7 +176,11 @@ class Wikidot_Search_Lucene {
 				$offset += $atOnce;
 				$c->setLimit($atOnce, $offset);
 				
-				$this->index->commit();
+				unset($entries); // try to save SOME memory
+				
+				if ($verbose) {
+					echo ".";
+				}
 				
 			} while (count($entries));
 		}
@@ -255,16 +262,6 @@ class Wikidot_Search_Lucene {
 	}
 	
 	public function indexAllSitesVerbose() {
-		$c = new Criteria();
-		$c->add("deleted", false);
-		$c->add("visible", true);
-		
-		foreach (DB_SitePeer::instance()->select($c) as $site) {
-			echo "indexing " . $site->getUnixName() . "\n";
-			$this->indexSite($site);
-		}
-		echo "optimizing\n";
-		$this->index->optimize();
-		$this->index->commit();
+		$this->indexSite("ALL", true);
 	}
 }
