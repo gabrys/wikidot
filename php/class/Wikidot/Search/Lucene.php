@@ -253,13 +253,11 @@ class Wikidot_Search_Lucene {
 		foreach (DB_SitePeer::instance()->select($c) as $site) {
 			echo "indexing " . $site->getUnixName() . "\n";
 			$this->indexSite($site);
-			
-			if ($site->getSiteId() % 10 == 0) {
-				echo "commiting\n";
-				$this->index->commit();
-			}
+			echo "commiting\n";
 		}
 		echo "commiting\n";
+		$this->index->commit();
+		$this->index->optimize();
 		$this->index->commit();
 	}
 }
