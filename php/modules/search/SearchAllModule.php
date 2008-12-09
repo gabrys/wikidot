@@ -73,9 +73,9 @@ class SearchAllModule extends SmartyModule {
 	}
 	
 	protected function simplifyForTs($query) {
-		/*$q = " $query ";
-		$q = preg_replace("/ site:[a-z0-9-]* /i", " ", $q);*/
-		$q = $this->normalizeWhiteSpace($query);
+		$q = " $query ";
+		$q = preg_replace("/ site:[a-z0-9-]+/i", " ", $q);
+		$q = $this->normalizeWhiteSpace($q);
 		$q = preg_replace("/[&\|:\?^~]/", ' ', $q);
 		$q = preg_replace("/((^)|([\s]+))\-/", '&!', $q);
 		$q = str_replace("-", " ", $q);
@@ -175,6 +175,7 @@ class SearchAllModule extends SmartyModule {
 			}
 		}
 		
+		// feed the template
 		$runData->contextAdd("pagerData", $pagerData);
 		$runData->contextAdd("results", $res);
 		$runData->contextAdd("countResults", count($res));

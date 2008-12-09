@@ -227,7 +227,13 @@ class Wikidot_Search_Lucene {
 	}
 
 	public function query($query) {
-		return $this->index->find($query);
+		$cache = Ozone::$memcache;
+		$key = "search..$query";
+		if (! $result = $cache->get($key)) {
+			$result = $this->index->find($query);
+			$cache->set($key, $result, 0, 150);
+		}
+		return $result;
 	}
 	
 	public function indexAllSitesVerbose() {

@@ -47,7 +47,6 @@ for($i=1; $i<count($split); $i+=2){
 
 if(!isset($parms['u'])){
     if(!isset($_GET['u'])){
-        echo 'dupa';
         return;
     }else{
         $userId = $_GET['u'];
