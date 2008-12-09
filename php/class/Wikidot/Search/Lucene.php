@@ -152,7 +152,7 @@ class Wikidot_Search_Lucene {
 		
 		if ($site) {
 		
-			$atOnce = 20;
+			$atOnce = 5;
 			$offset = 0;
 			
 			$c = new Criteria();
