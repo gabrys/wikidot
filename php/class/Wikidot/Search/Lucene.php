@@ -226,11 +226,17 @@ class Wikidot_Search_Lucene {
 		$this->queue("INDEX_SITE", $site_id);
 	}
 
+	// queries the index and returns the array of Fts entries
 	public function query($query) {
 		$cache = Ozone::$memcache;
 		$key = "search..$query";
 		if (! $result = $cache->get($key)) {
-			$result = $this->index->find($query);
+			$result = array();
+			foreach ($this->index->find($query) as $hit) {
+				$result[] = array(
+					"fts_id" => $hit->fts_id
+				);
+			}
 			$cache->set($key, $result, 0, 150);
 		}
 		return $result;
