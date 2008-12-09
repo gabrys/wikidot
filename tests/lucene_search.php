@@ -34,16 +34,17 @@ $hits = $index->find($argv[1]);
 $i = 0;
 
 foreach ($hits as $hit) {
-	if (++$i == 10) {
+	if ($i == 10) {
 		return;
 	}
-	try {
+	if ($hit->page_id) {
 		$page = DB_PagePeer::instance()->selectByPrimaryKey($hit->page_id);
 	
 		echo "score: ";
 		printf("%0.4f", $hit->score);
 		echo "\tpage_name: " . $page->getUnixName() . "\n";
-	} catch (Exception $e) {	
+		
+		$i++;	
 	}
 }
 
