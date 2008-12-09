@@ -37,10 +37,13 @@ foreach ($hits as $hit) {
 	if (++$i == 10) {
 		return;
 	}
-	$page = DB_PagePeer::instance()->selectByPrimaryKey($hit->page_id);
+	try {
+		$page = DB_PagePeer::instance()->selectByPrimaryKey($hit->page_id);
 	
-	echo "score: ";
-	printf("%0.4f", $hit->score);
-	echo "\tpage_name: " . $page->getUnixName() . "\n";
+		echo "score: ";
+		printf("%0.4f", $hit->score);
+		echo "\tpage_name: " . $page->getUnixName() . "\n";
+	} catch (Exception $e) {	
+	}
 }
 
