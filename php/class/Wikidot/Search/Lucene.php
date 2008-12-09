@@ -233,15 +233,22 @@ class Wikidot_Search_Lucene {
 	public function query($query) {
 		$cache = Ozone::$memcache;
 		$key = "search..$query";
-		if (! $result = $cache->get($key)) {
-			$result = array();
-			foreach ($this->index->find($query) as $hit) {
-				$result[] = array(
-					"fts_id" => $hit->fts_id,
-				);
-			}
+		
+		if ($cache && $result = $cache->get($key)) {
+			return $result;
+		}
+		
+		$result = array();
+		foreach ($this->index->find($query) as $hit) {
+			$result[] = array(
+				"fts_id" => $hit->fts_id,
+			);
+		}
+		
+		if ($cache) {
 			$cache->set($key, $result, 0, 150);
 		}
+		
 		return $result;
 	}
 	
