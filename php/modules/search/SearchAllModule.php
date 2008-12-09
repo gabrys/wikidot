@@ -75,7 +75,7 @@ class SearchAllModule extends SmartyModule {
 		}
 		
 		// add public/private sites distinction
-		$q .= " +(site_private:false";
+		$q .= " +(site_public:true";
 		if (is_array($userSites) && count($userSites)) {
 			$q .= " site_id:" . implode(" site_id:", $userSites);
 		}

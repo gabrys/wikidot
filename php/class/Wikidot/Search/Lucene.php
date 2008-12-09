@@ -100,7 +100,7 @@ class Wikidot_Search_Lucene {
 			// construct the document
 			$doc = new Zend_Search_Lucene_Document();
 			
-			// add content, site_id, site_private, fts_id fields
+			// add content, site_id, site_public, fts_id fields
 			$doc->addField(Zend_Search_Lucene_Field::unStored("content", $fts->getText()));
 			$doc->addField(Zend_Search_Lucene_Field::text("site_id", $fts->getSiteId()));
 			$doc->addField(Zend_Search_Lucene_Field::text("site_public", $site->getPrivate() ? "false" : "true"));
