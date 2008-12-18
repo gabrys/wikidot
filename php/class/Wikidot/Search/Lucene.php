@@ -310,7 +310,7 @@ class Wikidot_Search_Lucene {
 		$sites_query = "";
 		if (is_array($sites) && count($sites)) {
 			foreach ($sites as $site) {
-				if (int($site) != $site) { // not an ID
+				if ((int) $site != $site) { // not an ID
 					if (is_string($site)) { // maybe unix_name?
 						$c = new Criteria();
 						$c->add("unix_name", $site);
