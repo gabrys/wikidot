@@ -320,7 +320,7 @@ class Wikidot_Search_Lucene {
 				if (is_a($site, "DB_Site")) { // object?
 					$site = $site->getSiteId(); // get an id
 				}
-				if ($site !== null && int($site) == $site) { // we have site id finally
+				if ($site !== null && (int) $site == $site) { // we have site id finally
 					$sites_query .= " site_id:$site";
 				}
 			}	
