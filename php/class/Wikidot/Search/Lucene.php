@@ -310,7 +310,7 @@ class Wikidot_Search_Lucene {
 		$sites_query = "";
 		if (is_array($sites) && count($sites)) {
 			foreach ($sites as $site) {
-				if ((int) $site != $site) { // not an ID
+				if (! is_numeric($site)) { // not an ID
 					if (is_string($site)) { // maybe unix_name?
 						$c = new Criteria();
 						$c->add("unix_name", $site);
@@ -320,7 +320,7 @@ class Wikidot_Search_Lucene {
 				if (is_a($site, "DB_Site")) { // object?
 					$site = $site->getSiteId(); // get an id
 				}
-				if ($site !== null && (int) $site == $site) { // we have site id finally
+				if ($site !== null && is_numeric($site)) { // we have site id finally
 					$sites_query .= " site_id:$site";
 				}
 			}	
