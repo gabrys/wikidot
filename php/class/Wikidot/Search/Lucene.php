@@ -330,11 +330,6 @@ class Wikidot_Search_Lucene {
 		if (! strstr($phrase, '"') && ! strstr($phrase, '^')) {
 			$phrase = "\"$phrase\"^2 $phrase";
 		}
-		
-		// make what user typed in a requirement
-		if (substr_count($phrase, '(') == substr_count($phrase, ')')) {
-			$phrase = "+($phrase)";
-		}
 	
 		$query = "";
 		if ($item_type == "p") {
