@@ -37,14 +37,7 @@ foreach ($hits as $hit) {
 	if ($i == 10) {
 		return;
 	}
-	if ($hit->item_type == "page") {
-		$page = DB_PagePeer::instance()->selectByPrimaryKey($hit->page_id);
-	
-		echo "score: ";
-		printf("%0.4f", $hit->score);
-		echo "\tpage_name: " . $page->getUnixName() . "\n";
-		
-		$i++;	
-	}
+	echo $hit->fts_id;
+	echo "\n";
 }
 
