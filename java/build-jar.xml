@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project searcher">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="./wikidot_search.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Built-By" value="${user.name}"/>
+                <attribute name="Main-Class" value="WikidotSearcher"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="."/>
+            <zipfileset excludes="META-INF/*.SF" src="/usr/share/java/lucene-core-2.2.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/usr/share/java/lucene-analyzers-2.2.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/usr/share/java/lucene-memory-2.2.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/usr/share/java/lucene-misc-2.2.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/usr/share/java/lucene-queries-2.2.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/usr/share/java/lucene-regex-2.2.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/usr/share/java/lucene-similarity-2.2.0.jar"/>
+        </jar>
+    </target>
+</project>

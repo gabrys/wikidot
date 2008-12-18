@@ -18,7 +18,7 @@
  * 
  * @category Wikidot
  * @package Wikidot_Web
- * @version $Id: lucene_search.php,v 1.1 2008/12/04 12:16:45 redbeard Exp $
+ * @version $Id: Lucene.php,v 1.1 2008/12/10 13:00:21 quake Exp $
  * @copyright Copyright (c) 2008, Wikidot Inc.
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
@@ -45,18 +45,18 @@ class Wikidot_Search_Lucene {
 		} else {
 			$this->queueFile = GlobalProperties::$SEARCH_LUCENE_QUEUE;
 		}
-		
-		try {
-			$this->index = Zend_Search_Lucene::open($this->indexFile);
-		} catch (Zend_Search_Lucene_Exception $e) {
-			$this->createIndex();
+	}
+	
+	protected function loadIndex() {
+		if (! $this->index) {
+			try {
+				$this->index = Zend_Search_Lucene::open($this->indexFile);
+			} catch (Zend_Search_Lucene_Exception $e) {
+				$this->index = Zend_Search_Lucene::create($this->indexFile, true);
+			}
 		}
 		
 		Zend_Search_Lucene_Analysis_Analyzer::setDefault(new Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive());
-	}
-	
-	protected function createIndex() {
-		$this->index = Zend_Search_Lucene::create($this->indexFile, true);
 	}
 	
 	protected function resetQueue() {
@@ -193,6 +193,7 @@ class Wikidot_Search_Lucene {
 	}
 	
 	public function processQueue() {
+		$this->loadIndex();
 		
 		$q = file($this->queueFile);
 		$this->resetQueue();
@@ -244,8 +245,12 @@ class Wikidot_Search_Lucene {
 		$this->queue("INDEX_SITE", $site_id);
 	}
 
-	// queries the index and returns the array of Fts entries
-	public function query($query) {
+	/*
+	 * queries the index and returns the array of Fts entries
+	 * @param $query Lucene query to search for
+	 * @return array fts_id array
+	 */
+	public function rawQuery($query) {
 		$cache = Ozone::$memcache;
 		$key = "search..$query";
 		
@@ -253,12 +258,7 @@ class Wikidot_Search_Lucene {
 			return $result;
 		}
 		
-		$result = array();
-		foreach ($this->index->find($query) as $hit) {
-			$result[] = array(
-				"fts_id" => $hit->fts_id,
-			);
-		}
+		$result = $this->executeWikidotSearch($query);
 		
 		if ($cache) {
 			$cache->set($key, $result, 0, $this->CACHE_FOR);
@@ -267,7 +267,109 @@ class Wikidot_Search_Lucene {
 		return $result;
 	}
 	
+	/**
+	 * high level Wikidot search function
+	 * manages user permisisons, searches only in public sites + those user is a member of
+	 * 
+	 * @param $phrase		 Lucene query to search for 
+	 * @param $user			 user that searches
+	 * @param $itemType		 p - search only pages, f - only forums
+	 * @param $sites		 sites to search within
+	 * @param $onlyUserSites whether to search ONLY in user sites 
+	 * @return array  		 fts_id array
+	 */
+	public function search($phrase, $user = null, $itemType = null, $sites = null, $onlyUserSites = false) {
+		
+		// user filter
+		
+		if ($onlyUserSites) {
+			$user_query = "";
+		} else {
+			$user_query = "site_public:true";
+		}
+		
+		$c = new Criteria();
+		$c->add("user_id", $user->getUserId());
+		$c->setLimit(100, 0);
+		
+		$memberships = DB_MemberPeer::instance()->selectByCriteria($c);
+		if (count($memberships) < 100) {
+			foreach ($memberships as $m) {
+				$user_query .= " site_id:" . $m->getSiteId() . "^2";
+			}
+		}
+		
+		if ($user_query == "") {
+			$user_query = "site_public:true";
+		}
+		
+		// sites filter
+		
+		$sites_query = "";
+		if (is_array($sites) && count($sites)) {
+			foreach ($sites as $site) {
+				if (int($site) != $site) { // not an ID
+					if (is_string($site)) { // maybe unix_name?
+						$c = new Criteria();
+						$c->add("unix_name", $site);
+						$site = DB_SitePeer::instance()->select($c); // make it an object
+					}
+				}
+				if (is_a($site, "DB_Site")) { // object?
+					$site = $site->getSiteId(); // get an id
+				}
+				if ($site !== null && int($site) == $site) { // we have site id finally
+					$sites_query .= " site_id:$site";
+				}
+			}	
+		}
+	
+		// give the exact match higher boost
+		if (! strstr($phrase, '"') && ! strstr($phrase, '^')) {
+			$phrase = "\"$phrase\"^2 $phrase";
+		}
+		
+		// make what user typed in a requirement
+		if (substr_count($phrase, '(') == substr_count($phrase, ')')) {
+			$phrase = "+($phrase)";
+		}
+	
+		$query = "";
+		if ($item_type == "p") {
+			$query .= "+item_type:page ";
+		}
+		if ($item_type == "f") {
+			$query .= "+item_type:thread ";
+		}
+		if ($sites_query) {
+			$query = "+($sites_query) ";
+		}
+		$query .= "+($user_query) +($phrase)";
+		
+		return $this->rawQuery($query);
+	}
+	
 	public function indexAllSitesVerbose() {
+		$this->loadIndex();
 		$this->indexSite("ALL", true);
+		echo "\n";
+	}
+	
+	protected function executeWikidotSearch($query) {
+		$cmd = escapeshellcmd(WIKIDOT_ROOT . "/java/wikidot_search.jar");
+		$cmd .= " " . escapeshellarg($this->indexFile);
+		$cmd .= " " . escapeshellarg($query);
+		$cmd .= " 2>&1";
+		
+		$results = array();
+		exec($cmd, $results);
+		if (count($results)) {
+			// something other than int in the first line means we had an exception in java program
+			if ((int) $results[0] != $results[0]) {
+				throw new Wikidot_Search_Exception(join("\n", $results));
+			}
+		}
+		
+		return $results;
 	}
 }

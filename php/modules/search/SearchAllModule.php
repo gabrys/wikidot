@@ -29,24 +29,16 @@ class SearchAllModule extends SmartyModule {
 		return trim(preg_replace('/\s+/', ' ', $query));
 	}
 	
-	protected function parseQuery($query, $area = null, $sites = null, $userSites = null) {
+	protected function parseQuery($query) {
 		// add some space
 		$q = " $query ";
 		
-		// check for site:X site:Y strings
-		if (! $sites) {
-			$sites = array();
-			$m = array();
-			if (preg_match("/ site:([a-z0-9,-]+) /i", $q, $m)) {
-				foreach (explode(",", $m[1]) as $site_name) {
-					$c = new Criteria();
-					$c->add("unix_name", strtolower($site_name));
-					if ($s = DB_SitePeer::instance()->selectOneByCriteria($c)) {
-						$sites[] = $s->getSiteId();
-					}
-					$q = str_replace("site:$m[1]", "", $q);
-				}
-			}
+		// check for site:X,Y,Z strings
+		$sites = null;
+		$m = array();
+		if (preg_match("/ site:([a-z0-9,-]+) /i", $q, $m)) {
+			$sites = explode(",", $m[1]);
+			$q = preg_replace("/ site:([a-z0-9,-]+) /i", "", $q);
 		}
 		
 		// we want "pure" query version now
@@ -54,36 +46,7 @@ class SearchAllModule extends SmartyModule {
 		
 		$q = $this->normalizeWhiteSpace($q);
 		
-		// give the exact match higher boost
-		if (! strstr($q, '"') && ! strstr($q, '^')) {
-			$q = "\"$q\"^2 $q";
-		}
-		
-		// make what user typed in a requirement
-		if (substr_count($q, '(') == substr_count($q, ')')) {
-			$q = "+($q)";
-		}
-		
-		// add the item type filter
-		if ($area == 'p') {
-			$q .= " +item_type:page";
-		} elseif ($area == 'f') {
-			$q .= " +item_type:thread";
-		}
-	
-		// add the sites filter
-		if (is_array($sites) && count($sites)) {
-			$q .= " +(site_id:" . implode(" site_id:", $sites) . ")";	
-		}
-		
-		// add public/private sites distinction
-		$q .= " +(site_public:true";
-		if (is_array($userSites) && count($userSites)) {
-			$q .= " site_id:" . implode("^2 site_id:", $userSites) . "^2";
-		}
-		$q .= ")";
-		
-		return $q;
+		return array("sites" => $sites, "query" => $q);
 	}
 	
 	protected function simplifyForTs($query) {
@@ -96,22 +59,6 @@ class SearchAllModule extends SmartyModule {
 		$q = trim($q);
 		$q = preg_replace('/ +/', '&', $q);
 		return $q;
-	}
-	
-	protected function getUserSites($user) {
-		if (! $user) {
-			return null;
-		}
-		
-		$c = new Criteria();
-		$c->add("user_id", $user->getUserId());
-		
-		$ret = array();
-		foreach (DB_MemberPeer::instance()->selectByCriteria($c) as $m) {
-			$ret[] = $m->getSiteId();
-		}
-		
-		return $ret;
 	}
 	
 	public function build($runData){
@@ -140,12 +87,12 @@ class SearchAllModule extends SmartyModule {
 		$offset = ($pageNumber - 1) * $perPage;
 		
 		// parse query
-		$lucene_query = $this->parseQuery($query, $area, null, $this->getUserSites($runData->getUser()));
-		$ts_query = "'" . db_escape_string($this->simplifyForTs($query)) . "'";
+		$query_array = $this->parseQuery($query);
+		$ts_query = "'" . db_escape_string($this->simplifyForTs($query_array['query'])) . "'";
 		
 		// find
 		$lucene = new Wikidot_Search_Lucene();
-		$lucene_hits = $lucene->query($lucene_query);
+		$lucene_hits = $lucene->search($query_array['query'], $runData->getUser(), $area, $query_array['sites']);
 		$result_count = count($lucene_hits);
 		
 		// limit
