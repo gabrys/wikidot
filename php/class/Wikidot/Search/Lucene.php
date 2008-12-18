@@ -288,14 +288,16 @@ class Wikidot_Search_Lucene {
 			$user_query = "site_public:true";
 		}
 		
-		$c = new Criteria();
-		$c->add("user_id", $user->getUserId());
-		$c->setLimit(100, 0);
-		
-		$memberships = DB_MemberPeer::instance()->selectByCriteria($c);
-		if (count($memberships) < 100) {
-			foreach ($memberships as $m) {
-				$user_query .= " site_id:" . $m->getSiteId() . "^2";
+		if ($user) {
+			$c = new Criteria();
+			$c->add("user_id", $user->getUserId());
+			$c->setLimit(100, 0);
+			
+			$memberships = DB_MemberPeer::instance()->selectByCriteria($c);
+			if (count($memberships) < 100) {
+				foreach ($memberships as $m) {
+					$user_query .= " site_id:" . $m->getSiteId() . "^2";
+				}
 			}
 		}
 		
