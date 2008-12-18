@@ -328,7 +328,9 @@ class Wikidot_Search_Lucene {
 	
 		// give the exact match higher boost
 		if (! strstr($phrase, '"') && ! strstr($phrase, '^')) {
-			$phrase = "\"$phrase\"^2 $phrase";
+			$content_phrase = "\"$phrase\"^2 $phrase";
+		} else {
+			$content_phrase = $phrase;
 		}
 	
 		$query = "";
@@ -341,7 +343,7 @@ class Wikidot_Search_Lucene {
 		if ($sites_query) {
 			$query = "+($sites_query) ";
 		}
-		$query .= "+($user_query) +(tags:($phrase) title:($phrase) content:($phrase))";
+		$query .= "+($user_query) +(tags:($phrase) title:($phrase) content:($content_phrase))";
 		
 		return $this->rawQuery($query);
 	}
@@ -353,17 +355,24 @@ class Wikidot_Search_Lucene {
 	}
 	
 	protected function executeWikidotSearch($query) {
-		$cmd = "java -jar " . escapeshellcmd(WIKIDOT_ROOT . "/bin/wikidot_search.jar");
-		$cmd .= " " . escapeshellarg($this->indexFile);
-		$cmd .= " " . escapeshellarg($query);
-		$cmd .= " 2>&1";
-		
 		$results = array();
-		exec($cmd, $results);
-		if (count($results)) {
-			// something other than int in the first line means we had an exception in java program
-			if ((int) $results[0] != $results[0]) {
-				throw new Wikidot_Search_Exception(join("\n", $results));
+		if (GlobalProperties::$SEARCH_USE_JAVA) {
+			$cmd = "java -jar " . escapeshellcmd(WIKIDOT_ROOT . "/bin/wikidot_search.jar");
+			$cmd .= " " . escapeshellarg($this->indexFile);
+			$cmd .= " " . escapeshellarg($query);
+			$cmd .= " 2>&1";
+			
+			exec($cmd, $results);
+			if (count($results)) {
+				// something other than int in the first line means we had an exception in java program
+				if ((int) $results[0] != $results[0]) {
+					throw new Wikidot_Search_Exception(join("\n", $results));
+				}
+			}
+		} else {
+			$this->loadIndex();
+			foreach ($this->index->find($query) as $hit) {
+				$results[] = $hit->fts_id;
 			}
 		}
 		
