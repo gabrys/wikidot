@@ -341,7 +341,7 @@ class Wikidot_Search_Lucene {
 		if ($sites_query) {
 			$query = "+($sites_query) ";
 		}
-		$query .= "+($user_query) +(tag:($phrase) title:($phrase) content:($phrase))";
+		$query .= "+($user_query) +(tags:($phrase) title:($phrase) content:($phrase))";
 		
 		return $this->rawQuery($query);
 	}
