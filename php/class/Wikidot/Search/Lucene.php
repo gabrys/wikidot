@@ -358,7 +358,7 @@ class Wikidot_Search_Lucene {
 	}
 	
 	protected function executeWikidotSearch($query) {
-		$cmd = escapeshellcmd(WIKIDOT_ROOT . "/java/wikidot_search.jar");
+		$cmd = "java -jar " . escapeshellcmd(WIKIDOT_ROOT . "/java/wikidot_search.jar");
 		$cmd .= " " . escapeshellarg($this->indexFile);
 		$cmd .= " " . escapeshellarg($query);
 		$cmd .= " 2>&1";
