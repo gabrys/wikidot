@@ -19,7 +19,7 @@ public class WikidotSearcher {
 			String queryString = args[1];
 
 			IndexSearcher indexSearcher = new IndexSearcher(indexPath);
-			QueryParser qp = new QueryParser("content",	new StandardAnalyzer());
+			QueryParser qp = new QueryParser("*",	new StandardAnalyzer());
 			Query query = qp.parse(queryString);
 
 			Hits hits = indexSearcher.search(query);
