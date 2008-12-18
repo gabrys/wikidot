@@ -328,9 +328,9 @@ class Wikidot_Search_Lucene {
 	
 		// give the exact match higher boost
 		if (! strstr($phrase, '"') && ! strstr($phrase, '^')) {
-			$content_phrase = "\"$phrase\"^2 $phrase";
+			$title_phrase = "\"$phrase\"^2 $phrase";
 		} else {
-			$content_phrase = $phrase;
+			$title_phrase = $phrase;
 		}
 	
 		$query = "";
@@ -343,7 +343,7 @@ class Wikidot_Search_Lucene {
 		if ($sites_query) {
 			$query = "+($sites_query) ";
 		}
-		$query .= "+($user_query) +(tags:($phrase) title:($phrase) content:($content_phrase))";
+		$query .= "+($user_query) +(tags:($phrase) title:($title_phrase) content:($phrase))";
 		
 		return $this->rawQuery($query);
 	}
