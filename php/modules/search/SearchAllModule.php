@@ -113,9 +113,7 @@ class SearchAllModule extends SmartyModule {
 		
 		$res = array();
 		
-		foreach ($lucene_hits as $hit) {
-			
-			$fts_id = $hit['fts_id'];
+		foreach ($lucene_hits as $fts_id) {
 			
 			$q = "SELECT *, 
 					fts_entry.unix_name AS fts_unix_name, 
