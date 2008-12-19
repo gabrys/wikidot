@@ -330,12 +330,20 @@ class Wikidot_Search_Lucene {
 				}
 			}	
 		}
-	
-		// give the exact match higher boost
-		if (! strstr($phrase, '"') && ! strstr($phrase, '^')) {
-			$title_phrase = "\"$phrase\"^2 $phrase";
+		
+		// construct content_query
+		if (! preg_match("/tags:/", $phrase) && ! preg_match("/title:/", $phrase) && ! preg_match("/content:/", $phrase)) {
+			
+			// give the exact match in title higher boost
+			if (! strstr($phrase, '"') && ! strstr($phrase, '^')) {
+				$title_phrase = "\"$phrase\"^2 $phrase";
+			} else {
+				$title_phrase = $phrase;
+			}
+			
+			$content_query = "tags:($phrase) title:($title_phrase) content:($phrase)";
 		} else {
-			$title_phrase = $phrase;
+			$content_query = $phrase;
 		}
 	
 		$query = "";
@@ -348,7 +356,7 @@ class Wikidot_Search_Lucene {
 		if ($sites_query) {
 			$query .= "+($sites_query) ";
 		}
-		$query .= "+($user_query) +(tags:($phrase) title:($title_phrase) content:($phrase))";
+		$query .= "+($user_query) +($content_query)";
 		
 		return $this->rawQuery($query);
 	}
