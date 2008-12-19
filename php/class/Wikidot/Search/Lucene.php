@@ -319,7 +319,7 @@ class Wikidot_Search_Lucene {
 					if (is_string($site)) { // maybe unix_name?
 						$c = new Criteria();
 						$c->add("unix_name", $site);
-						$site = DB_SitePeer::instance()->select($c); // make it an object
+						$site = DB_SitePeer::instance()->selectOne($c); // make it an object
 					}
 				}
 				if (is_a($site, "DB_Site")) { // object?
