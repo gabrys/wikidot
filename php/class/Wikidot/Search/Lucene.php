@@ -153,7 +153,7 @@ class Wikidot_Search_Lucene {
 		}
 	}
 	
-	protected function indexSite($site, $verbose = false) {
+	protected function indexSite($site, $verbose = false, $fts_id_from = null, $fts_id_to = null) {
 		
 		if ($site) {
 		
@@ -162,6 +162,11 @@ class Wikidot_Search_Lucene {
 			
 			$c = new Criteria();
 			$c->setLimit($atOnce, $offset);
+			
+			if ($fts_id_to) {
+				$c->add("fts_id", $fts_id_from, ">=");
+				$c->add("fts_id", $fts_id_to, "<");
+			}
 			
 			if ($site == "ALL") {
 				$site = null;
@@ -348,9 +353,9 @@ class Wikidot_Search_Lucene {
 		return $this->rawQuery($query);
 	}
 	
-	public function indexAllSitesVerbose() {
+	public function indexAllSitesVerbose($fts_id_from = null, $fts_id_to = null) {
 		$this->loadIndex();
-		$this->indexSite("ALL", true);
+		$this->indexSite("ALL", true, $fts_id_from, $fts_id_to);
 		echo "\n";
 	}
 	
@@ -377,5 +382,10 @@ class Wikidot_Search_Lucene {
 		}
 		
 		return $results;
+	}
+	
+	public function getCount() {
+		$this->loadIndex();
+		return $this->index->count();
 	}
 }
