@@ -378,7 +378,7 @@ class Wikidot_Search_Lucene {
 			exec($cmd, $results);
 			if (count($results)) {
 				// something other than int in the first line means we had an exception in java program
-				if ((int) $results[0] != $results[0]) {
+				if (! is_numeric($results[0])) {
 					throw new Wikidot_Search_Exception(join("\n", $results));
 				}
 			}
