@@ -18,26 +18,39 @@
  * 
  * @category Wikidot
  * @package Wikidot_Web
- * @version $Id: lucene_search.php,v 1.1 2008/12/04 12:16:45 redbeard Exp $
+ * @version $Id: lucene_search.php,v 1.8 2008/12/19 02:13:08 redbeard Exp $
  * @copyright Copyright (c) 2008, Wikidot Inc.
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
 
 require_once ("../php/setup.php");
 
-$index = new Zend_Search_Lucene(GlobalProperties::$SEARCH_LUCENE_INDEX);
-
-Zend_Search_Lucene_Analysis_Analyzer::setDefault(new Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive());
-
-$hits = $index->find($argv[1]);
-
-$i = 0;
-
-foreach ($hits as $hit) {
-	if ($i == 10) {
-		return;
-	}
-	echo $hit->fts_id;
-	echo "\n";
+if (! isset($argv[1])) {
+	echo "Usage:\n";
+	echo "  php lucene_search.php <search phrase>\n";
+	echo "  php lucene_search.php <search phrase> php -- force using the PHP Lucene implementation\n";
+	echo "  php lucene_search.php <search phrase> java -- force using the Java Lucene implementation\n";
+	exit();
 }
 
+if (isset($argv[2]) && $argv[2] == 'java') {
+	GlobalProperties::$SEARCH_USE_JAVA = true;
+} elseif (isset($argv[2]) && $argv[2] == 'php') {
+	GlobalProperties::$SEARCH_USE_JAVA = false;
+}
+
+$lucene = new Wikidot_Search_Lucene();
+$hits = $lucene->rawQuery($argv[1]);
+
+$i = 0;
+echo "indexed: " . $lucene->getCount() . "\n";
+echo "hits: " . count($hits) . "\n";
+
+foreach ($hits as $hit) {
+	if (++$i == 10) {
+		return;
+	}
+	echo "\n";
+	echo $hit;
+}
+echo "\n";
