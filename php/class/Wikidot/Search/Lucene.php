@@ -346,7 +346,7 @@ class Wikidot_Search_Lucene {
 			$query .= "+item_type:thread ";
 		}
 		if ($sites_query) {
-			$query = "+($sites_query) ";
+			$query .= "+($sites_query) ";
 		}
 		$query .= "+($user_query) +(tags:($phrase) title:($title_phrase) content:($phrase))";
 		
