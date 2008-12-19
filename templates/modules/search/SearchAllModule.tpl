@@ -1,14 +1,14 @@
 <div class="search-box">
 
 	<div class="query-area">
-		<form action="dummy" id="search-form">
+		<form action="dummy" id="search-form-all">
 			<div>
 				{t}Search query{/t}: 
-				<input class="text" type="text" size="30" name="query" id="search-form-input" value="{$query|escape}"/>
+				<input class="text" type="text" size="30" name="query" id="search-form-all-input" value="{$query|escape}"/>
 				<input class="button" type="submit" value="{t}search{/t}"/>
 			</div>
 			<div style="font-size: 87%; margin-top:5px;">
-				<input id="search-all-pf" class="radio" type="radio" name="area" value="pf" {if !$area}checked="checked"{/if}/><label for="search-all-pf">{t}pages and forums{/t}</label>
+				<input id="search-all-pf" class="radio" type="radio" name="area" value="pf" {if !$area || $area=='pf'}checked="checked"{/if}/><label for="search-all-pf">{t}pages and forums{/t}</label>
 				<input id="search-all-p" class="radio" type="radio" name="area" value="p" {if $area=='p'}checked="checked"{/if}/><label for="search-all-p">{t}pages only{/t}</label>
 				<input id="search-all-f" class="radio" type="radio" name="area" value="f" {if $area=='f'}checked="checked"{/if}/><label for="search-all-f">{t}forums only{/t}</label>
 			</div>

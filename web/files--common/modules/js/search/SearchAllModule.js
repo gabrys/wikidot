@@ -13,7 +13,7 @@ WIKIDOT.modules.SearchAllModulee = {};
 
 WIKIDOT.modules.SearchAllModulee.listeners = {
 	search: function(e){
-		var f = OZONE.utils.formToArray("search-form");
+		var f = OZONE.utils.formToArray("search-form-all");
 		var query = f['query'];
 		var area = f['area'];
 		// escape query
@@ -29,7 +29,7 @@ WIKIDOT.modules.SearchAllModulee.listeners = {
 }
 
 WIKIDOT.modules.SearchAllModulee.init = function(){
-	YAHOO.util.Event.addListener("search-form", "submit", WIKIDOT.modules.SearchAllModulee.listeners.search);
+	YAHOO.util.Event.addListener("search-form-all", "submit", WIKIDOT.modules.SearchAllModulee.listeners.search);
 }
 
 WIKIDOT.modules.SearchAllModulee.init();
