@@ -44,6 +44,7 @@ class SearchAllModule extends SmartyModule {
 		// we want "pure" query version now
 		$q = preg_replace('/[&\|\?~,)("^]/', " ", $q);
 		$q = preg_replace("/tags:/", "tags|", $q);
+		$q = preg_replace("/tag:/", "tags|", $q);
 		$q = preg_replace("/title:/", "title|", $q);
 		$q = preg_replace("/content:/", "content|", $q);
 		$q = preg_replace("/:/", " ", $q);
