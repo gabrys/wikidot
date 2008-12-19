@@ -335,7 +335,8 @@ class Wikidot_Search_Lucene {
 		$phrase = trim($phrase);
 		if ($phrase == "") {
 			return array();
-		} elseif (! preg_match("/tags:/", $phrase) && ! preg_match("/title:/", $phrase) && ! preg_match("/content:/", $phrase)) {
+		}
+		if (! preg_match("/tags:/", $phrase) && ! preg_match("/title:/", $phrase) && ! preg_match("/content:/", $phrase)) {
 			
 			// give the exact match in title higher boost
 			if (! strstr($phrase, '"') && ! strstr($phrase, '^')) {
