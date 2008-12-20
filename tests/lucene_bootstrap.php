@@ -26,4 +26,5 @@
 require_once ("../php/setup.php");
 
 $lucene = new Wikidot_Search_Lucene();
+$lucene->createIndex();
 $lucene->indexAllSitesVerbose();

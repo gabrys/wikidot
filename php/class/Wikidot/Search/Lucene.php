@@ -48,14 +48,12 @@ class Wikidot_Search_Lucene {
 	}
 	
 	protected function loadIndex() {
-		if (! $this->index) {
-			try {
-				$this->index = Zend_Search_Lucene::open($this->indexFile);
-			} catch (Zend_Search_Lucene_Exception $e) {
-				$this->index = Zend_Search_Lucene::create($this->indexFile, true);
-			}
-		}
-		
+		$this->index = Zend_Search_Lucene::open($this->indexFile);
+		Zend_Search_Lucene_Analysis_Analyzer::setDefault(new Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive());
+	}
+	
+	public function createIndex() {
+		$this->index = Zend_Search_Lucene::create($this->indexFile);
 		Zend_Search_Lucene_Analysis_Analyzer::setDefault(new Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive());
 	}
 	
