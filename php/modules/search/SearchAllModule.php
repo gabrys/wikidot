@@ -47,7 +47,7 @@ class SearchAllModule extends SmartyModule {
 		$q = str_replace(']', " ", $q);
 		$q = preg_replace('/([a-z][a-z][a-z])\*/', '\1~', $q);
 		$q = str_replace('*', ' ', $q);
-		$q = str_replace("~", '*', $q)
+		$q = str_replace("~", '*', $q);
 		$q = preg_replace("/tags:/", "tags~", $q);
 		$q = preg_replace("/tag:/", "tags~", $q);
 		$q = preg_replace("/title:/", "title~", $q);
