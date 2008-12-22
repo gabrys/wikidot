@@ -255,7 +255,7 @@ class Wikidot_Search_Lucene {
 	 */
 	public function rawQuery($query) {
 		$cache = Ozone::$memcache;
-		$key = "search..$query";
+		$key = "search.." . md5($query);
 		
 		if ($cache && $result = $cache->get($key)) {
 			return $result;
@@ -338,7 +338,7 @@ class Wikidot_Search_Lucene {
 			
 			// give the exact match in title higher boost
 			if (! strstr($phrase, '"') && ! strstr($phrase, '^')) {
-				$title_phrase = "\"$phrase\"^2 $phrase";
+				$title_phrase = "\"$phrase\"^5 $phrase";
 			} else {
 				$title_phrase = $phrase;
 			}
