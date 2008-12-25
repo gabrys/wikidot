@@ -111,7 +111,7 @@ abstract class WikidotController extends WebFlowController {
 	
 	private function calculateEtag($path) {
 		if (file_exists($path)) {
-			return '"' + md5(file_get_contents($path)) + '"';
+			return '"' . md5_file($path) . '"';
 		} else {
 			return '"none"';
 		}
