@@ -130,8 +130,8 @@ abstract class WikidotController extends WebFlowController {
 	protected function serveFileWithMime($path, $expires = null, $restrictHtml = false) {
 		$etag = $this->calculateEtag($path);
 		
-		if (isset($_SERVER["IF_NONE_MATCH"])) {
-			if ($_SERVER["IF_NONE_MATCH"] == $etag) {
+		if (isset($_SERVER["HTTP_IF_NONE_MATCH"])) {
+			if ($_SERVER["HTTP_IF_NONE_MATCH"] == $etag) {
 				$this->return304();
 				return;
 			}
