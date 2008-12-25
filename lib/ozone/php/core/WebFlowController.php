@@ -67,6 +67,17 @@ abstract class WebFlowController {
 			header("Content-type: $mime; charset=utf-8");
 		}
 	}
+
+	/**
+	 * sets the Content-type header
+	 *
+	 * @param string $mime
+	 */
+	protected function setEtagHeader($etag) {
+		if ($etag) {
+			header("Etag: $etag");
+		}
+	}
 	
 	/**
 	 * Redirects browser to certain URL build from URL and params
@@ -98,10 +109,11 @@ abstract class WebFlowController {
 	 * @param string $mime the mime to set
 	 * @param int $expires time in seconds to expire
 	 */
-	protected function serveFile($path, $mime = null, $expires = null) {
+	protected function serveFile($path, $mime = null, $expires = null, $etag = null) {
 		if (file_exists($path)) {
 			$this->setContentTypeHeader($mime);
 			$this->setExpiresHeader($expires);
+			$this->setEtagHeader($etag);
 			$this->readfile($path);
 		} else {
 			$this->setContentTypeHeader("text/html");

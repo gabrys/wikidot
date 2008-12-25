@@ -108,6 +108,18 @@ abstract class WikidotController extends WebFlowController {
 	protected function fileNotExists() {
 		$this->serveFile(WIKIDOT_ROOT."/files/file_not_exists.html", "text/html");
 	}
+	
+	private function calculateEtag($path) {
+		if (file_exists($path)) {
+			return '"' + md5(file_get_contents($path)) + '"';
+		} else {
+			return '"none"';
+		}
+	}
+	
+	public return304() {
+		header("HTTP/1.0 304 Not Modified");
+	}
 
 	/**
 	 * serves a file of given path with autodetected MIME type and given expires (if any)
@@ -116,6 +128,14 @@ abstract class WikidotController extends WebFlowController {
 	 * @param int $expires time in seconds
 	 */
 	protected function serveFileWithMime($path, $expires = null, $restrictHtml = false) {
+		$etag = $this->calculateEtag($path);
+		
+		if (isset($_SERVER["IF_NONE_MATCH"])) {
+			if ($_SERVER["IF_NONE_MATCH"] == $etag) {
+				$this->return304();
+				return;
+			}
+		}
 
 		/* guess/set the mime type for the file */
 		if ($dir == "theme" || preg_match("/\.css$/", $path)) {
@@ -128,7 +148,7 @@ abstract class WikidotController extends WebFlowController {
 			$mime = $this->fileMime($path, $restrictHtml);
 		}
 
-		$this->serveFile($path, $mime, $expires);
+		$this->serveFile($path, $mime, $expires, $etag);
 	}
 
 	/**
