@@ -117,7 +117,7 @@ abstract class WikidotController extends WebFlowController {
 		}
 	}
 	
-	public return304() {
+	public function return304() {
 		header("HTTP/1.0 304 Not Modified");
 	}
 
