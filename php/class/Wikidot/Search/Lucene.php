@@ -317,7 +317,7 @@ class Wikidot_Search_Lucene {
 	
 	public function indexAllSitesVerbose($fts_id_from = null, $fts_id_to = null) {
 		$this->loadIndex();
-		$this->indexSite("ALL", true, $fts_id_from, $fts_id_to);
+		$this->queueSite("ALL", true, $fts_id_from, $fts_id_to);
 		echo "\n";
 	}
 	
