@@ -28,6 +28,7 @@ public class WikidotIndexer {
 					String line = qr.readLine();
 					if (line == null) break;
 					queue.append(line);
+					queue.append("\n");
 				}
 				qr = new BufferedReader(new StringReader(queue.toString()));
 				
