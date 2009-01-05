@@ -31,9 +31,10 @@ class Wikidot_Search_Lucene {
 	protected $indexFile;
 	protected $index;
 	protected $queueFile;
+	protected $queueLockFile;
 	protected $processedFtsEntries = array();
 	
-	public function __construct($indexFile = null, $queueFile = null) {
+	public function __construct($indexFile = null, $queueFile = null, $queueLockFile = null) {
 		if ($indexFile) {
 			$this->indexFile = $indexFile;
 		} else {
@@ -44,6 +45,12 @@ class Wikidot_Search_Lucene {
 			$this->queueFile = $queueFile;
 		} else {
 			$this->queueFile = GlobalProperties::$SEARCH_LUCENE_QUEUE;
+		}
+		
+		if ($queueLockFile) {
+			$this->queueLockFile = $queueLockFile;
+		} else {
+			$this->queueLockFile = GlobalProperties::$SEARCH_LUCENE_LOCK;
 		}
 	}
 	
@@ -60,28 +67,8 @@ class Wikidot_Search_Lucene {
 	protected function resetQueue() {
 		file_put_contents($this->queueFile, "");
 	}
-	
-	protected function queue($type, $id) {
-		$fp = fopen($this->queueFile, "a");
 		
-		if (! in_array($type, array("INDEX_FTS", "INDEX_SITE", "DELETE_PAGE", "DELETE_THREAD", "DELETE_SITE"))) {
-			$type = "UNKNOWN";
-		}
-		$id = (int) $id;
-		
-		fwrite($fp, "$type $id\n");
-		fclose($fp);
-	}
-	
-	protected function deleteItems($query) {
-		foreach ($this->index->find($query) as $hit) {
-			$this->index->delete($hit->id);
-		}
-		
-		$this->index->commit();
-	}
-	
-	protected function addFtsEntry($fts, $site = null) {
+	protected function getFtsEntryDetails($fts, $site = null) {
 		if ($fts) {
 			if (in_array($fts->getFtsId(), $this->processedFtsEntries)) {
 				return;
@@ -97,61 +84,70 @@ class Wikidot_Search_Lucene {
 				return;
 			}
 			
-			// delete it first
-			$this->deleteItems("fts_id:" . $fts->getFtsId());
-			
-			// construct the document
-			$doc = new Zend_Search_Lucene_Document();
-			
 			// add content, site_id, site_public, fts_id fields
-			$doc->addField(Zend_Search_Lucene_Field::unStored("content", $fts->getText()));
-			$doc->addField(Zend_Search_Lucene_Field::text("site_id", $fts->getSiteId()));
-			$doc->addField(Zend_Search_Lucene_Field::text("site_public", $site->getPrivate() ? "false" : "true"));
-			$doc->addField(Zend_Search_Lucene_Field::text("fts_id", $fts->getFtsId()));
-			
-			// TITLE
-			$title_field = Zend_Search_Lucene_Field::text("title", $fts->getTitle());
-			$title_field->boost = 7;
-			$doc->addField($title_field);
+			$doc = "UNSTORED content 1.0 " . str_replace("\n", " ", $fts->getText());
+			$doc .= "\nTEXT site_id 0.1 " . $fts->getSiteId();
+			$doc .= "\nTEXT site_public 0.1 " . $site->getPrivate() ? "false" : "true";
+			$doc .= "\nTEXT title 7.0 " . $fts->getTitle();
 			
 			if ($fts->getPageId()) {
 				
-				// delete also by page_id (this shouldn't delete anything more)
-				$this->deleteItems("page_id:" . $fts->getPageId());
-				
-				$doc->addField(Zend_Search_Lucene_Field::text("item_type", "page"));
-				$doc->addField(Zend_Search_Lucene_Field::text("page_id", $fts->getPageId()));
+				$doc .= "\nTEXT item_type 0.1 page";
+				$doc .= "\nTEXT page_id 0.1 " . $fts->getPageId();
 				
 				// TAGS
 				if ($page = DB_PagePeer::instance()->selectByPrimaryKey($fts->getPageId())) {
-					
 					$tags = $page->getTagsAsArray();
-					$tags_field = Zend_Search_Lucene_Field::text("tags", implode(" ", $tags));
-					$tags_field->boost = 4 * count($tags);
-					$doc->addField($tags_field);
-					
+					$doc .= "\nUNSTORED tags " . (4.0 * count($tags)) . " " . implode(" ", $tags);
 				}
 				
 			} elseif ($fts->getThreadId()) {
 				
-				// delete also by thread_id (this shouldn't delete anything more)
-				$this->deleteItems("thread_id:" . $fts->getThreadId());
-				
-				$doc->addField(Zend_Search_Lucene_Field::keyword("item_type", "thread"));
-				$doc->addField(Zend_Search_Lucene_Field::keyword("thread_id", $fts->getThreadId()));
+				$doc .= "\nTEXT item_type 0.1 thread";
+				$doc .= "\nTEXT thread_id 0.1 " . $fts->getThreadId();
 				
 			} else {
-				
 				// NEITHER A PAGE NOR THREAD
-				return;
-				
+				return;	
 			}
 			
-			$this->index->addDocument($doc);
+			return "$doc\n";
 		}
 	}
 	
-	protected function indexSite($site, $verbose = false, $fts_id_from = null, $fts_id_to = null) {
+	protected function queue($type, $id, $details = null) {
+		$fp = fopen($this->queueFile, "a");
+		
+		if (! in_array($type, array("INDEX_FTS", "DELETE_PAGE", "DELETE_THREAD", "DELETE_SITE"))) {
+			$type = "UNKNOWN";
+		}
+		$id = (int) $id;
+		
+		fwrite($fp, "$type $id\n");
+		if ($details) {
+			fwrite($fp, $details);
+			fwrite($fp, "\n");
+		}
+		fclose($fp);
+	}
+	
+	public function queueFtsEntry($fts_id, $fts_details) {
+		$this->queue("INDEX_FTS", $fts_id, $fts_details);
+	}
+	
+	public function queueDeletePage($page_id) {
+		$this->queue("DELETE_PAGE", $page_id);
+	}
+	
+	public function queueDeleteThread($thread_id) {
+		$this->queue("DELETE_THREAD", $thread_id);
+	}
+	
+	protected function queueSite($site, $verbose = false, $fts_id_from = null, $fts_id_to = null) {
+		
+		if (is_numeric($site)) {
+			$site = DB_SitePeer::instance()->selectByPrimaryKey($site);
+		}
 		
 		if ($site) {
 		
@@ -181,7 +177,7 @@ class Wikidot_Search_Lucene {
 				$entries = $pp->selectByCriteria($c);
 				
 				foreach ($entries as $fts) {
-					$this->addFtsEntry($fts, $site);
+					$this->queueFtsEntry($fts->getFtsId(), $this->getFtsEntryDetails($fts, $site));
 				}
 
 				$offset += $atOnce;
@@ -195,57 +191,9 @@ class Wikidot_Search_Lucene {
 		}
 	}
 	
-	public function processQueue() {
-		$this->loadIndex();
-		
-		$q = file($this->queueFile);
-		$this->resetQueue();
-		
-		foreach ($q as $msg) {
-			$m = explode(" ", $msg);
-			$type = $m[0];
-			$id = $m[1];
-			
-			if ($type == "INDEX_FTS") {
-				
-				$fts = DB_FtsEntryPeer::instance()->selectByPrimaryKey($id);
-				$this->addFtsEntry($fts);
-				
-			} elseif ($type == "INDEX_SITE") {
-				
-				$this->indexSite(DB_SitePeer::instance()->selectByPrimaryKey($id));
-				
-			} elseif ($type == "DELETE_PAGE") {
-				
-				$this->deleteItems("page_id:$id");
-				
-			} elseif ($type == "DELETE_THREAD") {
-				
-				$this->deleteItems("thread_id:$id");
-				
-			} elseif ($type == "DELETE_SITE") {
-				
-				$this->deleteItems("site_id:$id");
-				
-			}
-		}
-	}
-	
-	public function queueFtsEntry($fts_id) {
-		$this->queue("INDEX_FTS", $fts_id);
-	}
-	
-	public function queueDeletePage($page_id) {
-		$this->queue("DELETE_PAGE", $page_id);
-	}
-	
-	public function queueDeleteThread($thread_id) {
-		$this->queue("DELETE_THREAD", $thread_id);
-	}
-	
 	public function queueReIndexSite($site_id) {
 		$this->queue("DELETE_SITE", $site_id);
-		$this->queue("INDEX_SITE", $site_id);
+		$this->queueSite($site_id);
 	}
 
 	/*
@@ -394,8 +342,91 @@ class Wikidot_Search_Lucene {
 		return $results;
 	}
 	
+	protected function tryLockingQueue() {
+		return flock(fopen($this->queueLockFile, 'w'), LOCK_EX);
+	}
+	
+	public function processQueue() {
+		
+		if (! $this->tryLockingQueue()) {
+			return;
+		}
+		
+		if (GlobalProperties::$SEARCH_USE_JAVA) {
+			$cmd = "java -jar " . escapeshellcmd(WIKIDOT_ROOT . "/bin/wikidotIndexer.jar");
+			$cmd .= " process " . escapeshellarg($this->indexFile);
+			$cmd .= " " . escapeshellarg($this->queueFile);
+			$cmd .= " 2>&1";
+			exec($cmd, $results);
+			if (count($results)) {
+				// something other than int in the first line means we had an exception in java program
+				if (! is_numeric($results[0])) {
+					throw new Wikidot_Search_Exception(join("\n", $results));
+				}
+			}
+		} else {
+			
+			$cmds = file($this->queueFile);
+			$this->loadIndex();
+			
+			while (count($cmds)) {
+				
+				$cmd = array_shift($cmds);
+				$a = explode(" ", $cmd);
+				if ($a[0] == "DELETE_PAGE") {
+					$this->zlDeleteItems("page_id:" . $a[1]);
+				} elseif ($a[0] == "DELETE_THREAD") {
+					$this->zlDeleteItems("thread_id:" . $a[1]);
+				} elseif ($a[0] == "DELETE_SITE") {
+					$this->zlDeleteItems("site_id:" . $a[1]);
+				} elseif ($a[0] == "INDEX_FTS") {
+					
+					// delete it first
+					$this->zlDeleteItems("fts_id:" . $a[1]);
+				
+					// construct the document
+					$doc = new Zend_Search_Lucene_Document();
+					
+					while (true) {
+						$line = array_shift($cmds);
+						if (trim($line) == "") {
+							break;
+						}
+						
+						$args = explode(" ", $line);
+						$key = array_shift($args);
+						$type = array_shift($args);
+						$boost = array_shift($args);
+						$val = implode(" ", $args);
+						
+						if ($type == "TEXT") {
+							$field = Zend_Search_Lucene_Field::text($key, $val);
+						} else {
+							$field = Zend_Search_Lucene_Field::unStored($key, $val);
+						}
+						
+						$field->boost = $boost;
+						$doc->addField($field);
+					}
+					$this->index->addDocument($doc);
+				}
+			}
+			$this->index->commit();
+		}
+		
+		$this->resetQueue();
+	}
+	
 	public function getCount() {
 		$this->loadIndex();
 		return $this->index->count();
+	}
+	
+	protected function zlDeleteItems($query) {
+		foreach ($this->index->find($query) as $hit) {
+			$this->index->delete($hit->id);
+		}
+		
+		$this->index->commit();
 	}
 }
