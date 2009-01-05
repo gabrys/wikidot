@@ -373,7 +373,7 @@ class Wikidot_Search_Lucene {
 		$results = array();
 		if (GlobalProperties::$SEARCH_USE_JAVA) {
 			$cmd = "java -jar " . escapeshellcmd(WIKIDOT_ROOT . "/bin/wikidotIndexer.jar");
-			$cmd .= " " . escapeshellarg($this->indexFile);
+			$cmd .= " search " . escapeshellarg($this->indexFile);
 			$cmd .= " " . escapeshellarg($query);
 			$cmd .= " 2>&1";
 			
