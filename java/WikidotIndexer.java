@@ -24,49 +24,51 @@ public class WikidotIndexer {
 				
 				try {
 					while (true) {
-						String line = qr.readLine();
 						
-						if (line == null) { // EOF
-							break;
-						}
-						
-						String cmd = line.split(" ")[0];
-						String id = line.split(" ")[1];
-						
-						if (cmd.equals("DELETE_PAGE")) {
-							im.deleteDocuments(new Term("page_id", id));
-						} else if (cmd.equals("DELETE_THREAD")) {
-							im.deleteDocuments(new Term("thread_id", id));
-						} else if (cmd.equals("DELETE_SITE")) {
-							im.deleteDocuments(new Term("site_id", id));
-						} else if (cmd.equals("INDEX_FTS")) {
-
-							im.deleteDocuments(new Term("fts_id", id));
-							Document doc = new Document();
-							doc.add(new Field("fts_id", id, Field.Store.YES, Field.Index.TOKENIZED));
+						try {
+							String line = qr.readLine();
 							
-							while (true) {
-
-								line = qr.readLine();
-								if (line.trim().equals("")) { // empty line
-									break;
-								}
-								
-								args = line.split(" ", 4);
-								String fieldType = args[0];
-								String key = args[1];
-								float boost = new Float(args[2]).floatValue();
-								String value = args[3];
-								
-								Field field = new Field(key, value,	fieldType.equals("TEXT") ? Field.Store.YES : Field.Store.NO, Field.Index.TOKENIZED);
-								field.setBoost(boost);
-								doc.add(field);
-								//System.out.println(key + ": " + value + " (" + boost + ")");
+							if (line == null) { // EOF
+								break;
 							}
-							im.addDocument(doc);
+							
+							String cmd = line.split(" ")[0];
+							String id = line.split(" ")[1];
+							
+							if (cmd.equals("DELETE_PAGE")) {
+								im.deleteDocuments(new Term("page_id", id));
+							} else if (cmd.equals("DELETE_THREAD")) {
+								im.deleteDocuments(new Term("thread_id", id));
+							} else if (cmd.equals("DELETE_SITE")) {
+								im.deleteDocuments(new Term("site_id", id));
+							} else if (cmd.equals("INDEX_FTS")) {
+	
+								im.deleteDocuments(new Term("fts_id", id));
+								Document doc = new Document();
+								doc.add(new Field("fts_id", id, Field.Store.YES, Field.Index.TOKENIZED));
+								
+								while (true) {
+									line = qr.readLine();
+									if (line.trim().equals("")) { // empty line
+										break;
+									}
+									
+									args = line.split(" ", 4);
+									String fieldType = args[0];
+									String key = args[1];
+									float boost = new Float(args[2]).floatValue();
+									String value = args[3];
+									
+									Field field = new Field(key, value,	fieldType.equals("TEXT") ? Field.Store.YES : Field.Store.NO, Field.Index.TOKENIZED);
+									field.setBoost(boost);
+									doc.add(field);
+									//System.out.println(key + ": " + value + " (" + boost + ")");
+								}
+								im.addDocument(doc);
+							}
+						} catch (ArrayIndexOutOfBoundsException e) { // file corrupted somehow
 						}
 					}
-					
 					im.optimize();
 					im.close();
 					
