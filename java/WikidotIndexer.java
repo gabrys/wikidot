@@ -19,8 +19,8 @@ public class WikidotIndexer {
 //process
 			if (args.length == 3 && args[0].equals("process")) {
 
-				BufferedReader qr = new BufferedReader(new InputStreamReader(new FileInputStream(new File(args[1]))));
-				IndexModifier im = new IndexModifier(args[2], new StandardAnalyzer(), false);
+				IndexModifier im = new IndexModifier(args[1], new StandardAnalyzer(), false);
+				BufferedReader qr = new BufferedReader(new InputStreamReader(new FileInputStream(new File(args[2]))));
 				
 				try {
 					while (true) {
