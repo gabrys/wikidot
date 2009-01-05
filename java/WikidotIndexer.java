@@ -33,7 +33,7 @@ public class WikidotIndexer {
 					queue.append("\n");
 				}
 				qr = new BufferedReader(new StringReader(queue.toString()));
-				new RandomAccessFile(args[2], "rw");
+				new RandomAccessFile(args[2], "rw").setLength(0);
 				
 				try {
 					while (true) {
