@@ -57,6 +57,7 @@ class GlobalProperties {
 	// search settings
 	public static $SEARCH_LUCENE_INDEX;
 	public static $SEARCH_LUCENE_QUEUE;
+	public static $SEARCH_LUCENE_LOCK;
 	public static $SEARCH_HIGHLIGHT;
 	public static $SEARCH_USE_JAVA;
 	
@@ -175,6 +176,7 @@ class GlobalProperties {
 		// search settings
 		self::$SEARCH_LUCENE_INDEX		= self::fromIni("search",	"lucene_index",		WIKIDOT_ROOT . "/tmp/lucene_index");
 		self::$SEARCH_LUCENE_QUEUE		= self::fromIni("search",	"lucene_queue",		WIKIDOT_ROOT . "/tmp/lucene_queue");
+		self::$SEARCH_LUCENE_LOCK		= self::fromIni("search",	"lucene_lock",		WIKIDOT_ROOT . "/tmp/lucene_lock");
 		self::$SEARCH_HIGHLIGHT			= self::fromIni("search",	"highlight",		false);
 		self::$SEARCH_USE_JAVA			= self::fromIni("search",	"use_java",			false);
 		
