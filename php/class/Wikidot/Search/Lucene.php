@@ -131,7 +131,11 @@ class Wikidot_Search_Lucene {
 		fclose($fp);
 	}
 	
-	public function queueFtsEntry($fts_id, $fts_details) {
+	public function queueFtsEntry($fts_id, $fts_details = null) {
+		if (! $fts_details) {
+			$fts = DB_FtsEntryPeer::instance()->selectByPrimaryKey($fts_id);
+			$fts_details = $this->getFtsEntryDetails($fts);
+		}
 		$this->queue("INDEX_FTS", $fts_id, $fts_details);
 	}
 	
