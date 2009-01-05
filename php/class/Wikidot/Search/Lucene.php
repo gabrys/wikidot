@@ -87,7 +87,7 @@ class Wikidot_Search_Lucene {
 			// add content, site_id, site_public, fts_id fields
 			$doc = "UNSTORED content 1.0 " . str_replace("\n", " ", $fts->getText());
 			$doc .= "\nTEXT site_id 0.1 " . $fts->getSiteId();
-			$doc .= "\nTEXT site_public 0.1 " . $site->getPrivate() ? "false" : "true";
+			$doc .= "\nTEXT site_public 0.1 " . ($site->getPrivate() ? "false" : "true");
 			$doc .= "\nTEXT title 7.0 " . $fts->getTitle();
 			
 			if ($fts->getPageId()) {
