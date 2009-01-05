@@ -116,6 +116,10 @@ class Wikidot_Search_Lucene {
 	}
 	
 	protected function queue($type, $id, $details = null) {
+		while (! $this->tryLockingQueue()) {
+			sleep(1);
+		}
+		
 		$fp = fopen($this->queueFile, "a");
 		
 		if (! in_array($type, array("INDEX_FTS", "DELETE_PAGE", "DELETE_THREAD", "DELETE_SITE"))) {
@@ -129,6 +133,8 @@ class Wikidot_Search_Lucene {
 			fwrite($fp, "\n");
 		}
 		fclose($fp);
+		
+		$this->releaseQueueLock();
 	}
 	
 	public function queueFtsEntry($fts_id, $fts_details = null) {
@@ -347,20 +353,20 @@ class Wikidot_Search_Lucene {
 	}
 	
 	protected function tryLockingQueue() {
-		$lock = fopen($this->queueLockFile, 'w');
-		return flock($lock, LOCK_EX);
+		$this->lock = fopen($this->queueLockFile, 'w');
+		return flock($this->lock, LOCK_EX);
+	}
+	
+	protected function releaseQueueLock() {
+		fclose($this->lock);
 	}
 	
 	public function processQueue() {
-		
-		if (! $this->tryLockingQueue()) {
-			return;
-		}
-		
 		if (GlobalProperties::$SEARCH_USE_JAVA) {
 			$cmd = "java -jar " . escapeshellcmd(WIKIDOT_ROOT . "/bin/wikidotIndexer.jar");
 			$cmd .= " process " . escapeshellarg($this->indexFile);
 			$cmd .= " " . escapeshellarg($this->queueFile);
+			$cmd .= " " . escapeshellarg($this->queueLockFile);
 			$cmd .= " 2>&1";
 			exec($cmd, $results);
 			if (count($results)) {
@@ -370,11 +376,17 @@ class Wikidot_Search_Lucene {
 				}
 			}
 		} else {
+
+			if (! $this->tryLockingQueue()) {
+				return;
+			}
 			
 			$this->loadIndex();
 			
 			$cmds = file($this->queueFile);
 			$this->resetQueue();
+			
+			$this->releaseQueueLock();
 			
 			while (count($cmds)) {
 				
