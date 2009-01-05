@@ -371,8 +371,10 @@ class Wikidot_Search_Lucene {
 			}
 		} else {
 			
-			$cmds = file($this->queueFile);
 			$this->loadIndex();
+			
+			$cmds = file($this->queueFile);
+			$this->resetQueue();
 			
 			while (count($cmds)) {
 				
@@ -418,8 +420,6 @@ class Wikidot_Search_Lucene {
 			}
 			$this->index->commit();
 		}
-		
-		$this->resetQueue();
 	}
 	
 	public function getCount() {

@@ -2,7 +2,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.io.StringReader;
+import java.io.RandomAccessFile;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -31,6 +33,7 @@ public class WikidotIndexer {
 					queue.append("\n");
 				}
 				qr = new BufferedReader(new StringReader(queue.toString()));
+				new RandomAccessFile(args[2], "w");
 				
 				try {
 					while (true) {
