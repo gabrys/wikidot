@@ -398,8 +398,8 @@ class Wikidot_Search_Lucene {
 						}
 						
 						$args = explode(" ", $line);
-						$key = array_shift($args);
 						$type = array_shift($args);
+						$key = array_shift($args);
 						$boost = array_shift($args);
 						$val = implode(" ", $args);
 						

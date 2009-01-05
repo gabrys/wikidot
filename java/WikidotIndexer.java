@@ -53,15 +53,15 @@ public class WikidotIndexer {
 								}
 								
 								args = line.split(" ", 4);
-								String key = args[0];
-								String fieldType = args[1];
+								String fieldType = args[0];
+								String key = args[1];
 								float boost = new Float(args[2]).floatValue();
 								String value = args[3];
 								
 								Field field = new Field(key, value,	fieldType.equals("TEXT") ? Field.Store.YES : Field.Store.NO, Field.Index.TOKENIZED);
 								field.setBoost(boost);
 								doc.add(field);
-							
+								//System.out.println(key + ": " + value + " (" + boost + ")");
 							}
 							im.addDocument(doc);
 						}
