@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -21,6 +22,14 @@ public class WikidotIndexer {
 
 				IndexModifier im = new IndexModifier(args[1], new StandardAnalyzer(), false);
 				BufferedReader qr = new BufferedReader(new InputStreamReader(new FileInputStream(new File(args[2]))));
+				// read the whole file
+				StringBuilder queue = new StringBuilder();
+				while (true) {
+					String line = qr.readLine();
+					if (line == null) break;
+					queue.append(line);
+				}
+				qr = new BufferedReader(new StringReader(queue.toString()));
 				
 				try {
 					while (true) {
