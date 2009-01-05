@@ -32,6 +32,7 @@ class Wikidot_Search_Lucene {
 	protected $index;
 	protected $queueFile;
 	protected $queueLockFile;
+	protected $lock;
 	protected $processedFtsEntries = array();
 	
 	public function __construct($indexFile = null, $queueFile = null, $queueLockFile = null) {
@@ -116,6 +117,9 @@ class Wikidot_Search_Lucene {
 	}
 	
 	protected function queue($type, $id, $details = null) {
+		while (! $this->tryLockingQueue()) {
+			sleep(5);
+		}
 		$fp = fopen($this->queueFile, "a");
 		
 		if (! in_array($type, array("INDEX_FTS", "DELETE_PAGE", "DELETE_THREAD", "DELETE_SITE"))) {
@@ -129,6 +133,7 @@ class Wikidot_Search_Lucene {
 			fwrite($fp, "\n");
 		}
 		fclose($fp);
+		$this->releaseQueueLock();
 	}
 	
 	public function queueFtsEntry($fts_id, $fts_details = null) {
@@ -347,7 +352,12 @@ class Wikidot_Search_Lucene {
 	}
 	
 	protected function tryLockingQueue() {
-		return flock(fopen($this->queueLockFile, 'w'), LOCK_EX);
+		$this->lock = fopen($this->queueLockFile, 'w');
+		return flock($this->lock, LOCK_EX);
+	}
+	
+	protected function releaseQueueLock() {
+		fclose($this->lock);
 	}
 	
 	public function processQueue() {
