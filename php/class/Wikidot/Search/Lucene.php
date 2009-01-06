@@ -307,10 +307,10 @@ class Wikidot_Search_Lucene {
 		}
 	
 		$query = "";
-		if ($item_type == "p") {
+		if ($itemType == "p") {
 			$query .= "+item_type:page ";
 		}
-		if ($item_type == "f") {
+		if ($itemType == "f") {
 			$query .= "+item_type:thread ";
 		}
 		if ($sites_query) {
