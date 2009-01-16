@@ -214,6 +214,12 @@ class UploadedFileFlowController extends WikidotController {
 			$this->siteNotExists();
 			return;
 		}
+		
+		if ($site->getSettings()->getSslMode() == "ssl_only" && ! $_SERVER['HTTPS']) {
+			header("HTTP/1.1 301 Moved Permanently");
+			header("Location: https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]");
+			return;
+		}
 
 		$file = urldecode($_SERVER['QUERY_STRING']);
 		$file = preg_replace("/\\?[0-9]+\$/", "", $file);
