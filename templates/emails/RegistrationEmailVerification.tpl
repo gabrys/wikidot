@@ -10,7 +10,7 @@ verification code: {$evcode}
 
 OR click the following link:
 
-https://www.wikidot.com/login:newaccount2/rcode/{$sessionHash}
+http://{$URL_HOST}/auth:newaccount2/rcode/{$sessionHash}
 
 Best regards - {$SERVICE_NAME}
 
