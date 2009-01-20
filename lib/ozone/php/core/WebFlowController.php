@@ -69,9 +69,9 @@ abstract class WebFlowController {
 	}
 
 	/**
-	 * sets the Content-type header
+	 * sets the Etag header
 	 *
-	 * @param string $mime
+	 * @param string $etag
 	 */
 	protected function setEtagHeader($etag) {
 		if ($etag) {
