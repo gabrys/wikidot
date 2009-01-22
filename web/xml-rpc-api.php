@@ -56,7 +56,7 @@ $server->setClass(new Wikidot_Facade_User($user), 'user');
 
 // map Wikidot_Facade_Exception to XML-RPC faults
 Zend_XmlRpc_Server_Fault::attachFaultException('Wikidot_Facade_Exception');
-Zend_XmlRpc_Server_Fault::attachFaultException('WDPermissionManager');
+Zend_XmlRpc_Server_Fault::attachFaultException('WDPermissionException');
 
 // run XML-RPC server
 header("Content-type: text/xml");
