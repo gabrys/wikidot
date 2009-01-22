@@ -2,6 +2,15 @@
 
 class Wikidot_Facade_User extends Wikidot_Facade_Base {
 	/**
+	 * Just check if user exists and has access to the API.
+	 * 
+	 * @param struct $args
+	 * @return struct
+	 */
+	public function dummy($args) {
+		$this->parseArgs($args, array("performer"));
+	}
+	/**
 	 * Get sites of a user. This is a fake one!
 	 * 
 	 * @param struct $args
