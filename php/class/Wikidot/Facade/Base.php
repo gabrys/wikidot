@@ -1,20 +1,30 @@
 <?php
 
 abstract class Wikidot_Facade_Base {
-	/**
-	 * The array of argument array keys that are accepted and passed thru
-	 * in addition to standard ones (like site, page, category, ...)
-	 *  
-	 * @var array
-	 */
-	protected $passthruArgs = array();
 	
 	/**
-	 * User that calls Facade methods
 	 * 
 	 * @var DB_OzoneUser
 	 */
-	protected $performer;
+	protected $performer = null;
+	
+	/**
+	 * 
+	 * @var DB_Site
+	 */
+	public $site = null;
+	
+	/**
+	 * 
+	 * @var DB_Category
+	 */
+	protected $category = null;
+	
+	/**
+	 * 
+	 * @var DB_Page
+	 */
+	protected $page = null;
 	
 	/**
 	 * construct Facade object
@@ -37,43 +47,43 @@ abstract class Wikidot_Facade_Base {
 			throw new Wikidot_Facade_Exception_WrongArguments("Argument is not an array");
 		}
 		
-		$ret = array();
-		
+		// simple types
 		foreach ($args as $key => $value) {
 			switch ($key) {
 				case "performer":
-					$ret[$key] = $this->_parseUser($value);
-					break;
-				case "user":
-					$ret[$key] = $this->_parseUser($value);
+					if (! $this->performer) {
+						$this->performer = $this->_parseUser($value);
+					}
 					break;
 				case "site":
-					$ret[$key] = $this->_parseSite($value);
+					$this->site = $this->_parseSite($value);
 					break;
 				case "category":
-					$ret[$key] = $this->_parseCategory($value);
+					$this->category = $value;
+					break;
+				case "page":
+					$this->page = $value;
 					break;
 				default:
-					if (in_array($key, $this->passthruArgs)) {
-						$ret[$key] = $value;
-					} else {
-						throw new Wikidot_Facade_Exception_WrongArguments("Invalid argument array key: $key");
-					}
+					throw new Wikidot_Facade_Exception_WrongArguments("Invalid argument array key: $key");
 					break;
 			}
 		}
 		
-		if ($this->performer) {
-			$ret["performer"] = $this->performer;
+		// more sophisticated ones...
+		if ($this->category) {
+			$this->category = $this->_parseCategory($this->site, $this->category);
+		}
+		
+		if ($this->page) {
+			$this->page = $this->_parsePage($this->site, $this->page);
 		}
 		
 		foreach ($requiredArgs as $key) {
-			if (! isset($ret[$key])) {
+			if (! $this->$key) {
 				throw new Wikidot_Facade_Exception_WrongArguments("Required argument array key not passed: $key");
 			}
 		}
-		
-		return $ret;
 	}
 	
 	protected function repr($object, $hint = null) {
@@ -86,9 +96,14 @@ abstract class Wikidot_Facade_Base {
 			return $array;
 		}
 		
-		// we're not an array, check by type
-		if (is_a($object, "DB_Page")) {
+		// page
+		if ($object instanceof DB_Page) {
 			return $this->_reprPage($object, $hint);
+		}
+		
+		// category
+		if ($object instanceof DB_Category) {
+			return $this->_reprCategory($object);
 		}
 		
 		// the result is of none supported types
@@ -100,7 +115,7 @@ abstract class Wikidot_Facade_Base {
 			$user = DB_OzoneUserPeer::instance()->selectByPrimaryKey($user);
 		}
 		
-		if (is_a($user, 'DB_OzoneUser')) {
+		if ($user instanceof DB_OzoneUser) {
 			return $user;
 		}
 		throw new Wikidot_Facade_Exception_WrongArguments("User does not exist");
@@ -108,22 +123,104 @@ abstract class Wikidot_Facade_Base {
 	
 	private function _parseSite($site) {
 		if (is_int($site)) { // int = ID
+			
 			$site = DB_SitePeer::instance()->selectByPrimaryKey($site);
+			
+		} elseif (is_string($site)) { // string = name
+			
+			$c = new Criteria();
+			$c->add("unix_name", WDStringUtils::toUnixName($site));
+			$site = DB_SitePeer::instance()->selectOne($c);
+			
 		}
 		
-		if (is_a($site, 'DB_Site')) {
-			throw new Wikidot_Facade_Exception_WrongArguments("Site does not exist");
+		if ($site instanceof DB_Site) {
+			return $site;
 		}
+		
+		throw new Wikidot_Facade_Exception_WrongArguments("Site does not exist");
 	}
 	
-	private function _parseCategory($category) {
+	private function _parseCategory($site, $category) {
 		if (is_int($category)) { // int = ID
+			
 			$category = DB_SitePeer::instance()->selectByPrimaryKey($category);
+			
+		} elseif (is_string($category)) {
+			
+			if ($site) {
+				$c = new Criteria();
+				$c->add("name", WDStringUtils::toUnixName($category));
+				$c->add("site_id", $site->getSiteId());
+				$category = DB_CategoryPeer::instance()->selectOne($c);
+			}
 		}
 		
-		if (is_a($category, 'DB_Site')) {
-			throw new Wikidot_Facade_Exception_WrongArguments("Site does not exist");
+		if ($category instanceof DB_Category) {
+			return $category;
 		}
+		throw new Wikidot_Facade_Exception_WrongArguments("Category does not exist");
+	}
+	
+	private function _parsePage($site, $page) {
+		if (is_int($page)) { // int = ID
+			
+			$page = DB_PagePeer::instance()->selectByPrimaryKey($page);
+			
+		} elseif (is_string($page)) {
+			
+			if ($site) {
+				
+				$page = preg_replace("/^_default:/", "", $page);
+				
+				$c = new Criteria();
+				$c->add("unix_name", WDStringUtils::toUnixName($page));
+				$c->add("site_id", $site->getSiteId());
+				$page = DB_PagePeer::instance()->selectOne($c);
+			}
+		}
+		
+		if ($page instanceof DB_Page) {
+			return $page;
+		}
+		throw new Wikidot_Facade_Exception_WrongArguments("Page does not exist");
+	}
+	
+	/**
+	 * string representation of date from ODate
+	 * 
+	 * @param $date ODate
+	 * @return string
+	 */
+	private function _reprDate($date) {
+		return $date->getDate();
+	}
+	
+	/**
+	 * string representation of compiled page
+	 * 
+	 * @param $compiled DB_PageCompiled
+	 * @return string
+	 */
+	private function _reprPageCompiled($compiled) {
+		$d = utf8_encode("\xFE");
+		$content = $compiled->getText();
+        $content = preg_replace("/" . $d . "module \"([a-zA-Z0-9\/_]+?)\"(.+?)?" . $d . "/", '', $content);
+        // TODO fix links: 
+    	//$content = preg_replace(';(<.*?)(src|href)="/([^"]+)"([^>]*>);si', '\\1\\2="http://'.$site->getDomain().'/\\3"\\4', $content);
+		$content = preg_replace(';<script\s+[^>]+>.*?</script>;is', '', $content);
+		$content = preg_replace(';(<[^>]*\s+)on[a-z]+="[^"]+"([^>]*>);si', '\\1 \\2', $content);
+		return $content;
+	}
+	
+	/**
+	 * representation of category
+	 * 
+	 * @param $category DB_Category
+	 * @return array
+	 */
+	private function _reprCategory($category) {
+		return $category->getName();
 	}
 	
 	/**
@@ -136,7 +233,7 @@ abstract class Wikidot_Facade_Base {
 	private function _reprPage($page, $hint) {
 		if ($hint == "meta") {
 			$category = $page->getCategoryName();
-			$name = $page->getUnixName();
+			$name = preg_replace("|^$category:|", "", $page->getUnixName());
 			$tags = $page->getTagsAsArray();
 			
 			$parent_page_name = null;
@@ -148,7 +245,7 @@ abstract class Wikidot_Facade_Base {
 			
 			$user_created_name = null;
 			if ($user_created_id = $page->getOwnerUserId()) {
-				if ($user_created = DB_OzoneUser::instance()->selectByPrimaryKey($user_created_id)) {
+				if ($user_created = DB_OzoneUserPeer::instance()->selectByPrimaryKey($user_created_id)) {
 					$user_created_name = $user_created->getNickName();
 				}
 			}
@@ -157,20 +254,20 @@ abstract class Wikidot_Facade_Base {
 				"site" => $page->getSite()->getUnixName(),
     			"category" => $category,
 				"name" => $name,
-				"full_name" => "$category:$name",
+				"full_name" => $page->getUnixName(),
 				"title" => $page->getTitle(),
 				"tag_string" => join(" ", $tags),
 				"tag_array" => $tags,
 				"parent_page" => $parent_page_name,
-				"date_edited" => $this->_reprData($page->getDateLastEdited()),
+				"date_edited" => $this->_reprDate($page->getDateLastEdited()),
 				"user_edited" => $page->getLastEditUserString(),
-				"date_created" => $this->_reprData($page->getDateCreated()),
+				"date_created" => $this->_reprDate($page->getDateCreated()),
 				"user_created" => $user_created_name
 			);
 		} else {
 			return array(
 				"source" => $page->getSource(),
-				"html" => $page->getCompiled(),
+				"html" => $this->_reprPageCompiled($page->getCompiled()),
 				"meta" => $this->_reprPage($page, "meta"),
 			);
 		}
