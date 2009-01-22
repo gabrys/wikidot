@@ -10,6 +10,12 @@ abstract class Wikidot_Facade_Base {
 	
 	/**
 	 * 
+	 * @var DB_OzoneUser
+	 */
+	protected $user = null;
+	
+	/**
+	 * 
 	 * @var DB_Site
 	 */
 	public $site = null;
@@ -54,6 +60,9 @@ abstract class Wikidot_Facade_Base {
 					if (! $this->performer) {
 						$this->performer = $this->_parseUser($value);
 					}
+					break;
+				case "user":
+					$this->user = $this->_parseUser($value);
 					break;
 				case "site":
 					$this->site = $this->_parseSite($value);
@@ -104,6 +113,11 @@ abstract class Wikidot_Facade_Base {
 		// category
 		if ($object instanceof DB_Category) {
 			return $this->_reprCategory($object);
+		}
+		
+		// site
+		if ($object instanceof DB_Site) {
+			return $this->_reprSite($object);
 		}
 		
 		// the result is of none supported types
@@ -214,13 +228,29 @@ abstract class Wikidot_Facade_Base {
 	}
 	
 	/**
+	 * representation of site
+	 * 
+	 * @param $site DB_Site
+	 * @return array
+	 */
+	private function _reprSite($site) {
+		return array(
+			"name" => $site->getUnixName(),
+			"title" => $site->getName(),
+			"private" => $site->getPrivate(),
+		);
+	}
+	
+	/**
 	 * representation of category
 	 * 
 	 * @param $category DB_Category
 	 * @return array
 	 */
 	private function _reprCategory($category) {
-		return $category->getName();
+		return array(
+			"name" => $category->getName(),
+		);
 	}
 	
 	/**
@@ -255,14 +285,16 @@ abstract class Wikidot_Facade_Base {
     			"category" => $category,
 				"name" => $name,
 				"full_name" => $page->getUnixName(),
-				"title" => $page->getTitle(),
+				"title" => $page->getTitleRaw(),
+				"title_shown" => $page->getTitle(),
+				"title_or_unix_name" => $page->getTitleOrUnixName(),
 				"tag_string" => join(" ", $tags),
 				"tag_array" => $tags,
 				"parent_page" => $parent_page_name,
 				"date_edited" => $this->_reprDate($page->getDateLastEdited()),
 				"user_edited" => $page->getLastEditUserString(),
 				"date_created" => $this->_reprDate($page->getDateCreated()),
-				"user_created" => $user_created_name
+				"user_created" => $user_created_name,
 			);
 		} else {
 			return array(
