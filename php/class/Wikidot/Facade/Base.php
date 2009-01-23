@@ -82,7 +82,7 @@ abstract class Wikidot_Facade_Base {
 			switch ($key) {
 				case "performer":
 					if ($this->performer) {
-						throw new Wikidot_Facade_Exception_WrongArguments("Array key performer is for internal use only");
+						//throw new Wikidot_Facade_Exception_WrongArguments("Array key performer is for internal use only");
 					} else {
 						$this->performer = $this->_parseUser($value);
 					}
