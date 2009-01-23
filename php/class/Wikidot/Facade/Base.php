@@ -33,6 +33,30 @@ abstract class Wikidot_Facade_Base {
 	protected $page = null;
 	
 	/**
+	 * 
+	 * @var DB_Page
+	 */
+	protected $parent_page = null;
+	
+	/**
+	 * 
+	 * @var string
+	 */
+	protected $title = null;
+	
+	/**
+	 * 
+	 * @var string
+	 */
+	protected $source = null;
+	
+	/**
+	 * 
+	 * @var array
+	 */
+	protected $tags = null;
+	
+	/**
 	 * construct Facade object
 	 * 
 	 * @param $performer DB_OzoneUser
@@ -57,7 +81,9 @@ abstract class Wikidot_Facade_Base {
 		foreach ($args as $key => $value) {
 			switch ($key) {
 				case "performer":
-					if (! $this->performer) {
+					if ($this->performer) {
+						throw new Wikidot_Facade_Exception_WrongArguments("Array key performer is for internal use only");
+					} else {
 						$this->performer = $this->_parseUser($value);
 					}
 					break;
@@ -73,6 +99,18 @@ abstract class Wikidot_Facade_Base {
 				case "page":
 					$this->page = $value;
 					break;
+				case "parent_page":
+					$this->parent_page = $value;
+					break;
+				case "title":
+					$this->title = $this->_parseString($value, "title");
+					break;
+				case "source":
+					$this->source = $this->_parseString($value, "source");
+					break;
+				case "tags":
+					$this->tags = $this->_parseTags($value);
+					break;
 				default:
 					throw new Wikidot_Facade_Exception_WrongArguments("Invalid argument array key: $key");
 					break;
@@ -86,6 +124,10 @@ abstract class Wikidot_Facade_Base {
 		
 		if ($this->page) {
 			$this->page = $this->_parsePage($this->site, $this->page);
+		}
+		
+		if ($this->parent_page) {
+			$this->parent_page = $this->_parsePage($this->site, $this->parent_page);
 		}
 		
 		foreach ($requiredArgs as $key) {
@@ -124,7 +166,27 @@ abstract class Wikidot_Facade_Base {
 		throw new Wikidot_Facade_Exception_WrongReturnValue("Invalid type of returned value");
 	}
 	
-	private function _parseUser($user) {
+	protected function _parseString($value, $key = "") {
+		if (is_string($value)) {
+			return $value;
+		}
+		if (is_numeric($value)) {
+			return "$value";
+		}
+		throw new Wikidot_Facade_Exception_WrongArguments("Argument $key must be a string");
+	}
+	
+	protected function _parseTags($tags) {
+		if (is_string($tags)) {
+			$tags = preg_split(trim("/[ ,]+/", $tags));
+		}
+		if (is_array($tags)) {
+			return $tags;
+		}
+		throw new Wikidot_Facade_Exception_WrongArguments("Invalid tags argument (it must be array or string)");
+	}
+	
+	protected function _parseUser($user) {
 		if (is_int($user)) { // int = ID
 			$user = DB_OzoneUserPeer::instance()->selectByPrimaryKey($user);
 		}
@@ -135,7 +197,7 @@ abstract class Wikidot_Facade_Base {
 		throw new Wikidot_Facade_Exception_WrongArguments("User does not exist");
 	}
 	
-	private function _parseSite($site) {
+	protected function _parseSite($site) {
 		if (is_int($site)) { // int = ID
 			
 			$site = DB_SitePeer::instance()->selectByPrimaryKey($site);
@@ -155,7 +217,7 @@ abstract class Wikidot_Facade_Base {
 		throw new Wikidot_Facade_Exception_WrongArguments("Site does not exist");
 	}
 	
-	private function _parseCategory($site, $category) {
+	protected function _parseCategory($site, $category) {
 		if (is_int($category)) { // int = ID
 			
 			$category = DB_SitePeer::instance()->selectByPrimaryKey($category);
@@ -176,7 +238,7 @@ abstract class Wikidot_Facade_Base {
 		throw new Wikidot_Facade_Exception_WrongArguments("Category does not exist");
 	}
 	
-	private function _parsePage($site, $page) {
+	protected function _parsePage($site, $page) {
 		if (is_int($page)) { // int = ID
 			
 			$page = DB_PagePeer::instance()->selectByPrimaryKey($page);
@@ -206,7 +268,7 @@ abstract class Wikidot_Facade_Base {
 	 * @param $date ODate
 	 * @return string
 	 */
-	private function _reprDate($date) {
+	protected function _reprDate($date) {
 		return $date->getDate();
 	}
 	
@@ -216,7 +278,7 @@ abstract class Wikidot_Facade_Base {
 	 * @param $compiled DB_PageCompiled
 	 * @return string
 	 */
-	private function _reprPageCompiled($compiled) {
+	protected function _reprPageCompiled($compiled) {
 		$d = utf8_encode("\xFE");
 		$content = $compiled->getText();
         $content = preg_replace("/" . $d . "module \"([a-zA-Z0-9\/_]+?)\"(.+?)?" . $d . "/", '', $content);
@@ -233,7 +295,7 @@ abstract class Wikidot_Facade_Base {
 	 * @param $site DB_Site
 	 * @return array
 	 */
-	private function _reprSite($site) {
+	protected function _reprSite($site) {
 		return array(
 			"name" => $site->getUnixName(),
 			"title" => $site->getName(),
@@ -247,7 +309,7 @@ abstract class Wikidot_Facade_Base {
 	 * @param $category DB_Category
 	 * @return array
 	 */
-	private function _reprCategory($category) {
+	protected function _reprCategory($category) {
 		return array(
 			"name" => $category->getName(),
 		);
@@ -260,7 +322,7 @@ abstract class Wikidot_Facade_Base {
 	 * @param string $hint
 	 * @return array
 	 */
-	private function _reprPage($page, $hint) {
+	protected function _reprPage($page, $hint) {
 		if ($hint == "meta") {
 			$category = $page->getCategoryName();
 			$name = preg_replace("|^$category:|", "", $page->getUnixName());
