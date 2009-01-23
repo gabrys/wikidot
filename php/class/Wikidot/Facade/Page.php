@@ -28,11 +28,11 @@ class Wikidot_Facade_Page extends Wikidot_Facade_Base {
 		$arg_page = $args['page'];
 		
 		unset($args['page']);
-		$this->parseArgs($args, array("performer"));
+		$this->parseArgs($args, array("performer", "site"));
 		
 		try {
 			
-			$page = $this->_parsePage($arg_page);
+			$page = $this->_parsePage($this->site, $arg_page);
 			
 			// page exists
 			$new = false;
