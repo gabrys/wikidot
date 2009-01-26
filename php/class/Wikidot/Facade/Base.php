@@ -4,6 +4,12 @@ abstract class Wikidot_Facade_Base {
 	
 	/**
 	 * 
+	 * @var string
+	 */
+	protected $app = null;
+	
+	/**
+	 * 
 	 * @var DB_OzoneUser
 	 */
 	protected $performer = null;
@@ -61,8 +67,9 @@ abstract class Wikidot_Facade_Base {
 	 * 
 	 * @param $performer DB_OzoneUser
 	 */
-	public function __construct($performer = null) {
+	public function __construct($performer = null, $app = null) {
 		$this->performer = $performer;
+		$this->app = $app;
 	}
 	
 	/**

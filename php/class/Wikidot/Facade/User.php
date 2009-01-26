@@ -7,9 +7,10 @@ class Wikidot_Facade_User extends Wikidot_Facade_Base {
 	 * @param struct $args
 	 * @return struct
 	 */
-	public function dummy($args) {
+	public function valid($args) {
 		$this->parseArgs($args, array("performer"));
 	}
+	
 	/**
 	 * Get sites of a user. This is a fake one!
 	 * 
@@ -18,7 +19,19 @@ class Wikidot_Facade_User extends Wikidot_Facade_Base {
 	 */
 	public function sites($args) {
 		$this->parseArgs($args, array("performer", "user"));
-		$site = DB_SitePeer::instance()->selectByPrimaryKey(1);
-		return $this->repr(array($site));
+		
+		if ($this->performer->getUserId() != $this->user->getUserId()) {
+			throw new WDPermissionException("One can only list their own sites");
+		}
+		
+		$c = new Criteria();
+		$c->add("user_id", $this->user->getUserId());
+		$memberships = DB_MemberPeer::instance()->selectByCriteria($c);
+		
+		$sites = array();
+		foreach ($memberships as $membership) {
+			$sites[] = $this->repr(DB_SitePeer::instance()->selectByPrimaryKey($membership->getSiteId()));
+		}
+		return $sites;
 	}
 }

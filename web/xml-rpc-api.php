@@ -13,46 +13,29 @@ function errorHandler($errno, $errstr, $errfile, $errline) {
 error_reporting(E_ALL & ~E_NOTICE);
 set_error_handler('errorHandler', E_ALL & ~E_NOTICE);
 
-// authorize user
-if (isset($_GET['key'])) {
-	$key = $_GET['key'];
-} else {
-	$key = "";
-}
-
-$m = array();
 $user = null;
-$md5_hash = null;
 
-if (preg_match('|^([^:]+):([0-9a-f]{32})$|', $key, $m)) {
-	$user_name = $m[1];
-	$md5_hash = $m[2];
-	$c = new Criteria();
-	$c->add("unix_name", WDStringUtils::toUnixName($user_name));
-	$c->add("password", $md5_hash);
-	$user = DB_OzoneUserPeer::instance()->selectOne($c);
+if (isset($_SERVER['PHP_AUTH_USER'])) {
+	$app = $_SERVER['PHP_AUTH_USER'];
+	$key = $_SERVER['PHP_AUTH_PW'];
+	$user = DB_ApiKeyPeer::instance()->getUserByKey($key);
 }
 
 if (! $user) {
 	header('HTTP/1.1 401 Unauthorized');
 	header('Content-type: text/plain');
-	if ($md5_hash) {
-		echo "Login failed";
-	} else {
-		echo "You need to append ?key=<username>:<hash> to the URL, where\n\n";
-		echo " * <username> is your user unix_name (John Smith -> john-smith)\n";
-		echo " * <hash> is a md5 sum from your password\n\n";
-		echo "The URL for this example would be like: http://$_SERVER[HTTP_HOST]/xml-rpc-api.php?key=john-smith:2304d4770a72d09106045fea654c4188";
-	}
-	exit();
+    header('WWW-Authenticate: Basic realm="Wikidot API. Please support application name (as user) and API key (as password)."');
+    header('HTTP/1.0 401 Unauthorized');
+	echo 'Login failed';
+    exit();
 }
 
 // construct facade objects
 $server = new Zend_XmlRpc_Server();
-$server->setClass(new Wikidot_Facade_Site($user), 'site');
-$server->setClass(new Wikidot_Facade_Page($user), 'page');
-$server->setClass(new Wikidot_Facade_Forum($user), 'forum');
-$server->setClass(new Wikidot_Facade_User($user), 'user');
+$server->setClass(new Wikidot_Facade_Site($user, $app), 'site');
+$server->setClass(new Wikidot_Facade_Page($user, $app), 'page');
+$server->setClass(new Wikidot_Facade_Forum($user, $app), 'forum');
+$server->setClass(new Wikidot_Facade_User($user, $app), 'user');
 
 // map Wikidot_Facade_Exception to XML-RPC faults
 Zend_XmlRpc_Server_Fault::attachFaultException('Wikidot_Facade_Exception');
