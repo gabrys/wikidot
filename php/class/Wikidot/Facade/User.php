@@ -30,8 +30,11 @@ class Wikidot_Facade_User extends Wikidot_Facade_Base {
 		
 		$sites = array();
 		foreach ($memberships as $membership) {
-			$sites[] = $this->repr(DB_SitePeer::instance()->selectByPrimaryKey($membership->getSiteId()));
+			$site = DB_SitePeer::instance()->selectByPrimaryKey($membership->getSiteId());
+			if (! $site->getPrivate()) {
+				$sites[] = $site;
+			}
 		}
-		return $sites;
+		return $this->repr($sites);
 	}
 }
