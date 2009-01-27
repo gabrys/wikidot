@@ -185,7 +185,7 @@ abstract class Wikidot_Facade_Base {
 	
 	protected function _parseTags($tags) {
 		if (is_string($tags)) {
-			$tags = preg_split(trim("/[ ,]+/", $tags));
+			$tags = preg_split("/[ ,]+/", trim($tags));
 		}
 		if (is_array($tags)) {
 			return $tags;
