@@ -32,6 +32,7 @@ class Wikidot_Search_Lucene {
 	protected $index;
 	protected $queueFile;
 	protected $queueLockFile;
+	protected $lock;
 	protected $processedFtsEntries = array();
 	
 	public function __construct($indexFile = null, $queueFile = null, $queueLockFile = null) {
@@ -127,10 +128,14 @@ class Wikidot_Search_Lucene {
 		}
 		$id = (int) $id;
 		
-		fwrite($fp, "$type $id\n");
-		if ($details) {
-			fwrite($fp, $details);
-			fwrite($fp, "\n");
+		if ($type == "INDEX_FTS") {
+			if ($details) {
+				fwrite($fp, "$type $id\n");
+				fwrite($fp, $details);
+				fwrite($fp, "\n");
+			}
+		} else {
+			fwrite($fp, "$type $id\n");
 		}
 		fclose($fp);
 		

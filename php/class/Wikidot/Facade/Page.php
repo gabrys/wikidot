@@ -19,6 +19,28 @@ class Wikidot_Facade_Page extends Wikidot_Facade_Base {
 		return $this->repr($this->page);
 	}
 	
+	/**
+	 * Get files from page
+	 * 
+	 * Argument array keys:
+	 *  site: site to get page from
+	 *  page: page to get (full_name) files from
+	 * 
+	 * @param struct $args
+	 * @return struct
+	 */
+	public function files($args) {
+		$this->parseArgs($args, array("performer", "site", "page"));
+		
+		WDPermissionManager::instance()->canAccessSite($this->performer, $this->site);
+		
+		$c = new Criteria();
+		$c->add("page_id", $this->page->getPageId());
+		$files = DB_FilePeer::instance()->select($c);
+		
+		return $this->repr($files);
+	}
+	
 	public function save($args) {
 		
 		if (! isset($args['page'])) {

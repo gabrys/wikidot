@@ -169,6 +169,11 @@ abstract class Wikidot_Facade_Base {
 			return $this->_reprSite($object);
 		}
 		
+		// file
+		if ($object instanceof DB_File) {
+			return $this->_reprFile($object);
+		}
+		
 		// the result is of none supported types
 		throw new Wikidot_Facade_Exception_WrongReturnValue("Invalid type of returned value");
 	}
@@ -372,5 +377,24 @@ abstract class Wikidot_Facade_Base {
 				"meta" => $this->_reprPage($page, "meta"),
 			);
 		}
+	}
+	
+	/**
+	 * representation of file
+	 * 
+	 * @param $file DB_File
+	 * @return array
+	 */
+	protected function _reprFile($file) {
+		return array(
+			"url" => $file->getFileURI(),
+			"name" => $file->getFilename(),
+			"path" => $file->getFilePath(),
+			"mime" => $file->getMimetype(),
+			"description" => $file->getDescription(),
+			"comment" => $file->getComment(),
+			"date_added" => $this->_reprDate($file->getDateAdded()),
+			"size" => $file->getSize(),
+		);
 	}
 }
