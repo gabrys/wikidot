@@ -23,33 +23,31 @@
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
 
-class WantedPagesModule extends SmartyModule {
+class OrphanedPagesStandaloneModule extends CacheableModule {
+	
+	protected $timeOut = 300;
 	
 	public function build($runData){
 		$site = $runData->getTemp("site");
 		$siteId = $site->getSiteId();
 		
-		$q = "SELECT page.*, page_link.to_page_name as wanted_unix_name FROM page, page_link " .
-				"WHERE page_link.site_id = '$siteId' AND page_link.to_page_id IS NULL " .
-				"AND page_link.from_page_id = page.page_id " .
-				"ORDER BY wanted_unix_name, COALESCE(page.title, page.unix_name)";
+		$q = "SELECT *, count(*) AS number_links FROM page, page_link " .
+				"WHERE page.site_id = '$siteId' AND page_link.to_page_id=page.page_id " .
+				"GROUP BY (page.page_id) " .
+				"ORDER BY COALESCE(page.title, page.unix_name)";
 		
-		$db = Database::connection();
-		$res = $db->query($q);
+		$q = "SELECT * FROM page " .
+				"WHERE page.site_id = '$siteId'" .
+				"AND (SELECT count(*) FROM page_link WHERE page_link.to_page_id = page.page_id) = 0 ".
+				"ORDER BY COALESCE(page.title, page.unix_name)";
 		
-		$all = $res->fetchAll();
+		$c = new Criteria();
+		$c->setExplicitQuery($q);
 		
-		$res = array();
+		$pages = DB_PagePeer::instance()->select($c);
 		
-		if($all){
-			foreach($all as $a){
-				$page = new DB_Page($a);
-				$wun = $a['wanted_unix_name'];
-				$res[$wun][] = $page;	
-			}	
-			
-			$runData->contextAdd("res", $res);
-		}
+		$runData->contextAdd("pages", $pages);
+		
 		
 			
 	}
