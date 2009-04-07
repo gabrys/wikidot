@@ -84,6 +84,9 @@ class Indexer {
 	public function deindexPage($page){
 		$ie = DB_FtsEntryPeer::instance()->selectByPageId($page->getPageId());
 		DB_FtsEntryPeer::instance()->deleteByPrimaryKey($ie->getFtsId());
+		
+		$lucene = new Wikidot_Search_Lucene();
+		$lucene->queueDeletePage($page->getPageId());
 	}
 	
 	public function indexThread($thread){
@@ -128,10 +131,7 @@ class Indexer {
 	
 	public function deindexThread($thread){
 		$ie = DB_FtsEntryPeer::instance()->selectByThreadId($thread->getThreadId());
-		DB_FtsEntryPeer::instance()->deleteByPrimaryKey($ie->getFtsId());	
-		
-		$lucene = new Wikidot_Search_Lucene();
-		$lucene->queueDeletePage($page->getPageId());
+		DB_FtsEntryPeer::instance()->deleteByPrimaryKey($ie->getFtsId());
 	}
 	
 }

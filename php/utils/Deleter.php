@@ -103,7 +103,7 @@ class Deleter {
         $outdater->pageEvent('delete', $page->getUnixName());
         
         // and from search index
-        $lucene = new Wikidot_Search_Lucene();
+        $lucene = new Wikidot_Search();
         $lucene->queueDeletePage($page->getPageId());
         
         // outdate descs too
