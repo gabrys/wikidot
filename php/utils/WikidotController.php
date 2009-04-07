@@ -25,7 +25,7 @@
 
 abstract class WikidotController extends WebFlowController {
 	
-	static protected $HTML_MIME_TYPES = array("text/html", "application/xhtml+xml", "application/xml", "text/xml");
+	static protected $HTML_MIME_TYPES = ";^text/html|^application/xhtml+xml|^application/xml|^text/xml;";
 	static protected $HTML_SERVE_AS = "text/plain";
 	
 	/**
@@ -194,7 +194,7 @@ abstract class WikidotController extends WebFlowController {
 			$mime = "application/octet-stream";
 		}
 		
-		if ($restrictHtml && in_array($mime, self::$HTML_MIME_TYPES)) {
+		if ($restrictHtml && preg_match(self::$HTML_MIME_TYPES, $mime)) {
 			$mime = self::$HTML_SERVE_AS;
 		}
 
