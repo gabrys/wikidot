@@ -95,6 +95,8 @@ class WikiTransformation {
 	    
 	    /* Handle ListPages module inside a template -- %%content%% need to be escaped. */
 	    $template = preg_replace_callback(";^\\[\\[module\\s+ListPages(.*?)\n\\[\\[/module\\]\\];ms", array($this, '_assemblyTemplateHandleListPages'), $template);
+	    $template = preg_replace_callback(";^\\[\\[module\\s+NextPage(.*?)\n\\[\\[/module\\]\\];ms", array($this, '_assemblyTemplateHandleListPages'), $template);
+	    $template = preg_replace_callback(";^\\[\\[module\\s+PreviousPage(.*?)\n\\[\\[/module\\]\\];ms", array($this, '_assemblyTemplateHandleListPages'), $template);
 	    $template = preg_replace_callback(";^\\[\\[module\\s+Feed(.*?)\n\\[\\[/module\\]\\];ms", array($this, '_assemblyTemplateHandleListPages'), $template);
 	    $template = preg_replace_callback(";^\\[\\[module\\s+FrontForum(.*?)\n\\[\\[/module\\]\\];ms", array($this, '_assemblyTemplateHandleListPages'), $template);
 	    

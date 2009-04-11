@@ -211,6 +211,32 @@ class ListPagesModule extends SmartyModule {
         }
         
         $c->add('unix_name', '(^|:)_', '!~');
+
+	/* Handle magic previousBy/nextBy keywords */
+	$previousBy = $this->_readParameter('previousBy', true);
+	$nextBy = $this->_readParameter('nextBy', true);
+
+	if ($previousBy || $nextBy) {
+		if ($refPage = $runData->getTemp('page')) {
+			
+			$refPageId = $refPage->getPageId();
+			$refPageTitle = $refPage->getTitle() . ' ... ' . $refPage->getUnixName();
+
+			if ($previousBy == 'page_id') {
+				$c->add('page_id', $refPageId, '<');
+			} elseif ($nextBy == 'page_id') {
+				$c->add('page_id', $refPageId, '>');
+			} elseif ($previousBy == 'title') {
+				$c->add("title || ' ... ' || unix_name", $refPageTitle, '<');
+			} elseif ($nextBy == 'title') {
+				$c->add("title || ' ... ' || unix_name", $refPageTitle, '>');
+			}
+			
+		} else {
+			$c->add('page_id', 0); // this should be simply never;
+		}
+	}
+
         
         /* Handle tags! */
         
