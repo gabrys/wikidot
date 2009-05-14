@@ -63,6 +63,10 @@ class Wikidot_Util_Diff {
 		
 		$result_lines = array();
 		exec($cmd, $result_lines);
+		
+		unlink($file_from);
+		unlink($file_to);
+		
 		return implode("\n", $result_lines);
 	}
 	
