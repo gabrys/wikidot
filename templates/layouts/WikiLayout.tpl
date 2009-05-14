@@ -175,8 +175,10 @@
 			 		</a>
 			 		
 	 			</div>
-	 			Part of <a href="http://{$URL_HOST}">{$SERVICE_NAME|escape}</a>
-	 			&#8212; 
+				{if $SERVICE_NAME!=""}
+	 				Part of <a href="http://{$URL_HOST}">{$SERVICE_NAME|escape}</a>
+	 				&#8212; 
+				{/if}
  				Powered by <a href="http://www.wikidot.org/">Wikidot</a>
 	 		</div>
 	 		{if $licenseText!=""}

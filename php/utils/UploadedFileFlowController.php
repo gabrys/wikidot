@@ -158,20 +158,28 @@ class UploadedFileFlowController extends WikidotController {
 	 * @param string $fileName code/pagename/number
 	 * @param int $expires timeout in seconds
 	 */
-	protected function serveCode($site, $fileName, $expires = 0) {
+	protected function serveCode($site, $fileName, $expires = 0, $restrict_html = false) {
 		$m = array();
 
-		if (preg_match(";^code/([^/]+)(?:/([0-9]+))?$;", $fileName, $m)) {
+		if (preg_match(";^code/([^/]+)/?(?:/([0-9]+))?(?:(/r/)(.*))?$;", $fileName, $m)) {
 			$pageName = $m[1];
 			$number = 1;
 			if (isset($m[2])) {
 				$number = (int) $m[2];
 			}
-				
-			$ext = new CodeblockExtractor($site, $pageName, $number);
+			if (isset($m[3])) {
+				$params = array();
+				if (isset($m[4])) {
+					parse_str($m[4], $params);
+				}
+			} else {
+				$params = null;
+			}
+			
+			$ext = new CodeblockExtractor($site, $pageName, $number, $params);
 			
 			$mime = $ext->getMimeType();
-			if (GlobalProperties::$RESTRICT_HTML && in_array($mime, self::$HTML_MIME_TYPES)) {
+			if ($restrict_html && preg_match(self::$HTML_MIME_TYPES, $mime)) {
 				$mime = self::$HTML_SERVE_AS;
 			}
 			$this->setContentTypeHeader($mime);
@@ -237,7 +245,7 @@ class UploadedFileFlowController extends WikidotController {
 			if ($this->publicArea($site, $file)) {
 					
 				if ($this->isCodeRequest($file)) {
-					$this->serveCode($site, $file, 3600);
+					$this->serveCode($site, $file, 3600, GlobalProperties::$RESTRICT_HTML);
 				} else {
 					$this->serveFileWithMime($path, 3600, GlobalProperties::$RESTRICT_HTML);
 				}

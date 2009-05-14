@@ -38,6 +38,7 @@ WIKIDOT.modules.LoginModule.listeners = {
 	
 	switchUser: function(e){
 		setCookie('welcome', null, -100000, '/', '.'+URL_DOMAIN);
+		setCookie('welcome', null, -100000, '/');
 		window.location.reload();
 	},
 	
@@ -72,12 +73,12 @@ WIKIDOT.modules.LoginModule.callbacks = {
 		if(originalUrl){
 			window.location.href=originalUrl;
 		}else{
-			window.location.href='http://'+URL_HOST;
+			window.location.href='http://'+window.location.host;
 		}
 	},
 	
 	cancel: function(r){
-		window.location.href='http://'+window.location.hostname;
+		window.location.href='http://'+window.location.host;
 	}
 }
 

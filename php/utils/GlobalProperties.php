@@ -38,6 +38,8 @@ class GlobalProperties {
 	public static $SERVICE_NAME;
 	public static $URL_DOMAIN;
 	public static $URL_HOST;
+	public static $WIKI_FARM;
+	public static $HTTP_PORT;
 	
 	// security settings
 	public static $USE_SSL;
@@ -46,6 +48,7 @@ class GlobalProperties {
 	public static $USE_UPLOAD_DOMAIN;
 	public static $URL_UPLOAD_DOMAIN;
 	public static $RESTRICT_HTML;
+	public static $SECRET_MANAGE_SUPERADMIN;
 	
 	// database settings
 	public static $DATABASE_SERVER;
@@ -143,6 +146,16 @@ class GlobalProperties {
 		}
 		return $value;
 	}
+
+	protected static function fromFile($file) {
+		if ($fp = @fopen(WIKIDOT_ROOT . '/conf/' . $file, 'r')) {
+			$s = fread($fp, 4096);
+			fclose($fp);
+		} else {
+			$s = "";
+		}
+		return trim($s);
+	}
 	
 	/**
 	 * read wikidot.ini file
@@ -154,17 +167,27 @@ class GlobalProperties {
 		self::$iniConfig = parse_ini_file(WIKIDOT_ROOT . "/conf/wikidot.ini", true);
 		
 		// main settings
-		self::$SERVICE_NAME				= self::fromIni("main",		"service");			// no default!
-		self::$URL_DOMAIN				= self::fromIni("main",		"domain");			// no default!
-		self::$URL_HOST					= self::fromIni("main",		"main_wiki",		"www." . self::$URL_DOMAIN);
+		self::$WIKI_FARM				= self::fromIni("main",		"wiki_farm",	false);
+		self::$HTTP_PORT				= self::fromIni("main",		"port",			8080);
+
+		if (self::$WIKI_FARM) {
+			self::$SERVICE_NAME			= self::fromIni("main",		"service");		//no default
+			self::$URL_DOMAIN			= self::fromIni("main",		"domain",		"singlewiki.wikidot.dev");
+			self::$URL_HOST				= self::fromIni("main",		"main_wiki",	"www." . self::$URL_DOMAIN);
+		} else {
+			self::$SERVICE_NAME			= "";
+			self::$URL_DOMAIN			= self::fromIni("main",		"domain",		"singlewiki.wikidot.dev");
+			self::$URL_HOST				= self::fromIni("main",		"main_wiki",	"www." . self::$URL_DOMAIN);
+		}
 		
 		// security settings
-		self::$SECRET					= self::fromIni("security",	"secret");					// no default!
+		self::$SECRET					= self::fromIni("security",	"secret",					self::fromFile('secret'));
 		self::$USE_SSL					= self::fromIni("security",	"ssl",						false);
 		self::$SECRET_DOMAIN_LOGIN		= self::fromIni("security",	"secret_login",				self::$SECRET . "_custom_domain_login");
 		self::$USE_UPLOAD_DOMAIN		= self::fromIni("security",	"upload_separate_domain",	false);
 		self::$URL_UPLOAD_DOMAIN		= self::fromIni("security",	"upload_domain",			"wd.files." . self::$URL_DOMAIN);
 		self::$RESTRICT_HTML			= self::fromIni("security",	"upload_restrict_html",		true);
+		self::$SECRET_MANAGE_SUPERADMIN = self::fromIni("security", "secret_manage_superuser",  md5(self::$SECRET . '_super_admin'));
 		
 		// database settings
 		self::$DATABASE_USER			= self::fromIni("db",		"user");			// no default!
