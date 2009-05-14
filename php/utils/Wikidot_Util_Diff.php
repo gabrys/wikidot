@@ -23,15 +23,48 @@
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
 
-if(!extension_loaded('xdiff')){
-	dl( 'xdiff.so' );
-}
-
 /**
  * A set of methods handling diff operations.
  *
  */
 class Wikidot_Util_Diff {
+	
+	/**
+	 * Implementation of unified diff of two strings
+	 * 
+	 * @param $fromString the first string to create diff from
+	 * @param $toString the second string to create diff from
+	 * @param $contextLines the number of lines of context
+	 * @param $minimal whether to find the minimal diff or just any good
+	 * @return string the unified diff
+	 */
+	static public function unifiedDiff($fromString, $toString, $contextLines = 3, $minimal = false) {
+#		Implementation of unified diff of two strings
+
+#		using php libxdiff:
+#		
+#		if(!extension_loaded('xdiff')){
+#			dl( 'xdiff.so' );
+#		}
+#		return xdiff_string_diff($fromString, $toString, $contextLines, $minimal);
+
+#		or the diff command:
+#
+		$file_from = tempnam(WIKIDOT_ROOT . '/tmp', 'diff-');
+		$file_to = tempnam(WIKIDOT_ROOT . '/tmp', 'diff-');
+		file_put_contents($file_from, $fromString);
+		file_put_contents($to_from, $toString);
+		
+		$from_arg = escapeshellarg($file_from);
+		$to_arg = escapeshellarg($file_to);
+		$minimal_arg = $minimal ? "-d" : "";
+		$context_arg = (int) $contextLines;
+		$cmd = "diff $minimal_arg -U $context_arg $from_arg $to_arg";
+		
+		$result_lines = array();
+		exec($cmd, $result_lines);
+		return implode("\n", $result_lines);
+	}
 	
 	/**
 	 * Generates a difference between two strings.
@@ -45,7 +78,7 @@ class Wikidot_Util_Diff {
 		$fromString = Wikidot_Util_String::addTrailingNewline($fromString);
 		$toString = Wikidot_Util_String::addTrailingNewline($toString);
 		
-		return xdiff_string_diff($fromString, $toString, $contextLines, $minimal);
+		return self::unifiedDiff($fromString, $toString, $contextLines, $minimal);
 	}
 	
 	/**
