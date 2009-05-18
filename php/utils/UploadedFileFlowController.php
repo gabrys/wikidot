@@ -182,6 +182,7 @@ class UploadedFileFlowController extends WikidotController {
 			if ($restrict_html && preg_match(self::$HTML_MIME_TYPES, $mime)) {
 				$mime = self::$HTML_SERVE_AS;
 			}
+		
 			$this->setContentTypeHeader($mime);
 			$this->setExpiresHeader($expires);
 			

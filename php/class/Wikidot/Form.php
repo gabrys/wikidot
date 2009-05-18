@@ -8,8 +8,6 @@ class Wikidot_Form {
 		$form = new self();
 		$yaml = Wikidot_Yaml::load($yamlString);
 		
-		$first_value = null;
-		
 		if (is_array($yaml['fields'])) {
 			foreach ($yaml['fields'] as $name => $f) {
 				if (isset($f['values'])) {
@@ -17,6 +15,7 @@ class Wikidot_Form {
 						$f['default'] = $f['values'];
 						unset($f['values']);
 					} else if (is_array($f['values'])) {
+						$f['type'] = 'select';
 						$invalid_keys = array();
 						foreach ($f['values'] as $key => $value) {
 							if (! is_string($key) && ! is_numeric($key)) {
@@ -28,7 +27,7 @@ class Wikidot_Form {
 									if (empty($value)) {
 										$f[$key] = $key;
 									}
-									if (empty($first_value)) {
+									if (! isset($first_value)) {
 										$first_value = $f[$key];
 									}
 								}
@@ -50,11 +49,22 @@ class Wikidot_Form {
 				if ($f['type'] == 'select' && (! isset($f['values']) || ! count($f['values']))) {
 					$f['type'] = 'text';
 				}
+				if (isset($f['default']) && $f['type'] == 'select') {
+					$def_val = $f['default'];
+					if (isset($f['values'][$def_val])) {
+						$f['default'] = $f['values'][$def_val];
+					} elseif (! in_array($def_val, $f['values'])) {
+						unset($f['default']);
+					}
+				}
+				if (! is_string($f['default']) && ! is_numeric($f['default'])) {
+					unset($f['default']);
+				}
 				if (! isset($f['default'])) {
 					if ($first_value !== null) {
 						$f['default'] = $first_value;
 					} else {
-						$f['default'] = $name;
+						$f['default'] = '';
 					}
 				}
 				$form->fields[$name] = $f;
@@ -65,5 +75,27 @@ class Wikidot_Form {
 			$form->presets = $yaml['presets'];
 		}
 		return $form;
+	}
+	
+	public function computeValues($values) {
+		$ret = array();
+		foreach ($this->fields as $name => $field) {
+			if (isset($values[$name]) && (is_string($name) || is_numeric($name))) {
+				$value = $values[$name];
+				$type = $field['type'];
+				
+				if ($type == 'select') { 
+					if (isset($field['values'][$value])) {
+						$ret[$name] = $field['values'][$value];
+					}
+				} elseif ($type == 'text') {
+					$ret[$name] = $value;
+				}
+			}
+			if (! isset($ret[$name])) {
+				$ret[$name] = $field['default'];
+			}
+		}
+		return $ret;
 	}
 }

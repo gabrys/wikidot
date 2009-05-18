@@ -77,7 +77,7 @@ class CodeblockExtractor {
 			$code = trim($code) . "\n";
 			
 			if (is_array($templateVars)) {
-				$this->contents = $this->renderSimpleTemplate($code, $templateVars);
+				$this->contents = $this->renderFromTemplate($code, $templateVars);
 			} else {
 				$this->contents = $code;
 			}
@@ -98,23 +98,21 @@ class CodeblockExtractor {
 		return "text/plain";
 	}
 	
-	public function renderSimpleTemplate($template, $context) {
+	public function renderFromTemplate($template, $extValues) {
 		$template = "\n$template\n";
 		$template_parts = explode("\n---\n", $template);
+		
+		// form definition is the YAML document before the first "---"
 		$form_def = array_shift($template_parts);
+		
+		// Wikidot (DTL) template is the rest
 		$template = trim(implode("\n---\n", $template_parts));
 		
 		$form = Wikidot_Form::fromYaml($form_def);
+		$context = $form->computeValues($extValues);
 		
-		foreach ($form->fields as $name => $field) {
-			$variable = '$(' . $name . ')';
-			$value = $field['default'];
-			if (isset($context[$name])) {
-				$value = $context[$name];
-			}
-			$template = str_replace($variable, $value, $template);
-		}
-		return $template;
+		// render the template
+		$w_template = new Wikidot_Template($template);
+		return $w_template->render($context);
 	}
-
 }
