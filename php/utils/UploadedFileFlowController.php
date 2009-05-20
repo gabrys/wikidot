@@ -246,9 +246,9 @@ class UploadedFileFlowController extends WikidotController {
 			if ($this->publicArea($site, $file)) {
 					
 				if ($this->isCodeRequest($file)) {
-					$this->serveCode($site, $file, 3600, GlobalProperties::$RESTRICT_HTML);
+					$this->serveCode($site, $file, GlobalProperties::$CACHE_FILES_FOR, GlobalProperties::$RESTRICT_HTML);
 				} else {
-					$this->serveFileWithMime($path, 3600, GlobalProperties::$RESTRICT_HTML);
+					$this->serveFileWithMime($path, GlobalProperties::$CACHE_FILES_FOR, GlobalProperties::$RESTRICT_HTML);
 				}
 
 				return;

@@ -10,58 +10,57 @@ class Wikidot_Form {
 		
 		if (is_array($yaml['fields'])) {
 			foreach ($yaml['fields'] as $name => $f) {
-				if (isset($f['values'])) {
-					if (is_string($f['values'])) {
-						$f['default'] = $f['values'];
-						unset($f['values']);
-					} else if (is_array($f['values'])) {
-						$f['type'] = 'select';
-						$invalid_keys = array();
-						foreach ($f['values'] as $key => $value) {
-							if (! is_string($key) && ! is_numeric($key)) {
+				unset($first_value);
+				if (isset($f['options']) && is_array($f['options'])) {
+					$f['type'] = 'select';
+					$invalid_keys = array();
+					foreach ($f['options'] as $key => $option) {
+						if (! is_string($key) && ! is_numeric($key)) {
+							$invalid_keys[] = $key;
+						} else {
+							if (is_string($option) || is_numeric($option)) {
+								$option = array('value' => $option);
+							}
+							if (! is_string($option['value']) && ! is_numeric($option['value'])) {
 								$invalid_keys[] = $key;
 							} else {
-								if (! is_string($value) && ! is_numeric($value)) {
-									$invalid_keys[] = $key;
-								} else {
-									if (empty($value)) {
-										$f[$key] = $key;
-									}
-									if (! isset($first_value)) {
-										$first_value = $f[$key];
-									}
+								if (!isset($option['label']) || (! is_string($option['label'] && ! is_numeric($option['label'])))) {
+									$option['label'] = $key;
+								}
+								if (! isset($first_value)) {
+									$first_value = $option['value'];
 								}
 							}
 						}
-						foreach ($invalid_keys as $invalid_key) {
-							unset($f['values'][$invalid_key]);
-						}
-					} else {
-						unset($f['values']);
 					}
+					foreach ($invalid_keys as $invalid_key) {
+						unset($f['options'][$invalid_key]);
+					}
+				} else {
+					unset($f['options']);
 				}
 				if (! isset($f['type']) || ! is_string($f['type']) || empty($f['type'])) {
 					$f['type'] == 'text';
-					if (isset($f['values'])) {
+					if (isset($f['options'])) {
 						$f['type'] == 'select';
 					}
 				}
-				if ($f['type'] == 'select' && (! isset($f['values']) || ! count($f['values']))) {
+				if ($f['type'] == 'select' && (! isset($f['options']) || ! count($f['options']))) {
 					$f['type'] = 'text';
 				}
 				if (isset($f['default']) && $f['type'] == 'select') {
 					$def_val = $f['default'];
-					if (isset($f['values'][$def_val])) {
-						$f['default'] = $f['values'][$def_val];
-					} elseif (! in_array($def_val, $f['values'])) {
+					if (isset($f['options'][$def_val])) {
+						$f['default'] = $f['options'][$def_val]['value'];
+					} elseif (! in_array($def_val, $f['options'])) {
 						unset($f['default']);
 					}
 				}
-				if (! is_string($f['default']) && ! is_numeric($f['default'])) {
+				if (! isset($f['default']) || (! is_string($f['default']) && ! is_numeric($f['default']))) {
 					unset($f['default']);
 				}
 				if (! isset($f['default'])) {
-					if ($first_value !== null) {
+					if (isset($first_value)) {
 						$f['default'] = $first_value;
 					} else {
 						$f['default'] = '';
@@ -85,8 +84,8 @@ class Wikidot_Form {
 				$type = $field['type'];
 				
 				if ($type == 'select') { 
-					if (isset($field['values'][$value])) {
-						$ret[$name] = $field['values'][$value];
+					if (isset($field['options'][$value])) {
+						$ret[$name] = $field['options'][$value]['value'];
 					}
 				} elseif ($type == 'text') {
 					$ret[$name] = $value;

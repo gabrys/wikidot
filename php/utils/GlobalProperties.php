@@ -98,6 +98,7 @@ class GlobalProperties {
 	public static $LOGGER_FILE;
 	
 	// other settings
+	public static $CACHE_FILES_FOR;
 	public static $URL_DOCS;
 	public static $IP_HOST;
 	public static $USE_CUSTOM_DOMAINS;
@@ -237,6 +238,7 @@ class GlobalProperties {
 		self::$LOGGER_FILE				= self::fromIni("log",		"file",				"wikidot.log"); // TODO: use this setting
 		
 		// other settings
+		self::$CACHE_FILES_FOR			= self::fromIni("misc",		"cache_files_for",	0);
 		self::$URL_DOCS					= self::fromIni("misc",		"doc_url",			"http://www.wikidot.org/doc");
 		self::$IP_HOST					= self::fromIni("misc",		"ip",				"127.0.0.1");
 		self::$USE_CUSTOM_DOMAINS		= self::fromIni("misc",		"custom_domains",	false);
