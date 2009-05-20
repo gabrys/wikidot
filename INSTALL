@@ -1,3 +1,5 @@
+The full document is located at: http://www.wikidot.org/installation-guide
+
 To install Wikidot Open Source follow the points:
 
 1. Install PostgreSQL 8.3, PHP 5.2, Lighttpd, ImageMagick and Git.
