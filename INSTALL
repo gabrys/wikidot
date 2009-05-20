@@ -4,7 +4,7 @@ To install Wikidot Open Source follow the points:
 
 2. Get Wikidot.
 
-$ git clone git://github.com/Gabrys/wikidot.git wikidot
+$ git clone git://github.com/gabrys/wikidot.git wikidot
 $ cd wikidot
 $ git submodules update --init
 
