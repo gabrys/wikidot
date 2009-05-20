@@ -1,6 +1,6 @@
 To install Wikidot Open Source follow the points:
 
-1. Install PostgreSQL, PHP, Lighttpd, ImageMagick and Git.
+1. Install PostgreSQL 8.3, PHP 5.2, Lighttpd, ImageMagick and Git.
 
 2. Get Wikidot.
 
@@ -10,7 +10,19 @@ $ git submodules update --init
 
 3. Prepare PostgreSQL database.
 
-You basically need to run make prepare_db as user postgres.
+NOTE FOR UBUNTU USERS: you need to set user setting in
+wikidot/conf/wikidot.ini to your __current__ user, since
+Ubuntu enables authorizing local users with PAM by default.
+
+Don't forget to start PostgreSQL:
+
+$ sudo /etc/init.d/postgresql start
+
+or
+
+$ sudo /etc/init.d/postgresql-8.3 start
+
+Now you basically need to run make prepare_db as user postgres.
 I usually use the following command:
 
 $ sudo sudo -u postgres make prepare_db
@@ -22,13 +34,15 @@ Password: (enter postgres password)
 $ make prepare_db
 $ exit
 
-4. Install Wikidot db.
+4. Install Wikidot database and generate configuration files.
 
 $ make
 
-5. Run Wikidot
+5. Run Wikidot.
 
 $ ./wikidotctl start
+
+To stop use ./wikidotctl stop
 
 6. Go to the URL make prints at the end to configure your wiki superuser password.
 
