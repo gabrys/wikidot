@@ -1,0 +1,9 @@
+[submodule "lib/zf"]
+	path = lib/zf
+	url = http://tjohns.net/git/zf.git
+[submodule "lib/spyc"]
+	path = lib/spyc
+	url = git://github.com/cbosuna/spyc.git
+[submodule "lib/h2o"]
+	path = lib/h2o
+	url = git://github.com/speedmax/h2o-php.git
