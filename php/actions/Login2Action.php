@@ -47,7 +47,17 @@ class Login2Action extends SmartyAction {
 			}
 		}else{
 		
-			$user = SecurityManager::authenticateUser($uname, $upass);
+            // allow logging with nick name too
+            if (! strpos('@', $uname)) {
+                $c = new Criteria();
+                $c->add('nick_name', $uname);
+                $user_by_nick = DB_OzoneUserPeer::instance()->selectOne($c);
+                if ($user_by_nick) {
+                    $uname = $user_by_nick->getName();
+                }
+            }
+            
+    		$user = SecurityManager::authenticateUser($uname, $upass);
 		}
 		
 		if($user == null){
