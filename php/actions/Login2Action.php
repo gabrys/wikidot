@@ -50,7 +50,7 @@ class Login2Action extends SmartyAction {
             // allow logging with nick name too
             if (! strpos('@', $uname)) {
                 $c = new Criteria();
-                $c->add('nick_name', $uname);
+                $c->add('lower(nick_name)', strtolower($uname));
                 $user_by_nick = DB_OzoneUserPeer::instance()->selectOne($c);
                 if ($user_by_nick) {
                     $uname = $user_by_nick->getName();

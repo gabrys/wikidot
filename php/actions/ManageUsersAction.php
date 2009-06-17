@@ -48,7 +48,6 @@ class ManageUsersAction extends SmartyAction {
 		
 		foreach ($ids as $id) {
 			$nick_name = $params["nick_name_$id"];
-			$email = $params["email_$id"];
 			$password = $params["password_$id"];
 			
 			if ($nick_name) {
@@ -69,8 +68,8 @@ class ManageUsersAction extends SmartyAction {
 				
 				if (! $next) {
 					
-					$u->setName($email);
-					$u->setEmail($email);
+					$u->setName($nick_name);
+					$u->setEmail($nick_name);
 					$u->setNickName($nick_name);
 					$u->setUnixName(WDStringUtils::toUnixName($nick_name));
 					

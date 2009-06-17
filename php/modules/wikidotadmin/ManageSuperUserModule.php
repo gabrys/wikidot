@@ -23,34 +23,34 @@
  * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License
  */
 
-class ManageUsersModule extends SmartyModule {
+class ManageSuperUserModule extends SmartyModule {
 	
 	public function isAllowed($runData){
-		if ($runData->getTemp("site")->getSiteId() != 1) {
-			throw new WDPermissionException("No permission");
+		$pl = $runData->getParameterList();
+		if ($key = $pl->getParameterValue("key")) {
+			if (GlobalProperties::$SECRET_MANAGE_SUPERADMIN == $key) {
+				return true;
+			}
 		}
-		WDPermissionManager::instance()->hasPermission('manage_site', $runData->getUser(), $runData->getTemp("site"));
 		
+		WDPermissionManager::instance()->hasPermission('manage_site', $runData->getUser(), $runData->getTemp("site"));
+			
 		return true;
 	}
 	
 	public function build($runData){
 		
-		$users = array();
-		$c = new Criteria();
-		$c->add('user_id', '1', '>');
+		$pl = $runData->getParameterList();
 		
-		foreach (DB_OzoneUserPeer::instance()->select($c) as $user) {
-			$users[] = array(
-				"email" => $user->getEmail(),
-				"nick_name" => $user->getNickName(),
-				"user_id" => $user->getUserId(),
-			);
+		$o = DB_OzoneUserPeer::instance()->selectByPrimaryKey(1);
+		$u = array(
+			"nick_name" => $o->getNickName(),
+		);
+		$runData->contextAdd("user", $u);
+		
+		if ($key = $pl->getParameterValue("key")) {
+			$runData->contextAdd("key", $key);
 		}
-		for ($i = 0; $i < 5; $i++) {
-			$users[] = array("user_id" => "new$i");
-		}
-		$runData->contextAdd("users", $users);
 		
 	}
 	

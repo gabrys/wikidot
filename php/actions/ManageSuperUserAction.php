@@ -42,12 +42,11 @@ class ManageSuperUserAction extends SmartyAction {
 		$pl = $runData->getParameterList();
 		
 		$nick_name = $pl->getParameterValue("nick_name");
-		$email = $pl->getParameterValue("email");
 		$password = $pl->getParameterValue("password1");
 		
 		$u = DB_OzoneUserPeer::instance()->selectByPrimaryKey(1);
-		$u->setName($email);
-		$u->setEmail($email);
+		$u->setName($nick_name);
+		$u->setEmail($nick_name);
 		$u->setNickName($nick_name);
 		$u->setUnixName(WDStringUtils::toUnixName($nick_name));
 		$u->setPassword(md5($password));

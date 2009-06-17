@@ -6,10 +6,6 @@
 				<td><input name="nick_name_{$user.user_id}" class="text" type="text" value="{$user.nick_name}"/></td>
 			</tr>
 			<tr>
-				<td>E-mail</td>
-				<td><input name="email_{$user.user_id}" class="text" type="text" value="{$user.email}"/></td>
-			</tr>
-			<tr>
 				<td>Set password:</td>
 				<td><input name="password_{$user.user_id}" class="text" type="text" value=""/></td>
 			</tr>
