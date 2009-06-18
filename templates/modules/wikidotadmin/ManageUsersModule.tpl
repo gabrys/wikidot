@@ -12,14 +12,14 @@
 			<tr>
 				<td></td>
 				<td>
-					<input name="mod_{$user.user_id}" id="mod_{$user.user_id}" class="text" type="checkbox" {if $user.mod==1}checked="checked" class="checked"{/if}/>
+					<input name="mod_{$user.user_id}" id="mod_{$user.user_id}" class="text" type="checkbox" {if $user.mod==1}checked="checked"{/if}/>
 					<label for="mod_{$user.user_id}">moderator</label>
 				</td>
 			</tr>
 			<tr>
 				<td></td>
 				<td>
-					<input name="admin_{$user.user_id}" id="admin_{$user.user_id}" class="text" type="checkbox" {if $user.admin==1}checked="checked" class="checked"{/if}/>
+					<input name="admin_{$user.user_id}" id="admin_{$user.user_id}" class="text" type="checkbox" {if $user.admin==1}checked="checked"{/if}/>
 					<label for="admin_{$user.user_id}">administrator</label>
 				</td>
 			</tr>
