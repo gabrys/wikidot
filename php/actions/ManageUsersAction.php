@@ -49,6 +49,10 @@ class ManageUsersAction extends SmartyAction {
 		foreach ($ids as $id) {
 			$nick_name = $params["nick_name_$id"];
 			$password = $params["password_$id"];
+            $admin = $params["admin_$id"] ? true : false;
+            $mod = $params["mod_$id"] ? true : false;
+
+            $site = $runData->getTemp('site');
 			
 			if ($nick_name) {
 				if ($id = 1 * $id) {
@@ -64,6 +68,14 @@ class ManageUsersAction extends SmartyAction {
 					if (! $password) {
 						$next = true;
 					}
+                    
+                    $u->save();
+                    
+                    $m = new DB_Member();
+                    $m->setUserId($u->getUserId());
+                    $m->setSiteId($site->getSiteId());
+                    $m->save();
+
 				}
 				
 				if (! $next) {
@@ -76,8 +88,36 @@ class ManageUsersAction extends SmartyAction {
 					if ($password) {
 						$u->setPassword(md5($password));
 					}
+                    
+                    $u->save();
+
+                    if ($admin) {
+                        if (! WDPermissionManager::hasPermission('manage_site', $u, $site)) {
+                            $a = new DB_Admin();
+                            $a->setUserId($u->getUserId());
+                            $a->setSiteId($site->getSiteId());
+                            $a->save();
+                        }
+                    } else { // ! $admin
+                        $c = new Criteria();
+                        $c->add('site_id', $site->getSiteId());
+                        $c->add('user_id', $u->getUserId());
+                        DB_AdminPeer::instance()->delete($c);
+                    }
 					
-					$u->save();
+                    if ($mod) {
+                        if (! WDPermissionManager::hasPermission('moderate_site', $u, $site)) {
+                            $m = new DB_Moderator();
+                            $m->setUserId($u->getUserId());
+                            $m->setSiteId($site->getSiteId());
+                            $m->save();
+                        }
+                    } else { // ! $mod
+                        $c = new Criteria();
+                        $c->add('site_id', $site->getSiteId());
+                        $c->add('user_id', $u->getUserId());
+                        DB_ModeratorPeer::instance()->delete($c);
+                    }
 				}
 			}
 		}

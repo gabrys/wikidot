@@ -39,11 +39,16 @@ class ManageUsersModule extends SmartyModule {
 		$users = array();
 		$c = new Criteria();
 		$c->add('user_id', '1', '>');
-		
+
 		foreach (DB_OzoneUserPeer::instance()->select($c) as $user) {
+            $admin = WDPermissionManager::hasPermission('manage_site', $user, 1) ? 1 : 0;
+            $mod = WDPermissionManager::hasPermission('moderate_site', $user, 1) ? 1 : 0;
+
 			$users[] = array(
 				"nick_name" => $user->getNickName(),
 				"user_id" => $user->getUserId(),
+                "mod" => $mod,
+                "admin" => $admin,
 			);
 		}
 		for ($i = 0; $i < 5; $i++) {

@@ -7,7 +7,7 @@ WIKIDOT.ManageUsersModule = {
 		params.event = 'save';
 
 		OZONE.ajax.requestModule(null, params, function(r) {
-			alert(JSON.stringify(r));
+			document.location = document.location;
 		});
 		
 	}

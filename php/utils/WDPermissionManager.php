@@ -156,7 +156,23 @@ class WDPermissionManager {
 					}
 				}
 				break;
-			case 'account':
+        
+        case 'moderate_site':
+				if(!$user){
+					$message = _("You have no permission to moderate the site. Only site moderatorss are allowed to do it.".
+					"But right now you are not even logged in...");
+				}else{
+					$c = new Criteria();
+					$c->add("user_id", $user->getUserId());
+					$c->add("site_id", $site->getSiteId());
+					$rel = DB_ModeratorPeer::instance()->selectOne($c);
+					if($rel == null){
+						$message = _("You have no permission to moderate the site properties. Only site moderators are allowed to do it.");
+					}
+				}
+				break;
+
+		case 'account':
 				if(!$user){
 					$message = _("You can not access your account while not being logged in...");
 				}
