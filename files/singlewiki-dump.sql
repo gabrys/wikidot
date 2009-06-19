@@ -2392,6 +2392,7 @@ INSERT INTO category VALUES (22, 1, 'search', true, 20, true, 'e:rm;c:rm;m:rm;d:
 INSERT INTO category VALUES (23, 1, 'nav', true, 20, true, 'e:rm;c:rm;m:rm;d:rm;a:rm;r:rm;z:rm;o:rm', true, 1, NULL, true, 'nav:top', 'nav:side', NULL, NULL, true, NULL, NULL, NULL, true, false, false, NULL);;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 INSERT INTO category VALUES (24, 1, 'admin', true, 20, true, 'e:rm;c:rma;m:rm;d:rm;a:rm;r:rm;z:rm;o:rm', true, 1, NULL, true, 'nav:top', 'nav:side', NULL, NULL, true, NULL, NULL, NULL, true, false, false, NULL);;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 INSERT INTO category VALUES (1, 1, '_default', true, 20, false, 'e:rm;c:rm;m:rm;d:rm;a:rm;r:rm;z:rm;o:rm', false, 1, NULL, false, 'nav:top', 'nav:side', NULL, false, true, NULL, NULL, NULL, true, false, false, NULL);;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+INSERT INTO admin VALUES (1, 1, 1, 'T');;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
