@@ -35,19 +35,25 @@ Database::init();
 $db = Database::connection();
 $db->begin();
 
-$dump = file_get_contents('../' . $argv[1]);
+$files = $argv;
+array_shift($files);
 
-$query_no = 0;
+while (count($files)) {
+    $dump = file_get_contents('../' . $files[0]);
+    $query_no = 0;
 
-foreach (explode(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', $dump) as $query) {
-	try {
-		$query_no++;
-		if (trim($query) != "") {
-			@$db->query($query);
-		}
-	} catch (OzoneDatabaseException $e) {
-		die('Error occured at query number ' . $query_no . ':\n' . htmlspecialchars($query) . '\n');
-	}
+    foreach (explode(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', $dump) as $query) {
+        try {
+            $query_no++;
+            if (trim($query) != "") {
+                $db->query($query);
+            }
+        } catch (OzoneDatabaseException $e) {
+            die("\n\nError occured at query number " . $query_no . ', file ' . $files[0] . ":\n" . htmlspecialchars($query) . "\n");
+        }
+    }
+
+    array_shift($files);
 }
 
 $db->commit();
