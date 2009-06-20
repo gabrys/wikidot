@@ -3,6 +3,8 @@ INSERT INTO site VALUES (2, 'Plain Wiki', 'powered by wikidot software', 'templa
 
 INSERT INTO site_settings VALUES (2, false, false, '', 314572800, false, 'system:join', 50, 20, true, NULL, false, false, 10485760, true);;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+INSERT INTO site_super_settings VALUES (2, true);;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 INSERT INTO admin VALUES (2, 2, 1, true);;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 INSERT INTO member VALUES (2, 2, 1, NOW());;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -16,7 +18,7 @@ INSERT INTO category VALUES (11,
     NULL, false, true, NULL, NULL, NULL, true, false, false, NULL
 );;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-INSERT INTO category VALUES (13,
+INSERT INTO category VALUES (12,
     2, 'system',
     true, 20,
     false, 'e:;c:;m:;d:;a:;r:;z:;o:',
@@ -25,7 +27,7 @@ INSERT INTO category VALUES (13,
     NULL, NULL, true, NULL, NULL, NULL, true, false, false, NULL
 );;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-INSERT INTO category VALUES (14,
+INSERT INTO category VALUES (13,
     2, 'search',
     true, 20,
     false, 'e:;c:;m:;d:;a:;r:;z:;o:',
@@ -34,7 +36,7 @@ INSERT INTO category VALUES (14,
     NULL, NULL, true, NULL, NULL, NULL, true, false, false, NULL
 );;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-INSERT INTO category VALUES (15,
+INSERT INTO category VALUES (14,
     2, 'admin',
     false, 21,
     false, 'e:;c:;m:;d:;a:;r:;z:;o:',
