@@ -46,6 +46,12 @@ abstract class Wikidot_Facade_Base {
 	
 	/**
 	 * 
+	 * @var bool
+	 */
+	protected $clear_parent_page = false;
+	
+	/**
+	 * 
 	 * @var string
 	 */
 	protected $title = null;
@@ -63,13 +69,37 @@ abstract class Wikidot_Facade_Base {
 	protected $tags = null;
 	
 	/**
+	 * 
+	 * @var array
+	 */
+	protected $config = array();
+	
+	/**
+	 * 
+	 * @var array
+	 */
+	protected $config_keys = array('expose_file_path');
+	
+	/**
 	 * construct Facade object
 	 * 
 	 * @param $performer DB_OzoneUser
+	 * @param $app string application
+	 * @param $config array configuration array, keys: expose_file_path: false by default
 	 */
-	public function __construct($performer = null, $app = null) {
+	public function __construct($performer = null, $app = null, $config = null) {
 		$this->performer = $performer;
 		$this->app = $app;
+		
+		if (is_array($config)) {
+			foreach ($this->config_keys as $key) {
+				if (isset($config[$key])) {
+					$this->config[$key] = $config[$key];
+				} else {
+					$this->config[$key] = null;
+				}
+			}
+		}
 	}
 	
 	/**
@@ -110,13 +140,13 @@ abstract class Wikidot_Facade_Base {
 					$this->parent_page = $value;
 					break;
 				case "title":
-					$this->title = $this->_parseString($value, "title");
+					$this->title = $this->_parseString($value, "title", 128);
 					break;
 				case "source":
-					$this->source = $this->_parseString($value, "source");
+					$this->source = $this->_parseString($value, "source", 200000);
 					break;
 				case "tags":
-					$this->tags = $this->_parseTags($value);
+					$this->tags = $this->_parseTags($value, 64, 500);
 					break;
 				default:
 					throw new Wikidot_Facade_Exception_WrongArguments("Invalid argument array key: $key");
@@ -135,6 +165,10 @@ abstract class Wikidot_Facade_Base {
 		
 		if ($this->parent_page) {
 			$this->parent_page = $this->_parsePage($this->site, $this->parent_page);
+		}
+		
+		if ($this->parent_page === "") { // empty string is passed as the parent_page
+			$this->clear_parent_page = true;
 		}
 		
 		foreach ($requiredArgs as $key) {
@@ -178,29 +212,56 @@ abstract class Wikidot_Facade_Base {
 		throw new Wikidot_Facade_Exception_WrongReturnValue("Invalid type of returned value");
 	}
 	
-	protected function _parseString($value, $key = "") {
-		if (is_string($value)) {
-			return $value;
-		}
+	protected function _parseString($value, $key = "", $max_length = null, $trim = true) {
 		if (is_numeric($value)) {
-			return "$value";
+			$value = "$value";
+		}
+		if (is_string($value)) {
+			
+			if ($trim) {
+				$value= trim($value);
+			}
+			
+			if ($max_length && strlen8($value) > $max_length) {
+				throw new Wikidot_Facade_Exception_WrongArguments("Argument $key is too long (> $max_length)");
+			} 
+			
+			return $value;
 		}
 		throw new Wikidot_Facade_Exception_WrongArguments("Argument $key must be a string");
 	}
 	
-	protected function _parseTags($tags) {
+	protected function _parseTags($tags, $max_tag_length = null, $max_total_length = null) {
 		if (is_string($tags)) {
 			$tags = preg_split("/[ ,]+/", trim($tags));
 		}
-		if (is_array($tags)) {
-			return $tags;
+		if (! is_array($tags)) {
+			throw new Wikidot_Facade_Exception_WrongArguments("Invalid tags argument (it must be array or string)");
 		}
-		throw new Wikidot_Facade_Exception_WrongArguments("Invalid tags argument (it must be array or string)");
+		$tags = array_unique($tags);
+		$total_length = -1;
+		$tags_new = array();
+		foreach ($tag as $tags) {
+			$tag = $this->_parseString($tag, "tag", $max_tag_length);
+			$total_length += strlen8($tag) + 1;
+			$tags_new[] = strtolower($tag);
+		}
+		if ($total_length > $max_total_length) {
+			throw new Wikidot_Facade_Exception_WrongArguments("Tags are too long (> $max_total_length)");
+		}
+		return $tags_new;
 	}
 	
 	protected function _parseUser($user) {
 		if (is_int($user)) { // int = ID
 			$user = DB_OzoneUserPeer::instance()->selectByPrimaryKey($user);
+		}
+		
+		if (is_string($user)) {
+			$c = new Criteria();
+			$unix_name = WDStringUtils::toUnixName($user);
+			$c->add('unix_name', $unix_name);
+			$user = DB_OzoneUserPeer::instance()->selectOne($c);
 		}
 		
 		if ($user instanceof DB_OzoneUser) {
@@ -386,15 +447,18 @@ abstract class Wikidot_Facade_Base {
 	 * @return array
 	 */
 	protected function _reprFile($file) {
-		return array(
+		$r = array(
 			"url" => $file->getFileURI(),
 			"name" => $file->getFilename(),
-			"path" => $file->getFilePath(),
 			"mime" => $file->getMimetype(),
 			"description" => $file->getDescription(),
 			"comment" => $file->getComment(),
 			"date_added" => $this->_reprDate($file->getDateAdded()),
 			"size" => $file->getSize(),
 		);
+		if ($this->config['expose_file_path']) {
+			$r['path'] = $file->getFilePath();
+		}
+		return $r;
 	}
 }

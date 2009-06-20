@@ -5,8 +5,9 @@ prepare_db:
 	bin/prepare_db.php | psql
 
 db:
-	bin/bootstrap_db.php files/singlewiki-dump.sql
+	bin/bootstrap_db.php files/dump/db/*.sql
 	bin/generate_om.php
+	bin/bootstrap_pages.php files/dump/sites/*
 
 config:
 	bin/configure.php

@@ -32,4 +32,4 @@ require ('../php/setup.php');
 $host = GlobalProperties::$IP_HOST . ':' . GlobalProperties::$HTTP_PORT;
 $key = GlobalProperties::$SECRET_MANAGE_SUPERADMIN;
 
-echo "http://$host/admin:superadmin/key/$key\n";
+echo "http://$host/admin:superuser/key/$key\n";
