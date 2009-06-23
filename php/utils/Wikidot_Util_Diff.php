@@ -53,7 +53,7 @@ class Wikidot_Util_Diff {
 		$file_from = tempnam(WIKIDOT_ROOT . '/tmp', 'diff-');
 		$file_to = tempnam(WIKIDOT_ROOT . '/tmp', 'diff-');
 		file_put_contents($file_from, $fromString);
-		file_put_contents($to_from, $toString);
+		file_put_contents($file_to, $toString);
 		
 		$from_arg = escapeshellarg($file_from);
 		$to_arg = escapeshellarg($file_to);
@@ -63,6 +63,8 @@ class Wikidot_Util_Diff {
 		
 		$result_lines = array();
 		exec($cmd, $result_lines);
+        array_shift($result_lines);
+        array_shift($result_lines);
 		
 		unlink($file_from);
 		unlink($file_to);
