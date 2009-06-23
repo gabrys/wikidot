@@ -188,7 +188,7 @@ class GlobalProperties {
 		self::$USE_UPLOAD_DOMAIN		= self::fromIni("security",	"upload_separate_domain",	false);
 		self::$URL_UPLOAD_DOMAIN		= self::fromIni("security",	"upload_domain",			"wd.files." . self::$URL_DOMAIN);
 		self::$RESTRICT_HTML			= self::fromIni("security",	"upload_restrict_html",		true);
-		self::$SECRET_MANAGE_SUPERADMIN = self::fromIni("security", "secret_manage_superuser",  md5(self::$SECRET . '_super_admin'));
+		self::$SECRET_MANAGE_SUPERADMIN = self::fromIni("security", "secret_manage_superadmin",  md5(self::$SECRET . '_super_admin'));
 		
 		// database settings
 		self::$DATABASE_USER			= self::fromIni("db",		"user");			// no default!
