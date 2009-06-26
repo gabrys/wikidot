@@ -140,6 +140,7 @@ class Wikidot_Facade_Page extends Wikidot_Facade_Base {
 		$new_rev = new DB_PageRevision();
 		$new_rev->setSiteId($this->site->getSiteId());
 		$new_rev->setPageId($page->getPageId());
+        $new_rev->setUserId($this->performer->getUserId());
 		$new_rev->setDateLastEdited($now);
         if ($new) {
             $new_rev->setRevisionNumber(0);
@@ -160,8 +161,7 @@ class Wikidot_Facade_Page extends Wikidot_Facade_Base {
 			$new_src->save();
 			
 			$new_rev->setSourceId($new_src->getSourceId());
-			$new_rev->setFlagText(true);
-			
+
 			$src_changed = true;
 		
 		} else {
@@ -247,6 +247,21 @@ class Wikidot_Facade_Page extends Wikidot_Facade_Base {
 		} else {
 			$new_rev->setMetadataId($cur_meta->getMetadataId());
 		}
+
+        // set flag on revision
+        if ($new) {
+            $new_rev->setFlagNew(true);
+        } else {
+            if ($src_changed) {
+                $new_rev->setFlagText(true);
+            }
+            if ($title_changed) {
+                $new_rev->setFlagTitle(true);
+            }
+            if ($parent_changed) {
+                $new_rev->setFlagMeta(true);
+            }
+        }
 		
 		if ($src_changed || $meta_changed || $tags_changed) {
 			
