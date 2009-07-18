@@ -74,19 +74,13 @@ class Indexer {
 		if(!preg_match(';^8\.3;', $v['server'])){
 		    $db->query("SELECT set_curcfg('default')");
 		}
-		$ie->setVector("(setweight( to_tsvector('$title'), 'A') || to_tsvector('".db_escape_string($text)."') || setweight( to_tsvector('$tagstring'), 'B'))", true);
+		$ie->setVector("(setweight( to_tsvector('$title'), 'C')||setweight( to_tsvector('$unixName'), 'C') || to_tsvector('".db_escape_string($text)."')||setweight( to_tsvector('$tagstring'), 'C'))", true);
 		$ie->save();
-		
-		$lucene = new Wikidot_Search_Lucene();
-		$lucene->queueFtsEntry($ie->getFtsId());
 	}
 	
 	public function deindexPage($page){
 		$ie = DB_FtsEntryPeer::instance()->selectByPageId($page->getPageId());
-		DB_FtsEntryPeer::instance()->deleteByPrimaryKey($ie->getFtsId());
-		
-		$lucene = new Wikidot_Search_Lucene();
-		$lucene->queueDeletePage($page->getPageId());
+		DB_FtsEntryPeer::instance()->deleteByPrimaryKey($ie->getFtsId());	
 	}
 	
 	public function indexThread($thread){
@@ -124,14 +118,11 @@ class Indexer {
 		$ie->setVector("setweight( to_tsvector('$title'), 'C') || setweight( to_tsvector('$description'), 'C') || to_tsvector('".db_escape_string($text)."')", true);
 		
 		$ie->save();
-		
-		$lucene = new Wikidot_Search_Lucene();
-		$lucene->queueFtsEntry($ie->getFtsId());
 	}
 	
 	public function deindexThread($thread){
 		$ie = DB_FtsEntryPeer::instance()->selectByThreadId($thread->getThreadId());
-		DB_FtsEntryPeer::instance()->deleteByPrimaryKey($ie->getFtsId());
+		DB_FtsEntryPeer::instance()->deleteByPrimaryKey($ie->getFtsId());		
 	}
 	
 }

@@ -818,12 +818,7 @@ class ManageSiteAction extends SmartyAction {
 			}
 		}
 
-		$db->commit();
-
-		// update the search index
-		$lucene = new Wikidot_Search_Lucene();
-		$lucene->queueReIndexSite($site->getSiteId());
-		
+		$db->commit();	
 		if (GlobalProperties::$UI_SLEEP) { sleep(1); }
 	}
 	
@@ -910,10 +905,6 @@ class ManageSiteAction extends SmartyAction {
 			$site->setCustomDomain(null);
 		}
 		$db->commit();
-
-		// update the search index
-		$lucene = new Wikidot_Search_Lucene();
-		$lucene->queueReIndexSite($site->getSiteId());
 		
 	}
 	

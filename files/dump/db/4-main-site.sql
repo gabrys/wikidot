@@ -56,10 +56,10 @@ INSERT INTO category VALUES (5,
 
 INSERT INTO category VALUES (6,
     1, 'account',
-    true, 20,
+    false, 21,
     false, 'e:;c:;m:;d:;a:;r:;z:;o:',
     true, 1, NULL,
-    true, 'nav:top', 'nav:side',
+    false, 'nav:top', NULL,
     NULL, false, true, NULL, NULL, NULL, true, false, false, NULL
 );;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
