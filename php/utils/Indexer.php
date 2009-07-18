@@ -74,7 +74,7 @@ class Indexer {
 		if(!preg_match(';^8\.3;', $v['server'])){
 		    $db->query("SELECT set_curcfg('default')");
 		}
-		$ie->setVector("(setweight( to_tsvector('$title'), 'C')||setweight( to_tsvector('$unixName'), 'C') || to_tsvector('".db_escape_string($text)."')||setweight( to_tsvector('$tagstring'), 'C'))", true);
+        $ie->setVector("(setweight( to_tsvector('$title'), 'A') || to_tsvector('".db_escape_string($text)."') || setweight( to_tsvector('$tagstring'), 'B'))", true);
 		$ie->save();
 	}
 	
