@@ -1,6 +1,6 @@
 [submodule "lib/zf"]
 	path = lib/zf
-	url = http://tjohns.net/git/zf.git
+	url = git://github.com/tjohns/zf.git
 [submodule "lib/spyc"]
 	path = lib/spyc
 	url = git://github.com/cbosuna/spyc.git
