@@ -13,6 +13,7 @@ array_shift($dirs);
 
 foreach ($dirs as $dir) {
     foreach (ls('../' . $dir, '*.page') as $file) {
+        echo "Saving $dir/$file\n";
         $source = file('../' . $dir . '/' . $file);
         $title = array_shift($source);
         $page_facade->save(array(

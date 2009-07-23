@@ -284,10 +284,6 @@ class CreateAccount2Action extends SmartyAction {
 		// profile page
 		
 		$c = new Criteria();
-		$c->add("unix_name", "template-en");
-		$tsite = DB_SitePeer::instance()->selectOne($c);
-		
-		$c = new Criteria();
 		$c->add("unix_name", "profiles");
 		$nsite = DB_SitePeer::instance()->selectOne($c);
 		$ncategory = DB_CategoryPeer::instance()->selectByName('profile', $nsite->getSiteId());
@@ -295,7 +291,7 @@ class CreateAccount2Action extends SmartyAction {
 		$dup = new Duplicator;
 		$dup->setOwner($nuser);
 		
-		$dup->duplicatePage(DB_PagePeer::instance()->selectByName($tsite->getSiteId(), 'profile:template'),
+		$dup->duplicatePage(DB_PagePeer::instance()->selectByName($nsite->getSiteId(), 'template:profile'),
 					$nsite,  $ncategory, 'profile:'.$nuser->getUnixName());
 		
 		$page = DB_PagePeer::instance()->selectByName($nsite->getSiteId(), 'profile:'.$nuser->getUnixName());
