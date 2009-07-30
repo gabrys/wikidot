@@ -66,7 +66,9 @@ class Text_Wiki_Parse_Form extends Text_Wiki_Parse {
         $formYaml = $matches[1];
         $dataYaml = $matches[2];
         
-        $json = new JSONService(SERVICES_JSON_LOOSE_TYPE);
+        if (substr($dataYaml, 0, 2) == '%%') {
+            $dataYaml = '';
+        }
         $form = Wikidot_Form::fromYaml($formYaml, $dataYaml);
 
         $output = $this->wiki->addToken($this->rule, array('begin' => 1));

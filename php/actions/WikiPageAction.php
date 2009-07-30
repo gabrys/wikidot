@@ -44,7 +44,7 @@ class WikiPageAction extends SmartyAction {
                     $data[$m[1]] = $val;
                 }
             }
-            $source = substr(Wikidot_Yaml::dump($data), 4);
+            $source = Wikidot_Yaml::dump($data);
         } else {
 		    $source = trim($pl->getParameterValue("source"));
         }

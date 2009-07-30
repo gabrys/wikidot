@@ -7,3 +7,6 @@
 [submodule "lib/h2o"]
 	path = lib/h2o
 	url = git://github.com/speedmax/h2o-php.git
+[submodule "lib/sfyaml"]
+	path = lib/sfyaml
+	url = git://github.com/fabpot/yaml.git

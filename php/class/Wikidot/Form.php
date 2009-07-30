@@ -9,7 +9,7 @@ class Wikidot_Form {
 	
 	public static function fromYaml($yamlString, $dataYamlString = null) {
 		$form = new self();
-		$yaml = Wikidot_Yaml::load($yamlString);
+		$yaml = Wikidot_Yaml::load($yamlString, true); // forgiving mode ;)
 
         # relation between data type and field type
         $datatypes = array('text' => 'wiki', 'page' => 'wiki');
@@ -90,7 +90,7 @@ class Wikidot_Form {
     public function setDataFromYaml($dataYamlString) {
 
         if ($dataYamlString) {
-            $data = Wikidot_Yaml::load($dataYamlString);
+            $data = Wikidot_Yaml::load($dataYamlString, true); // forgiving mode again ;)
         } else {
             $data = array();
         }
