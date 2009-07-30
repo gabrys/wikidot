@@ -6,4 +6,7 @@ class Wikidot_Yaml {
 	public static function load($string) {
 		return Spyc::YAMLLoadString($string);
 	}
+    public static function dump($object) {
+        return Spyc::YAMLDump($object);
+    }
 }

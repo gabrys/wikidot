@@ -1,12 +1,17 @@
 <?php
 
-class Wikidot_Form {
-	public $fields = array();
-	public $presets = array();
-
-    // keep this up to date with Text_Wiki_Parse_Form!
-    public static $FORM_REGEXP = '/\[\[form\]\]\s*\n(.*)\n---\s*\n(.*)\n\[\[\/form\]\]/is';
-	
+class Wikidot_Form_Renderer extends Wikidot_Form {
+    public function __construct($form) {
+        $fields = $form->fields;
+        $this->presets = $form->presets;
+        $this->data = $form->data;
+    
+        foreach ($fields as $name => $field) {
+            $this->fields[$name] = $field;
+            $this->fields[$name]['editor'] = Wikidot_Form_Field::field($field);
+        }
+    }
+    
 	public static function fromYaml($yamlString, $dataYamlString = null) {
 		$form = new self();
 		$yaml = Wikidot_Yaml::load($yamlString);
@@ -79,31 +84,25 @@ class Wikidot_Form {
 			
 		}
 
-        $form->setDataFromYaml($dataYamlString);
-       
-		if (is_array($yaml['presets'])) {
-			$form->presets = $yaml['presets'];
-		}
-		return $form;
-	}
-
-    public function setDataFromYaml($dataYamlString) {
-
         if ($dataYamlString) {
             $data = Wikidot_Yaml::load($dataYamlString);
         } else {
             $data = array();
         }
 
-        foreach ($this->fields as $name => $field) {
+        foreach ($form->fields as $name => $field) {
             if (isset($data[$name])) {
-                $this->fields[$name]['value'] = $data[$name];
+                $form->fields[$name]['value'] = $data[$name];
             } else {
-                $this->fields[$name]['value'] = null;
+                $form->fields[$name]['value'] = null;
             }
         }
- 
-    }
+        
+		if (is_array($yaml['presets'])) {
+			$form->presets = $yaml['presets'];
+		}
+		return $form;
+	}
 
     public static function fromSource($source) {
         $m = array();

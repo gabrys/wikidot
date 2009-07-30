@@ -41,17 +41,29 @@
 					{/if}
 				</table>
 			{/if}
-			<div class="wd-editor-toolbar-panel" id="wd-editor-toolbar-panel"></div>
-			<div>
-				<textarea id="edit-page-textarea" name="source" rows="20" cols="40" style="width: 95%;">{$source|escape}</textarea>
-			</div>
-			<div class="change-textarea-size">
-				<a href="javascript:;" onclick="WIKIDOT.utils.changeTextareaRowNo('edit-page-textarea',-5)">-</a>
-				<a href="javascript:;" onclick="WIKIDOT.utils.changeTextareaRowNo('edit-page-textarea',5)">+</a>
-			</div>
-			<div class="edit-help-34">
-				{t}Need help? Check the{/t} <a href="{$URL_DOCS}" target="_blank">{t}documentation{/t}</a>.
-			</div>
+            {if $form}
+                <input type="hidden" name="form" value="true"/>
+                <table class="form" style="margin: 0.5em auto 1em 0pt">
+                    {foreach from=$form->fields item=field}
+                        <tr>
+                            <td>{$field.label}: </td>
+                            <td>{$field.editor->renderEdit()}</td>
+                        </tr>
+                    {/foreach}
+                </table>
+            {else}
+                <div class="wd-editor-toolbar-panel" id="wd-editor-toolbar-panel"></div>
+                <div>
+                    <textarea id="edit-page-textarea" name="source" rows="20" cols="40" style="width: 95%;">{$source|escape}</textarea>
+                </div>
+                <div class="change-textarea-size">
+                    <a href="javascript:;" onclick="WIKIDOT.utils.changeTextareaRowNo('edit-page-textarea',-5)">-</a>
+                    <a href="javascript:;" onclick="WIKIDOT.utils.changeTextareaRowNo('edit-page-textarea',5)">+</a>
+                </div>
+                <div class="edit-help-34">
+                    {t}Need help? Check the{/t} <a href="{$URL_DOCS}" target="_blank">{t}documentation{/t}</a>.
+                </div>
+            {/if}
 		
 			<table style="padding: 2px 0; border: none;">
 				<tr>

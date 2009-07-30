@@ -212,6 +212,16 @@ class DB_Category extends DB_CategoryBase {
 			return 'a';
 		}
 	}
+
+    public function getTemplatePage() {
+        $name = $this->getName();
+        if ($name == '_default') {
+            $name = '_template';
+        } else {
+            $name = $name . ':_template';
+        }
+        return DB_PagePeer::instance()->selectByName($this->getSiteId(), $name);
+    }
 	
 	public function save(){
 		$memcache = Ozone::$memcache;

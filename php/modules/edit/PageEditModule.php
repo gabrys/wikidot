@@ -146,11 +146,13 @@ class PageEditModule extends SmartyModule {
 			
 			/* Select available templates, but only if the category does not have a live template. */
 			
-    		$categoryName = $category->getName();
-    	    $templatePage = DB_PagePeer::instance()->selectByName($site->getSiteId(), 
-    		    ($categoryName == '_default' ? '' : $categoryName.':') .'_template');
+            $templatePage = $category->getTemplatePage();
     		
-    		if(!$templatePage || !preg_match(';^={4,}$;sm', $templatePage->getSource())) {
+            if ($templatePage && $form = Wikidot_Form::fromSource($templatePage->getSource())) {
+
+                $runData->contextAdd("form", new Wikidot_Form_Renderer($form));
+
+            } elseif (!$templatePage || !preg_match(';^={4,}$;sm', $templatePage->getSource())) {
         	    			
     			$templatesCategory = DB_CategoryPeer::instance()->selectByName("template", $site->getSiteId());
     		
@@ -210,9 +212,19 @@ class PageEditModule extends SmartyModule {
 		// now check for permissions!
 		
 		WDPermissionManager::instance()->hasPagePermission('edit', $user, $category, $page);
+
+        // now check if form is defined
+
+        $templatePage = $category->getTemplatePage();
+
+        if (preg_match('/^[^:]*:[^_]|^[^_:][^:]*$/', $page->getUnixName())
+            && $templatePage && $form = Wikidot_Form::fromSource($templatePage->getSource())
+        ) {
+            $form->setDataFromYaml($page->getSource());
+            $runData->contextAdd("form", new Wikidot_Form_Renderer($form));
 		
 		// check if mode is sections if page is editable in this mode
-		if($mode == "section"){
+		} elseif($mode == "section"){
 			$compiledContent = $page->getCompiled()->getText();
 			$editable = WDEditUtils::sectionsEditable($compiledContent);
 			if($editable == false){

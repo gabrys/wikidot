@@ -35,8 +35,20 @@ class WikiPageAction extends SmartyAction {
 		$pageId = $pl->getParameterValue("page_id");
 		
 		$mode = $pl->getParameterValue("mode");
-		
-		$source = trim($pl->getParameterValue("source"));
+
+        if ($pl->getParameterValue("form")) {
+            $data = array();
+            foreach ($runData->getParameterList()->asArray() as $name => $val) {
+                $m = array();
+                if (preg_match("/^field_(.*)$/", $name, $m)) {
+                    $data[$m[1]] = $val;
+                }
+            }
+            $source = substr(Wikidot_Yaml::dump($data), 4);
+        } else {
+		    $source = trim($pl->getParameterValue("source"));
+        }
+
 		$comments = trim($pl->getParameterValue("comments"));
 		$title = trim($pl->getParameterValue("title"));
 		
