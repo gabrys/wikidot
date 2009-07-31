@@ -9,7 +9,7 @@
 {else}
 	<div>
 		
-		<form id="edit-page-form">
+		<form id="edit-page-form"{if $form} class="edit-with-form"{/if}>
 			<input type="hidden" name="page_id" value="{$pageId|escape}"/>
 			{if $mode=="page" || ($newPage && $templates)}
 				<table class="form" style="margin: 0.5em auto 1em 0">
@@ -46,7 +46,7 @@
                 <table class="form" style="margin: 0.5em auto 1em 0pt">
                     {foreach from=$form->fields item=field}
                         <tr>
-                            <td>{$field.label}: </td>
+                            <td>{$field.label|escape}: </td>
                             <td>{$field.editor->renderEdit()}</td>
                         </tr>
                     {/foreach}

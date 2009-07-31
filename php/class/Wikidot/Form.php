@@ -10,9 +10,6 @@ class Wikidot_Form {
 	public static function fromYaml($yamlString, $dataYamlString = null) {
 		$form = new self();
 		$yaml = Wikidot_Yaml::load($yamlString, true); // forgiving mode ;)
-
-        # relation between data type and field type
-        $datatypes = array('text' => 'wiki', 'page' => 'wiki');
 		
 		if (is_array($yaml['fields'])) {
 			foreach ($yaml['fields'] as $name => $f) {
@@ -72,7 +69,12 @@ class Wikidot_Form {
 						$f['default'] = '';
 					}
 				}
-                $f['datatype'] = $datatypes[$f['type']];
+                if (is_string($f['category']) || is_numeric($f['category'])) {
+                    $f['category'] = WDStringUtils::toUnixName($f['category']);
+                } else {
+                    $f['category'] = '';
+                }
+                $name = WDStringUtils::toUnixName($name);
                 $f['name'] = $name;
 				$form->fields[$name] = $f;
 			}

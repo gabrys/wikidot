@@ -38,6 +38,7 @@ class WikiPageAction extends SmartyAction {
 
         if ($pl->getParameterValue("form")) {
             $data = array();
+            $newpages = array();
             foreach ($runData->getParameterList()->asArray() as $name => $val) {
                 $m = array();
                 if (preg_match("/^field_(.*)$/", $name, $m)) {
