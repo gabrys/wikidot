@@ -19,7 +19,8 @@ set -e
 
 case "$1" in
     remove|upgrade|deconfigure)
-        rm -r /usr/lib/wikidot/logs /usr/lib/wikidot/php/db /usr/lib/wikidot/tmp
+        rm -rf /usr/lib/wikidot/logs /usr/lib/wikidot/php/db /usr/lib/wikidot/tmp /usr/lib/wikidot/conf/lighttpd /usr/lib/wikidot/conf/secret /usr/lib/wikidot/files
+        /etc/init.d/wikidot stop
         /etc/init.d/postgresql-8.3 start
     ;;
 

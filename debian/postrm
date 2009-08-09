@@ -21,9 +21,9 @@ set -e
 
 case "$1" in
     purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
-        userdel wikidot
-        sudo -u postgres dropdb wikidot
-        sudo -u postgres dropuser wikidot
+        userdel wikidot || true
+        sudo -u postgres dropdb wikidot || true
+        sudo -u postgres dropuser wikidot || true
     ;;
 
     *)

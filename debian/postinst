@@ -24,7 +24,7 @@ case "$1" in
         cd /usr/lib/wikidot
         chown wikidot:wikidot . -R
         sudo -u postgres make prepare_db
-        make || make # because of php memory limit
+        make || make || true # because of php memory limit and segfaults
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
