@@ -27,3 +27,12 @@ finish:
 	@bin/finish_url.php
 	@echo
 
+debs:
+	rm -rf build .build
+	mkdir -p .build/wikidot-`cat VERSION`
+	cp -r * .build/wikidot-`cat VERSION`
+	mv .build build
+	find build/wikidot-`cat VERSION` -type d -name '.git' -print0 | xargs -0 rm -r
+	cd build/wikidot-`cat VERSION`; rm -r lib/zf/bin lib/zf/demos lib/zf/tests lib/zf/documentation
+	cd build/wikidot-`cat VERSION`; dpkg-buildpackage -rfakeroot
+
